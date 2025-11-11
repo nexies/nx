@@ -110,7 +110,9 @@ function(nx_make_module)
         if(NOT _NX_HEADERS_BASE_DIRS)
             set(_NX_HEADERS_BASE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/include")
         endif()
-        message(${DESC} "Headers base dir is set to ${_NX_HEADERS_BASE_DIRS}...")
+#        message(${DESC} "Headers base dir is set to ${_NX_HEADERS_BASE_DIRS}...")
+        list(LENGTH _NX_PUBLIC_HEADERS _headers_count)
+        message(${DESC} "Found ${_headers_count} public headers")
         target_sources(${_t}
                 PUBLIC
                 FILE_SET public_headers
@@ -146,6 +148,15 @@ function(nx_make_module)
             )
         endif()
     endif()
+
+    message(${DESC}
+            "Installing public header interface: BUILD[${_NX_HEADERS_BASE_DIRS}],
+                                                 INSTALL[${NX_INSTALL_INCLUDEDIR}]")
+    target_include_directories(${_t}
+            PUBLIC
+            $<BUILD_INTERFACE:${_NX_HEADERS_BASE_DIRS}>
+            $<INSTALL_INTERFACE:${NX_INSTALL_INCLUDEDIR}>
+    )
 
     get_property(_all GLOBAL PROPERTY NX_AVAILABLE_COMPONENTS)
     list(APPEND _all "${_name}")
