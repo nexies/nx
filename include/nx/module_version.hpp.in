@@ -1,0 +1,11 @@
+#pragma once
+
+namespace nx::@_MODULE_NAME@
+{
+    namespace version {
+        static constexpr const char * str = "@_MODULE_VERSION_STR@";
+        static constexpr int major = @_MODULE_VERSION_MAJOR@;
+        static constexpr int minor = @_MODULE_VERSION_MINOR@;
+        static constexpr int major = @_MODULE_VERSION_PATCH@;
+    }
+}

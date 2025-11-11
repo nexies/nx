@@ -1,0 +1,19 @@
+//
+// Created by nexie on 11.11.2025.
+//
+
+#ifndef VERSION_HPP_IN_HPP
+#define VERSION_HPP_IN_HPP
+
+#define NX_VERSION_MAJOR @NX_VERSION_MAJOR@
+#define NX_VERSION_MINOR @NX_VERSION_MINOR@
+#define NX_VERSION_PATCH @NX_VERSION_PATCH@
+#define NX_VERSION_TWEAK @NX_VERSION_TWEAK@
+
+#define NX_VERSION_STR          "@NX_VERSION_STR@"
+#define NX_BUILD_TIMESTAMP_UTC  "@NX_BUILD_TIMESTAMP_UTC@"
+#define NX_GIT_SHA1             "@NX_GIT_SHA1@"
+
+
+
+#endif
