@@ -146,10 +146,13 @@ function(nx_make_module)
     list(REMOVE_DUPLICATES _all)
     set_property(GLOBAL PROPERTY NX_AVAILABLE_COMPONENTS "${_all}")
 
-    message(${DESC} "Enabling...")
     get_property(_en GLOBAL PROPERTY NX_ENABLED_COMPONENTS)
     list(APPEND _en "${_name}")
     list(REMOVE_DUPLICATES _en)
     set_property(GLOBAL PROPERTY NX_ENABLED_COMPONENTS "${_en}")
+
+    get_property(_ver GLOBAL PROPERTY NX_${_name_up}_VERSION_STR)
+    message(${DESC} "Configured module ${_name} version ${_ver}")
+    message("=========================================================================================================")
 
 endfunction()

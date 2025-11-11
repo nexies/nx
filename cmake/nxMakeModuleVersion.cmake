@@ -15,6 +15,7 @@ function(nx_make_module_version)
         set(_MODULE_VERSION_STR ${NX_${_name_up}_VERSION_STR})
     else()
         set(_MODULE_VERSION_STR ${NX_VERSION_STR})
+        set_property(GLOBAL PROPERTY NX_${_name_up}_VERSION_STR ${NX_VERSION_STR})
         set(NX_${_name_up}_VERSION_STR ${NX_VERSION_STR})
     endif()
 
@@ -41,8 +42,6 @@ function(nx_make_module_version)
             "${CMAKE_BINARY_DIR}/generated/nx/${_name}/version.hpp"
             @ONLY
     )
-
-
 
     unset(_MODULE_VERSION_PATCH)
     unset(_MODULE_VERSION_MINOR)
