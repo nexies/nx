@@ -11,6 +11,7 @@ set(NX_NAMESPACE nx)
 set(NX_EXPORT_SET nxTargets)
 set(NX_INSTALL_INCLUDEDIR include)
 set(NX_CXX_STANDARD 20)
+set(NX_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 option (NX_BUILD_MODULE_CORE "Build nx::core module" ON)
 option (NX_BUILD_MODULE_APP "Build nx::app module" ON)

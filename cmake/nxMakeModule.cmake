@@ -20,7 +20,7 @@ define_property(GLOBAL PROPERTY NX_AVAILABLE_COMPONENTS BRIEF_DOCS "nx component
 define_property(GLOBAL PROPERTY NX_ENABLED_COMPONENTS   BRIEF_DOCS "nx components (built)"  FULL_DOCS "Enabled nx components")
 
 function(nx_make_module)
-    set(_one TARGET VERSION)
+    set(_one NAME TARGET VERSION)
     set(_multi
             PUBLIC_HEADERS
             HEADERS_BASE_DIRS
@@ -31,20 +31,26 @@ function(nx_make_module)
             PUBLIC_INCLUDE_DIRS
             PRIVATE_INCLUDE_DIRS
     )
+    message("=========================================================================================================")
+
     cmake_parse_arguments(_NX "" "${_one}" "${_multi}" ${ARGN})
     set (DESC "nx_make_module()")
 
     if(NOT _NX_TARGET)
-        message(FATAL_ERROR "${DESC}: TARGET is not provided")
+        message(FATAL_ERROR "${DESC}: parameter TARGET is not provided")
         return ()
     endif()
     if(NOT TARGET ${_NX_TARGET})
-        message(FATAL_ERROR "${DESC}: ${_NX_TARGET} target does not exist")
+        message(FATAL_ERROR "${DESC}: target '${_NX_TARGET}' does not exist")
         return ()
     endif()
+    if(NOT _NX_NAME)
+        message("${DESC}: parameter NAME is not specified, will use target name '${_NX_TARGET}'")
+        set(_NX_NAME ${_NX_TARGET})
+    endif()
 
-    string(TOUPPER "${_NX_TARGET}" _name_up)
-    set(_name   ${_NX_TARGET})
+    string(TOUPPER "${_NX_NAME}" _name_up)
+    set(_name   ${_NX_NAME})
     set(_t      ${_NX_TARGET})
     set(_alias  ${NX_NAMESPACE}::${_name})
     set(DESC "[${_alias}] -- ")
@@ -153,6 +159,5 @@ function(nx_make_module)
 
     get_property(_ver GLOBAL PROPERTY NX_${_name_up}_VERSION_STR)
     message(${DESC} "Configured module ${_name} version ${_ver}")
-    message("=========================================================================================================")
 
 endfunction()

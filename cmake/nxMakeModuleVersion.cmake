@@ -38,7 +38,7 @@ function(nx_make_module_version)
     endif()
 
     configure_file(
-            "${CMAKE_SOURCE_DIR}/include/nx/module_version.hpp.in"
+            "${NX_SOURCE_DIR}/include/nx/module_version.hpp.in"
             "${CMAKE_BINARY_DIR}/generated/nx/${_name}/version.hpp"
             @ONLY
     )
