@@ -3,6 +3,9 @@ add_library(nx_app
         src/EventLoop.cpp
         src/Object.cpp
         src/Event.cpp
+        Thread.cpp
+        include/app/Thread.hpp
+        include/app/Loop.hpp
 )
 
 find_package(spdlog REQUIRED)

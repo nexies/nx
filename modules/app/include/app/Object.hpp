@@ -5,36 +5,24 @@
 #ifndef OBJECT_HPP
 #define OBJECT_HPP
 
-#include "Signal.hpp"
-#include "Connection.hpp"
-#include "Event.hpp"
+#include "nxapp.hpp"
 
 namespace nx {
 
-    class EventLoop;
+    class Loop;
+    class Event;
 
     class Object {
     public:
         Object ();
-        Object (const std::string & name);
-
-        std::string objectName() const;
-        void setObjectName(const std::string & name);
+        virtual ~Object ();
 
     protected:
-        void onEvent (Event & event);
-        EventLoop * getEventLoop ();
-
-
-    public: //TODO: signals
-        NX_SIGNAL(objectNameChanged, const char *)
-        void onObjectNameChanged(const char * name) {
-
-        }
+        virtual Result _onEvent (Event *);
+        void   _generateEvent (Event *) const;
+        Loop * _getLocalLoop () const;
     private:
-        class Impl;
-        Impl * _impl;
-        EventLoop * _getThisEventLoop();
+
     };
 }
 
