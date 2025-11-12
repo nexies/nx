@@ -5,7 +5,7 @@
 #ifndef FUNCTOR2_H
 #define FUNCTOR2_H
 #include <utility>
-
+#include <memory>
 
 namespace nx
 {

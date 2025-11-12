@@ -56,6 +56,8 @@ namespace nx {
     public: //TODO: signals
     static NX_SIGNAL(applicationNameChanged, const std::string &);
     static NX_SIGNAL(executionStart);
+    static NX_SIGNAL(executionEnd);
+
 
     private:
         Application();

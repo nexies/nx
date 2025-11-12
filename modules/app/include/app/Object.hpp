@@ -7,6 +7,7 @@
 
 #include "Signal.hpp"
 #include "Connection.hpp"
+#include "Event.hpp"
 
 namespace nx {
 
@@ -19,6 +20,11 @@ namespace nx {
 
         std::string objectName() const;
         void setObjectName(const std::string & name);
+
+    protected:
+        void onEvent (Event & event);
+        EventLoop * getEventLoop ();
+
 
     public: //TODO: signals
         NX_SIGNAL(objectNameChanged, const char *)

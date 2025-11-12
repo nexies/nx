@@ -42,7 +42,7 @@ namespace nx {
             return Result::Err("Singleton::Init(): Singleton instance already exists");
 
         self._class_instance = std::make_unique<Class>(std::forward<Args>(args)...);
-        if (self._class_instance)
+        if (!self._class_instance)
             return Result::Err("Singleton::Init(): Error creating instance");
 
         return Result::Ok();
@@ -63,7 +63,7 @@ namespace nx {
         if (!self._class_instance)
             if (!Init()) throw nx::Exception("Instance is not initialized and does not have a default constructor");
 
-        return S_this_instance()._class_instance.get();
+        return *S_this_instance()._class_instance.get();
     }
 }
 

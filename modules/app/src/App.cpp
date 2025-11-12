@@ -3,6 +3,7 @@
 //
 
 #include "app/App.hpp"
+#include "app/EventLoop.hpp"
 #include <iostream>
 
 #include <spdlog/sinks/basic_file_sink.h>
@@ -129,8 +130,12 @@ nx::Result nx::Application::create_event_loop() {
 }
 
 nx::Result nx::Application::start_event_loop() {
-    return Result::Err("Event loop is not yet implemented");
-    nx::emit_signal(executionStart);
+    // return Result::Err("Event loop is not yet implemented");
+    EventLoop loop;
+    emit_signal(executionStart);
+    auto ret =  loop.exec();
+    emit_signal(executionEnd);
+    return ret;
 }
 
 nx::Application * nx::Application::_Self() {

@@ -14,7 +14,7 @@ namespace nx
     public:
         explicit Exception (const char * str) : _str(str) {}
         [[nodiscard]]
-        const char * what () const override { return _str; }
+        const char * what () const noexcept override { return _str; }
     };
 }
 
