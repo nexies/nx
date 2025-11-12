@@ -9,7 +9,7 @@ set (NX_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 set(NX_NAMESPACE nx)
 set(NX_EXPORT_SET nxTargets)
-set(NX_INSTALL_INCLUDEDIR include)
+set(NX_INSTALL_INCLUDEDIR include/nx)
 set(NX_CXX_STANDARD 20)
 set(NX_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -31,7 +31,7 @@ add_subdirectory(modules)
 get_property(components GLOBAL PROPERTY NX_ENABLED_COMPONENTS)
 foreach (comp IN LISTS components)
     target_link_libraries (nx INTERFACE nx::${comp})
-    message (STATUS "Linking component nx::${comp}")
+    message (STATUS "Linking component nx::${comp} to nx::nx...")
 endforeach ()
 
 

@@ -130,7 +130,7 @@ function(nx_make_module)
                 ARCHIVE DESTINATION lib
                 LIBRARY DESTINATION lib
                 RUNTIME DESTINATION bin
-                INCLUDES DESTINATION ${NX_INSTALL_INCLUDEDIR}/${_name}
+                INCLUDES DESTINATION ${NX_INSTALL_INCLUDEDIR}
         )
     else()
         # Классическая установка без FILE_SET
@@ -139,12 +139,12 @@ function(nx_make_module)
                 ARCHIVE DESTINATION lib
                 LIBRARY DESTINATION lib
                 RUNTIME DESTINATION bin
-                INCLUDES DESTINATION ${NX_INSTALL_INCLUDEDIR}/${_name}
+                INCLUDES DESTINATION ${NX_INSTALL_INCLUDEDIR}
         )
         if(_NX_PUBLIC_HEADERS)
             message(${DESC} "Has public headers, installing...")
             install(FILES ${_NX_PUBLIC_HEADERS}
-                    DESTINATION ${NX_INSTALL_INCLUDEDIR}/${NX_NAMESPACE}/${_name}
+                    DESTINATION ${NX_INSTALL_INCLUDEDIR}
             )
         endif()
     endif()
