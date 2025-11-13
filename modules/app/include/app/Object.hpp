@@ -6,23 +6,33 @@
 #define OBJECT_HPP
 
 #include "nxapp.hpp"
+#include "Event.hpp"
 
 namespace nx {
 
-    class Loop;
-    class Event;
+    class Thread;
 
     class Object {
     public:
         Object ();
         virtual ~Object ();
 
-    protected:
-        virtual Result _onEvent (Event *);
-        void   _generateEvent (Event *) const;
-        Loop * _getLocalLoop () const;
-    private:
+        ThreadId attachedThreadId () const;
+        Result attachToThread (Thread *);
 
+        virtual Result onEvent (Event *);
+        Result notify (Object *, Event *) const;
+
+        virtual Result onUpdate (Event *);
+        virtual Result onTimer (TimerEvent *);
+
+    protected:
+        void     _generateEvent (Object *, Event *, int priority = 0) const;
+        Thread * _getLocalThread () const;
+        void _reattachToLocalThread ();
+        void _reattachToThread (Thread *);
+    private:
+        Thread * local_thread;
     };
 }
 

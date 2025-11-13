@@ -6,6 +6,7 @@ add_library(nx_app
         src/Thread.cpp
         include/app/Thread.hpp
         include/app/Loop.hpp
+        src/Loop.cpp
 )
 
 find_package(spdlog REQUIRED)

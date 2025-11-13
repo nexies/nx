@@ -33,21 +33,21 @@ nx::Result nx::EventLoop::process_single_event()
         }
         auto ev = entry.event;
 
-        if (ev->type() == Event::Type::Signal)
-        {
-            auto * signal = static_cast<SignalEvent *>(ev);
-            if (_exec_thread_id == signal->targetThread())
-            {
-                signal->accept();
-                return Result::Ok("Signal processed");
-            }
-            auto target = EventLoopDispatcher::Instance().getEventLoop(signal->targetThread());
-            if (!target)
-                return Result::Err("Signal located in wrong event loop and can't be redirected (target event loop does not exist)");
-
-            target->addEvent(signal, entry.priority);
-            return Result::Ok("Signal redirected into it's target thread");
-        }
+        // if (ev->type() == Event::Type::Signal)
+        // {
+        //     auto * signal = static_cast<SignalEvent *>(ev);
+        //     if (_exec_thread_id == signal->targetThread())
+        //     {
+        //         signal->accept();
+        //         return Result::Ok("Signal processed");
+        //     }
+        //     auto target = EventLoopDispatcher::Instance().getEventLoop(signal->targetThread());
+        //     if (!target)
+        //         return Result::Err("Signal located in wrong event loop and can't be redirected (target event loop does not exist)");
+        //
+        //     target->addEvent(signal, entry.priority);
+        //     return Result::Ok("Signal redirected into it's target thread");
+        // }
 
         // TODO: Event dispatcher here ?
         return Result::Err("Not implemented");
@@ -105,7 +105,7 @@ nx::Result nx::EventLoop::processEventsFor(Duration dur)
     return Result::Ok();
 }
 
-nx::Result nx::EventLoop::processEventsUntil(TimerPoint tp)
+nx::Result nx::EventLoop::processEventsUntil(TimePoint tp)
 {
     return processEventsFor(tp - Clock::now());
 }

@@ -19,8 +19,11 @@ namespace nx {
             None,
             Timer,
             Startup,
+            Exit,
             Quit,
             Signal,
+            Update,
+            Sleep,
         };
 
         explicit Event(Type type);
@@ -36,26 +39,43 @@ namespace nx {
     class SignalEvent : public Event
     {
     public:
-    //     SignalEvent(std::thread::id, InvokerPtr);
-    //     void accept () override;
-    //     std::thread::id targetThread () const;
-    //
-    // private:
-    //     std::thread::id _thread_id;
-    //     InvokerPtr _invoker;
+        SignalEvent(ThreadId, InvokerPtr);
+        void accept () override;
+        std::thread::id targetThread () const;
+
+    private:
+        ThreadId _thread_id;
+        InvokerPtr _invoker;
+    };
+
+    class TimerEvent : public Event
+    {
+    public:
+        TimerEvent(int timer_id);
+    };
+
+    class SleepEvent : public Event
+    {
+        Duration duration;
+    public:
+        SleepEvent(Duration);
+        SleepEvent(TimePoint);
+
+        inline Duration getDuration () const { return duration; }
+        inline TimePoint getTimePoint () const { return Clock::now() + duration; }
     };
 
     class Object;
     class EventQueue {
     public:
-        class Entry
+        struct Entry
         {
             int priority { 0 };
             Object * receiver { nullptr };
             Event * event { nullptr };
             bool operator < (const Entry& other) const { return priority < other.priority; }
         };
-        using queue_type = std::queue<Entry>;
+        using queue_type = std::priority_queue<Entry>;
 
         EventQueue (size_t max_size);
         ~EventQueue();
@@ -73,6 +93,7 @@ namespace nx {
         std::mutex mutex { };
         std::condition_variable cv { };
         std::atomic_bool accepting_events { true };
+        size_t max_size { 0 };
     };
 }
 

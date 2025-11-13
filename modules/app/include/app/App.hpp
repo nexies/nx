@@ -7,6 +7,7 @@
 
 #include "nxapp.hpp"
 #include "Signal.hpp"
+#include "Object.hpp"
 
 #include <filesystem>
 #include <boost/program_options.hpp>
@@ -14,7 +15,7 @@
 namespace nx {
     using options_description = boost::program_options::options_description;
 
-    class Application {
+    class App : Object {
     public:
         static void Init (int argc, char * argv[]);
         static void Free ();
@@ -23,21 +24,17 @@ namespace nx {
         //! @return exit code
         static int Exec ();
 
-        //! Exit the application (non-graceful)
+        //! Exit the application (Gracefully)
         //! @param code exit code
         static void Exit (int code);
 
-        //! Exit the application (non-graceful)
+        //! Exit the application (Gracefully)
         //! @param res exit result (code + comment)
         static void Exit (const Result & res);
 
         //! Gracefully exit the application
         //! @param code exit code
-        static void Quit (int code);
-
-        //! Gracefully exit the application
-        //! @param res exit result (code + comment)
-        static void Quit (const Result & res);
+        static void Quit ();
 
         //! Abort execution (hard-exit)
         static void Abort ();
@@ -47,6 +44,8 @@ namespace nx {
         static Result AddProgramOptions (const options_description & desc);
         static void SetApplicationName (const std::string & name);
         static std::string ApplicationName();
+
+        static Result Notify (Object *, Event *);
 
         template<typename Type>
         result_t<Type, const char *> GetParam (const std::string_view & name);
@@ -58,19 +57,24 @@ namespace nx {
     static NX_SIGNAL(executionStart);
     static NX_SIGNAL(executionEnd);
 
-
     private:
-        Application();
+        App();
         Result init (int argc, char * argv[]);
+        Result make_main_thread ();
         Result parse_options (int argc, char * argv[]);
         Result read_dot_env_file ();
         Result create_logger (); // <- params ?
         Result create_event_loop ();
         Result start_event_loop ();
 
+        Result onTimer(TimerEvent *) override;
+        Result onEvent(Event*) override;
+
+        void exit_impl () const;
+
     private:
-        static Application * m_self;
-        static Application * _Self ();
+        static App * m_self;
+        static App * _Self ();
 
         struct Preferences {
             using path = std::filesystem::path;
@@ -82,9 +86,9 @@ namespace nx {
             path log_file {application_name + ".log"};
             spdlog::level::level_enum log_level;
         } m_preferences;
-    };
 
-    using App = Application;
+        Thread * main_thread { nullptr };
+    };
 }
 
 

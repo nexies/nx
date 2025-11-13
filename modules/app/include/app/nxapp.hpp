@@ -22,7 +22,7 @@
 namespace nx {
     using Clock         = std::chrono::high_resolution_clock;
     using Duration      = Clock::duration;
-    using TimerPoint    = Clock::time_point;
+    using TimePoint    = Clock::time_point;
 
     // using Days    = std::chrono::days;
     using Hours         = std::chrono::hours;
@@ -51,6 +51,10 @@ namespace nx {
  *          - Позволяет запускать новые потоки, зарегистрированные в библиотеке NX
  *          - Позволяет переносить в себя и из себя объекты nx::Object с помощью nx::moveToThread
  *          - наследник nx::Object ! Знает, в каком nx::Thread был создан - соответственно строится дерево зависимостей nx::Thread
+ *
+ *      nx::Event
+ *          - Quit - выход из текущего цикла ивентов
+ *          - Exit - рекурсивно выйти из всех циклов ивентов в данном потоке
  *
  *      nx::Loop   - Объект, представляющий собой обработчик цикла ивентов, занимающий собой выделенный ему поток
  *          - Знает, в каком потоке был создан и вызван (nx::Thread::current)
