@@ -26,7 +26,7 @@ nx::App * nx::App::m_self { nullptr };
 
 void nx::App::Init(int argc, char *argv[]) {
     auto self = _Self ();
-    if (auto const res = self->init(argc, argv); !res)
+    if (auto const res = self->_init(argc, argv); !res)
         Exit(res);
 
     nxInfo("Application initialized");
@@ -39,7 +39,7 @@ void nx::App::Free() {
 }
 
 int nx::App::Exec() {
-    auto res = _Self()->start_event_loop();
+    auto res = _Self()->_startEventLoop();
     if (!res) {
         nxCritical("Application error: {}", res.get_err().str());
         return res.get_err().code();
@@ -50,13 +50,6 @@ int nx::App::Exec() {
 }
 
 void nx::App::Exit(int code) {
-    // _Self()->exit_impl();
-    // if (code)
-    //     std::cerr << "Exiting with code " << code << "..." << std::endl;
-    // else
-    //     std::cout << "Exiting with code " << code << "..." << std::endl;
-    // std::exit(code);
-
     nxDebug("App::Exit()");
     _Self()->_generateEvent(_Self(), new Event(Event::Exit), 10);
 }
@@ -106,16 +99,16 @@ nx::App::App() :
 
 }
 
-nx::Result nx::App::init(int argc, char *argv[]) {
-    auto res = parse_options(argc, argv);
-    if (res) res = make_main_thread();
-    if (res) res = read_dot_env_file();
-    if (res) res = create_logger();
-    if (res) res = create_event_loop();
+nx::Result nx::App::_init(int argc, char *argv[]) {
+    auto res = _parseOptions(argc, argv);
+    if (res) res = _makeMainThread();
+    if (res) res = _readDotEnvFile();
+    if (res) res = _createLogger();
+    if (res) res = _createEventLoop();
     return res;
 }
 
-nx::Result nx::App::make_main_thread(){
+nx::Result nx::App::_makeMainThread(){
     auto thread = Thread::fromCurrentThread();
     if (thread)
     {
@@ -125,15 +118,15 @@ nx::Result nx::App::make_main_thread(){
     return Result::Err("Failed to create main thread");
 }
 
-nx::Result nx::App::parse_options(int argc, char *argv[]) {
+nx::Result nx::App::_parseOptions(int argc, char *argv[]) {
     return Result::Ok();
 }
 
-nx::Result nx::App::read_dot_env_file() {
+nx::Result nx::App::_readDotEnvFile() {
     return Result::Ok();
 }
 
-nx::Result nx::App::create_logger() {
+nx::Result nx::App::_createLogger() {
     using namespace spdlog::sinks;
     auto combined = std::make_shared<spdlog::sinks::dist_sink_mt>();
 
@@ -156,11 +149,11 @@ nx::Result nx::App::create_logger() {
     return Result::Ok();
 }
 
-nx::Result nx::App::create_event_loop() {
+nx::Result nx::App::_createEventLoop() {
     return Result::Ok();
 }
 
-nx::Result nx::App::start_event_loop() {
+nx::Result nx::App::_startEventLoop() {
     Loop loop;
     return loop.exec();
 }

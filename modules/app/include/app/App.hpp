@@ -59,17 +59,17 @@ namespace nx {
 
     private:
         App();
-        Result init (int argc, char * argv[]);
-        Result make_main_thread ();
-        Result parse_options (int argc, char * argv[]);
-        Result read_dot_env_file ();
-        Result create_logger (); // <- params ?
-        Result create_event_loop ();
-        Result start_event_loop ();
+        Result _init (int argc, char * argv[]);
+        Result _makeMainThread ();
+        Result _parseOptions (int argc, char * argv[]);
+        Result _readDotEnvFile ();
+        Result _createLogger (); // <- params ?
+        Result _createEventLoop ();
+        Result _startEventLoop ();
 
+    protected:
         Result onTimer(TimerEvent *) override;
         Result onEvent(Event*) override;
-
 
     private:
         static App * m_self;
@@ -87,7 +87,7 @@ namespace nx {
             spdlog::level::level_enum log_level;
         } m_preferences;
 
-        Thread * main_thread { nullptr };
+        // Thread * main_thread { nullptr };
     };
 }
 
