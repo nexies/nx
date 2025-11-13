@@ -3,7 +3,7 @@ add_library(nx_app
         src/EventLoop.cpp
         src/Object.cpp
         src/Event.cpp
-        Thread.cpp
+        src/Thread.cpp
         include/app/Thread.hpp
         include/app/Loop.hpp
 )

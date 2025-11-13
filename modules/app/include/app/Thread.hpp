@@ -8,22 +8,9 @@
 #include "Object.hpp"
 #include "Event.hpp"
 #include <thread>
-#include <queue>
 
 namespace nx
 {
-    namespace detail
-    {
-        class EventEntry
-        {
-            int priority { 0 };
-            Object * receiver { nullptr };
-            Event * event { nullptr };
-
-            bool operator < (const EventEntry& other) const { return priority < other.priority; }
-        };
-    }
-
     class Thread : public Object
     {
     public:
@@ -40,12 +27,21 @@ namespace nx
 
         // bool pushEvent (Object * receiver, Event * )
 
+        bool isRunning () const;
+        bool isSleeping () const;
+
+        void sleep (Duration);
+        void sleepUntil (TimerPoint);
+
+        void exit ();
+        void quit ();
+
     private:
         std::thread thread;
         thread_id id;
         std::atomic_bool running { false };
-        std::priority_queue<detail::EventEntry> event_queue;
-
+        std::atomic_bool sleeping { false };
+        EventQueue queue;
     };
 }
 
