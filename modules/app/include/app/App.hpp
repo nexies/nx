@@ -70,11 +70,11 @@ namespace nx {
         Result onTimer(TimerEvent *) override;
         Result onEvent(Event*) override;
 
-        void exit_impl () const;
 
     private:
         static App * m_self;
         static App * _Self ();
+        void _closeThreads ();
 
         struct Preferences {
             using path = std::filesystem::path;

@@ -1,6 +1,5 @@
 add_library(nx_app
         src/App.cpp
-        src/EventLoop.cpp
         src/Object.cpp
         src/Event.cpp
         src/Thread.cpp

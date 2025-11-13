@@ -63,8 +63,8 @@ Result Loop::processEventsFor(Duration dur)
         auto entry = queue->getNext();
         if (entry.event)
         {
-            _processSingleEntry(entry);
-            delete entry.event;
+            if (_processSingleEntry(entry))
+                delete entry.event;
         }
         else
             break;
@@ -97,6 +97,7 @@ Result Loop::quit()
 
 void Loop::flush()
 {
+    nxTrace("Loop::flush()");
     while (queue->hasPendingEvents())
     {
         auto entry = queue->getNext();
@@ -106,6 +107,7 @@ void Loop::flush()
 
 bool Loop::_waitForEvents()
 {
+    nxTrace("Loop::_waitForEvents");
     if (!queue) return false;
     if (queue->hasPendingEvents())
         return true;
@@ -118,6 +120,7 @@ bool Loop::_waitForEvents()
 
 bool Loop::_waitForEventsFor(Duration dur)
 {
+    nxTrace("Loop::_waitForEvents");
     if (!queue) return false;
     if (queue->hasPendingEvents())
          return true;
@@ -130,6 +133,7 @@ bool Loop::_waitForEventsFor(Duration dur)
 
 bool Loop::_processSingleEntry(EventQueue::Entry& entry)
 {
+    nxTrace("Loop::_processSingleEntry");
     //TODO:
     if (!entry.event)
     {
@@ -137,46 +141,50 @@ bool Loop::_processSingleEntry(EventQueue::Entry& entry)
         return false;
     }
 
-    if (entry.receiver)
-    {
-        auto recv = entry.receiver;
-        if (recv->attachedThreadId() != this->attachedThreadId())
-        {
-            nxWarning("nx::Event in a wrong thread({}). Redirecting with higher priority..", this->attachedThreadId());
-            auto dest_thread = detail::ThreadInfo::Instance().threadForId(recv->attachedThreadId());
-            if (!dest_thread)
-            {
-                nxCritical("Destination thread does not exist");
-                return false;
-            }
-            dest_thread->pushEvent(recv, entry.event, entry.priority + 10);
-            return true;
-        }
+    if (_redirectEntry(entry))
+        return false;
 
-        auto res = recv->onEvent(entry.event);
-        if (!res)
-        {
-            nxDebug("Ignored event");
-            return true;
-        }
+    if (entry.event->type() == Event::Exit) {
+        this->_exitImpl();
         return true;
     }
-    else
-    {
-        auto ev = entry.event;
-        if (ev->type() == Event::Signal)
-        {
-            ev->accept();
-            return true;
-        } else if (ev->type() == Event::Quit) {
-            this->_quitImpl();
-        } else if (ev->type() == Event::Exit) {
-            this->_exitImpl();
-        } else {
-            nxWarning("Unhandled event with no receiver object");
-            return false;
-        }
+
+    if (entry.event->type() == Event::Signal) {
+        entry.event->accept();
+        return true;
     }
+
+    if (entry.receiver)
+    {
+        entry.receiver->onEvent(entry.event);
+        return true;
+    }
+
+    switch (entry.event->type()) {
+        default:
+            nxError("Unknown event type");
+            return true;
+    }
+}
+
+bool Loop::_redirectEntry(EventQueue::Entry &entry) {
+    nxTrace("Loop::_redirectEntry");
+    auto const recv = entry.receiver;
+    if (!recv)
+        return false;
+
+    auto const tid = recv->attachedThreadId();
+    if (attachedThreadId() == tid)
+        return false;
+
+    auto const thread = detail::ThreadInfo::Instance().threadForId(tid);
+    if (!thread) {
+        nxCritical("Event's destination thread does not exist, dropping event :( very bad");
+        delete entry.event;
+        return true;
+    }
+
+    thread->pushEvent(recv, entry.event, entry.priority + 1);
     return true;
 }
 
@@ -184,10 +192,12 @@ void Loop::_quitImpl()
 {
     flush();
     running.store(false, std::memory_order_relaxed);
+    interrupt.store(true, std::memory_order_relaxed);
 }
 
 void Loop::_exitImpl()
 {
+    nxTrace("Loop::_exitImpl");
     _quitImpl();
     _getLocalThread()->pushEvent(nullptr, new Event(Event::Exit), 0);
 }

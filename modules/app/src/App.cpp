@@ -44,8 +44,8 @@ int nx::App::Exec() {
         nxCritical("Application error: {}", res.get_err().str());
         return res.get_err().code();
     }
-    Free();
-    detail::ThreadInfo::Free();
+    nxInfo("exiting with code {}", res.get_ok().code());
+    _Self()->_closeThreads();
     return res.get_ok().code();
 }
 
@@ -57,6 +57,7 @@ void nx::App::Exit(int code) {
     //     std::cout << "Exiting with code " << code << "..." << std::endl;
     // std::exit(code);
 
+    nxDebug("App::Exit()");
     _Self()->_generateEvent(_Self(), new Event(Event::Exit), 10);
 }
 
@@ -149,7 +150,7 @@ nx::Result nx::App::create_logger() {
     combined->set_level(m_preferences.log_level);
     auto logger = std::make_shared<spdlog::logger>(MAIN_LOGGER_NAME, combined);
     logger->set_level(m_preferences.log_level);
-    logger->set_pattern("[%Y-%m-%d %H:%M:%S] [%n] [%^%l%$] %v (%s:%#)");
+    logger->set_pattern("[%Y-%m-%d %H:%M:%S] [%n] [%t] [%^%l%$] %v (%s:%#)");
     spdlog::set_default_logger(logger);
     nxInfo("Application logger installed. Log level=\"{}\"", spdlog::level::level_string_views[m_preferences.log_level]);
     return Result::Ok();
@@ -176,16 +177,15 @@ nx::Result nx::App::onEvent(Event* event)
 
     switch (event->type())
     {
-        case Event::Type::Exit: exit_impl(); return Result::Ok();
+        case Event::Type::Exit: _closeThreads(); return Result::Ok();
     }
     return Object::onEvent(event);
 }
 
-void nx::App::exit_impl() const
+void nx::App::_closeThreads()
 {
     detail::ThreadInfo::Instance().exitAllThreads();
     detail::ThreadInfo::Instance().waitForAllThreadsExit();
-    if (main_thread) delete main_thread;
 }
 
 nx::App * nx::App::_Self() {

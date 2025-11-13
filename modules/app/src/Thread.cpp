@@ -25,7 +25,7 @@ namespace nx::detail
 
     ThreadInfoInstance::~ThreadInfoInstance()
     {
-        nxWarning("Something went wrong while destroying thread info instance");
+        // nxWarning("Something went wrong while destroying thread info instance");
     }
 
     ThreadId ThreadInfoInstance::registerThread(Thread* thread)

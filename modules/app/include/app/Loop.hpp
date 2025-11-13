@@ -37,6 +37,7 @@ namespace nx
         bool _waitForEventsFor (Duration);
 
         bool _processSingleEntry (EventQueue::Entry & entry);
+        bool _redirectEntry (EventQueue::Entry & entry);
 
         void _quitImpl ();
         void _exitImpl ();
