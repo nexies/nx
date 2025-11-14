@@ -34,6 +34,7 @@ namespace nx {
 
     using ThreadId          = size_t;
     using NativeThreadId    = std::thread::id;
+    using TimerId           = size_t;
 
 /**
  *      nx::Object - объект, зарегистрированный в приложении NX

@@ -45,7 +45,7 @@ namespace nx {
         static void SetApplicationName (const std::string & name);
         static std::string ApplicationName();
 
-        static Result Notify (Object *, Event *);
+        // static Result Notify (Object *, Event *);
 
         template<typename Type>
         result_t<Type, const char *> GetParam (const std::string_view & name);
@@ -66,10 +66,6 @@ namespace nx {
         Result _createLogger (); // <- params ?
         Result _createEventLoop ();
         Result _startEventLoop ();
-
-    protected:
-        Result onTimer(TimerEvent *) override;
-        Result onEvent(Event*) override;
 
     private:
         static App * m_self;

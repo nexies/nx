@@ -89,7 +89,6 @@ namespace nx::detail
         }
 
         threads_by_id.erase(threadId);
-        nxTrace("Unregistered thread with id: {}", threadId);
         return true;
     }
 
@@ -110,7 +109,7 @@ namespace nx::detail
     void ThreadInfoInstance::exitAllThreads()
     {
         for (auto [id, thread] : threads_by_id)
-            thread->exit();
+            thread->exit(0);
     }
 
     void ThreadInfoInstance::waitForAllThreadsExit()
@@ -125,7 +124,7 @@ namespace nx::detail
 Thread::Thread() :
     Object (),
     id (detail::g_invalidThreadId),
-    queue(1024)
+    signal_queue(1024)
 {
     id = detail::ThreadInfo::Instance().registerThread(this);
     // _reattachToLocalThread();
@@ -135,7 +134,7 @@ Thread::~Thread()
 {
     if (thread and thread->joinable())
     {
-        exit();
+        exit( 0 );
         waitForExit();
     }
 
@@ -167,9 +166,10 @@ NativeThreadId Thread::getNativeId() const
     return native_id;
 }
 
-bool Thread::pushEvent(Object* obj, Event* event,  int priority)
+
+bool Thread::pushSignal(Signal&& signal, int priority)
 {
-    return queue.pushEvent(obj, event, priority);
+    return signal_queue.pushSignal(std::move(signal), priority);
 }
 
 bool Thread::isRunning() const
@@ -184,7 +184,7 @@ bool Thread::isSleeping() const
 
 void Thread::sleep(Duration duration)
 {
-    this->_generateEvent(this, new SleepEvent(duration));
+    this-pushSignal(Signal::Sleep(this, duration), 10);
 }
 
 void Thread::sleepUntil(TimePoint t)
@@ -194,11 +194,11 @@ void Thread::sleepUntil(TimePoint t)
         sleep(now - t);
 }
 
-void Thread::exit()
+void Thread::exit(int code)
 {
     if (running)
     {
-        pushEvent(nullptr, new Event(Event::Exit), 0);
+        pushSignal(Signal::Exit(current_loop, code), 10);
     }
 }
 
@@ -217,8 +217,7 @@ bool Thread::waitForExit()
 
 void Thread::quit()
 {
-    // this->_generateEvent(this, new Event(Event::Quit));
-    this->pushEvent(nullptr, new Event(Event::Quit), 0);
+    this->exit(0);
 }
 
 Thread* Thread::current()
@@ -236,49 +235,35 @@ Thread* Thread::fromCurrentThread()
     return out;
 }
 
-EventQueue* Thread::getQueue()
+Loop* Thread::currentLoop()
 {
-    return &queue;
+    return current()->current_loop;
 }
 
-Result Thread::onEvent(Event* event)
+SignalQueue* Thread::currentQueue()
 {
-    if (!event)
-        return Result::Err("Bad event");
-
-    switch (event->type())
-    {
-        case Event::Quit:   return onQuitEvent(event);
-        case Event::Sleep:  return onSleepEvent(static_cast<SleepEvent*>(event));
-        default:
-            return Object::onEvent(event);
-    }
+    return current()->queue();
 }
 
-Result Thread::onQuitEvent(Event* event)
+Loop* Thread::loop() const
 {
-    exit();
-    nxTrace("Thread will exit");
-    return Result::Ok();
+    return current_loop;
 }
 
-Result Thread::onSleepEvent(SleepEvent* event)
+SignalQueue* Thread::queue()
 {
-    nxTrace("Thread will sleep");
-    std::this_thread::sleep_for(event->getDuration());
-    return Result::Ok();
+    return & signal_queue;
+}
+
+
+void Thread::_sleepImpl(Duration dur)
+{
+    std::this_thread::sleep_for(dur);
 }
 
 Result Thread::_startExecute()
 {
-    try
-    {
-        native_id = std::this_thread::get_id();
-    } catch ( const std::exception & e)
-    {
-        nxError ("Error launching thread {} : {}", this->getId(), e.what());
-        return Result::Err(e.what());
-    }
+    native_id = std::this_thread::get_id();
 
     try
     {

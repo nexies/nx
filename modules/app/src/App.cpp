@@ -44,14 +44,15 @@ int nx::App::Exec() {
         nxCritical("Application error: {}", res.get_err().str());
         return res.get_err().code();
     }
-    nxInfo("exiting with code {}", res.get_ok().code());
     _Self()->_closeThreads();
+    nxInfo("exiting with code {}", res.get_ok().code());
     return res.get_ok().code();
 }
 
 void nx::App::Exit(int code) {
     nxDebug("App::Exit()");
-    _Self()->_generateEvent(_Self(), new Event(Event::Exit), 10);
+    auto self = _Self();
+    self->_generateSignal(Signal::Exit(self->_getLocalThread()->loop(), code), 10);
 }
 
 void nx::App::Exit(const Result & res) {
@@ -88,10 +89,10 @@ std::string nx::App::ApplicationName() {
     return _Self()->m_preferences.application_name;
 }
 
-nx::Result nx::App::Notify(Object* object, Event* event)
-{
-    return _Self()->notify(object, event);
-}
+// nx::Result nx::App::Notify(Object* object, Event* event)
+// {
+//     return _Self()->notify(object, event);
+// }
 
 nx::App::App() :
     Object()
@@ -131,12 +132,24 @@ nx::Result nx::App::_createLogger() {
     auto combined = std::make_shared<spdlog::sinks::dist_sink_mt>();
 
     if (auto const console_sink = std::make_shared<stdout_color_sink_mt>(); console_sink)
+    {
+        console_sink->set_color_mode(spdlog::color_mode::always);
+        console_sink->set_level(spdlog::level::trace);
         combined->add_sink(console_sink);
+    }
     else
         return Result::Err("Failed to create console log sink");
 
+    // if (auto const trace_sink = std::make_shared<stdout_color_sink_mt>(); trace_sink)
+    // {
+    //     trace_sink->set_color_mode(spdlog::color_mode::always);
+    // }
+
     if (auto const file_sink = std::make_shared<basic_file_sink_mt>(m_preferences.log_file); file_sink)
+    {
         combined->add_sink(file_sink);
+        combined->set_level(spdlog::level::debug);
+    }
     else
         return Result::Err("Failed to create file sink");
 
@@ -145,7 +158,7 @@ nx::Result nx::App::_createLogger() {
     logger->set_level(m_preferences.log_level);
     logger->set_pattern("[%Y-%m-%d %H:%M:%S] [%n] [%t] [%^%l%$] %v (%s:%#)");
     spdlog::set_default_logger(logger);
-    nxInfo("Application logger installed. Log level=\"{}\"", spdlog::level::level_string_views[m_preferences.log_level]);
+    nxInfo("Application logger installed. Log level=\"{}\"", spdlog::level::to_string_view(m_preferences.log_level));
     return Result::Ok();
 }
 
@@ -158,22 +171,22 @@ nx::Result nx::App::_startEventLoop() {
     return loop.exec();
 }
 
-nx::Result nx::App::onTimer(TimerEvent* timer_event)
-{
-    return Object::onTimer(timer_event);
-}
-
-nx::Result nx::App::onEvent(Event* event)
-{
-    if (!event)
-        return Result::Err("Bad nullptr event");
-
-    switch (event->type())
-    {
-        case Event::Type::Exit: _closeThreads(); return Result::Ok();
-    }
-    return Object::onEvent(event);
-}
+// nx::Result nx::App::onTimer(TimerEvent* timer_event)
+// {
+//     return Object::onTimer(timer_event);
+// }
+//
+// nx::Result nx::App::onEvent(Event* event)
+// {
+//     if (!event)
+//         return Result::Err("Bad nullptr event");
+//
+//     switch (event->type())
+//     {
+//         case Event::Type::Exit: _closeThreads(); return Result::Ok();
+//     }
+//     return Object::onEvent(event);
+// }
 
 void nx::App::_closeThreads()
 {

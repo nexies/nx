@@ -1,11 +1,12 @@
 add_library(nx_app
         src/App.cpp
         src/Object.cpp
-        src/Event.cpp
         src/Thread.cpp
-        include/app/Thread.hpp
-        include/app/Loop.hpp
         src/Loop.cpp
+        src/Signal.cpp
+#        unused/Event.cpp
+#        include/app/Thread.hpp
+#        include/app/Loop.hpp
 )
 
 find_package(spdlog REQUIRED)

@@ -5,15 +5,17 @@
 #ifndef LOOP_HPP
 #define LOOP_HPP
 
-#include "Event.hpp"
+#include "Signal.hpp"
 #include "Object.hpp"
 
 namespace nx
 {
     class Loop : public Object
     {
+        friend class Signal;
     public:
         Loop ();
+        ~Loop();
         Result exec ();
 
         Result processEvents ();
@@ -36,13 +38,17 @@ namespace nx
         bool _waitForEvents ();
         bool _waitForEventsFor (Duration);
 
-        bool _processSingleEntry (EventQueue::Entry & entry);
-        bool _redirectEntry (EventQueue::Entry & entry);
+        bool _processSingleEntry (SignalQueue::Entry & entry) const;
+        bool _redirectEntry (SignalQueue::Entry & entry) const;
 
         void _quitImpl ();
-        void _exitImpl ();
+        void _exitImpl (int code);
+        void _interruptImpl ();
+
     private:
-        EventQueue * queue;
+        SignalQueue * queue;
+        Loop * underlying_loop { nullptr };
+        int exit_code { 0 };
     };
 }
 

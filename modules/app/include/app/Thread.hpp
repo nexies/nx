@@ -6,10 +6,11 @@
 #define THREAD_HPP
 
 #include "Object.hpp"
-#include "Event.hpp"
+#include "Signal.hpp"
+#include "core/Singleton.hpp"
+
 #include <thread>
 
-#include "core/Singleton.hpp"
 
 namespace nx
 {
@@ -19,9 +20,14 @@ namespace nx
         constexpr ThreadId g_invalidThreadId = std::numeric_limits<ThreadId>::max();
     }
 
+    class Signal;
+    class Loop;
+
     class Thread : public Object
     {
         friend class ::nx::detail::ThreadInfoInstance;
+        friend class ::nx::Signal;
+        friend class ::nx::Loop;
 
     public:
         Thread();
@@ -35,37 +41,38 @@ namespace nx
         [[nodiscard]]
         NativeThreadId getNativeId () const;
 
-        bool pushEvent (Object * obj, Event * event, int priority);
+        bool pushSignal (Signal && signal, int priority);
 
         bool isRunning () const;
         bool isSleeping () const;
 
-        virtual void sleep (Duration);      //TODO: Via event loop
-        void sleepUntil (TimePoint);        //TODO: Via event loop
+        virtual void sleep (Duration);
+        void sleepUntil (TimePoint);
 
         void quit ();                       //TODO: Send event to event loop
-        void exit ();                       //TODO: Stop the loop execution (gracefully)
+        void exit (int);                    //TODO: Stop the loop execution (gracefully)
         void terminate ();                  //TODO: Terminate the working thread
 
         bool waitForExit ();                //TODO: Wait until thread exists
 
         static Thread * current ();
         static Thread * fromCurrentThread ();
+        static Loop * currentLoop ();
+        static SignalQueue * currentQueue ();
 
-        EventQueue * getQueue();
-
+        Loop * loop () const;
+        SignalQueue * queue();
     protected:
-        Result onEvent (Event * event) override;
-        Result onQuitEvent (Event * event);
-        Result onSleepEvent (SleepEvent * event);
 
+        void _sleepImpl (Duration);
         virtual Result _startExecute ();
 
         NativeThreadId native_id;
         ThreadId id { detail::g_invalidThreadId };
         std::atomic_bool running { false };
         std::atomic_bool sleeping { false };
-        EventQueue queue;
+        SignalQueue signal_queue;
+        Loop * current_loop { nullptr };
         std::unique_ptr<std::thread> thread;
 
     private:
@@ -110,7 +117,6 @@ namespace nx
 
         typedef ::nx::Singleton<ThreadInfoInstance> ThreadInfo;
     }
-
 }
 
 #endif //THREAD_HPP

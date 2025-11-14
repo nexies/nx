@@ -34,51 +34,56 @@ Result Object::attachToThread(Thread* thread)
     _reattachToThread(thread);
     return Result::Ok();
 }
+//
+// Result Object::onEvent(Event* ev)
+// {
+//     if (!ev)
+//         return Result::Err("Empty event!");
+//
+//     switch (ev->type())
+//     {
+//     case Event::Update:     return onUpdate(ev);
+//     case Event::Timer:      return onTimer(static_cast<TimerEvent*>(ev));
+//     case Event::Startup:
+//     case Event::Quit:
+//     case Event::Signal:
+//     default:
+//         return Result::Err("Unhandled event type");
+//     }
+// }
 
-Result Object::onEvent(Event* ev)
+// Result Object::notify(Object* o, Event* ev) const
+// {
+//     if (!o) return Result::Err("Object cannot be nullptr");
+//     if (!ev) return Result::Err("Event cannot be nullptr");
+//
+//     if (o->attachedThreadId() == this->attachedThreadId())
+//         o->onEvent(ev);
+//     else
+//         o->_getLocalThread()->pushSignal(o, ev, 0);
+//
+//     return Result::Ok();;
+// }
+
+// Result Object::onUpdate(Event*)
+// {
+//     nxDebug("Received update event");
+//     return Result::Ok();
+// }
+//
+// Result Object::onTimer(TimerEvent*)
+// {
+//     return Result::Ok();
+// }
+
+// void Object::_generateEvent(Object* o, Event* e, int priority) const
+// {
+//     local_thread->pushSignal(o, e, priority);
+// }
+
+void Object::_generateSignal(Signal&& signal, int priority) const
 {
-    if (!ev)
-        return Result::Err("Empty event!");
-
-    switch (ev->type())
-    {
-    case Event::Update:     return onUpdate(ev);
-    case Event::Timer:      return onTimer(static_cast<TimerEvent*>(ev));
-    case Event::Startup:
-    case Event::Quit:
-    case Event::Signal:
-    default:
-        return Result::Err("Unhandled event type");
-    }
-}
-
-Result Object::notify(Object* o, Event* ev) const
-{
-    if (!o) return Result::Err("Object cannot be nullptr");
-    if (!ev) return Result::Err("Event cannot be nullptr");
-
-    if (o->attachedThreadId() == this->attachedThreadId())
-        o->onEvent(ev);
-    else
-        o->_getLocalThread()->pushEvent(o, ev, 0);
-
-    return Result::Ok();;
-}
-
-Result Object::onUpdate(Event*)
-{
-    nxDebug("Received update event");
-    return Result::Ok();
-}
-
-Result Object::onTimer(TimerEvent*)
-{
-    return Result::Ok();
-}
-
-void Object::_generateEvent(Object* o, Event* e, int priority) const
-{
-    local_thread->pushEvent(o, e, priority);
+    local_thread->pushSignal(std::move(signal), priority);
 }
 
 Thread* Object::_getLocalThread() const
@@ -95,3 +100,4 @@ void Object::_reattachToThread(Thread* thread)
 {
     local_thread = thread;
 }
+

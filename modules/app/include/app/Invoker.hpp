@@ -57,7 +57,7 @@ namespace nx {
     typedef std::shared_ptr<detail::InvokerBase> InvokerPtr;
 
     template<typename... Args>
-    InvokerPtr make_invoker(Args&&... args) { return InvokerPtr(new Invoker(std::forward<Args>(args)...)); }
+    InvokerPtr make_invoker(Args... args) { return InvokerPtr(new Invoker(args...)); }
 
 
     //     template <typename Ret, typename... Args, typename... Params>

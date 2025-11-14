@@ -13,9 +13,15 @@ using namespace nx;
 
 Loop::Loop() :
     Object(),
-    queue { nullptr }
+    queue { nullptr },
+    underlying_loop(_getLocalThread()->current_loop)
 {
+    _getLocalThread()->current_loop = this;
+}
 
+Loop::~Loop()
+{
+    _getLocalThread()->current_loop = underlying_loop;
 }
 
 Result Loop::exec()
@@ -24,19 +30,20 @@ Result Loop::exec()
     if (!thread)
         return Result::Err("nx::Loop cannot perform exec() not inside an nx::Thread");
 
-    queue = thread->getQueue();
+    queue = thread->queue();
 
     //TODO: pre loop procedures
     running.store(true);
     while (running)
     {
-        processEventsFor(Seconds(1));
+        // processEventsFor(Seconds(1));
+        processEvents();
     }
     running.store(false);
 
     //TODO: post loop procedures
 
-    return Result::Ok();
+    return Result::Ok({exit_code, "Success"});
 }
 
 Result Loop::processEvents()
@@ -61,13 +68,7 @@ Result Loop::processEventsFor(Duration dur)
     while ((not interrupt) and (Clock::now() < deadline))
     {
         auto entry = queue->getNext();
-        if (entry.event)
-        {
-            if (_processSingleEntry(entry))
-                delete entry.event;
-        }
-        else
-            break;
+       _processSingleEntry(entry);
     }
 
     return Result::Ok();
@@ -91,14 +92,14 @@ Result Loop::quit()
 {
     if (!running)
         return Result::Err("Loop isn't running");
-    _generateEvent(this, new Event(Event::Quit), 0);
+    _generateSignal(Signal::Quit(this), 0);
     return Result::Ok();
 }
 
 void Loop::flush()
 {
     nxTrace("Loop::flush()");
-    while (queue->hasPendingEvents())
+    while (queue->hasPendingSignals())
     {
         auto entry = queue->getNext();
         _processSingleEntry(entry);
@@ -109,95 +110,70 @@ bool Loop::_waitForEvents()
 {
     nxTrace("Loop::_waitForEvents");
     if (!queue) return false;
-    if (queue->hasPendingEvents())
+    if (queue->hasPendingSignals())
         return true;
 
     sleeping.store(true);
-    queue->waitForEvents();
+    queue->waitForSignals();
     sleeping.store(false);
-    return queue->hasPendingEvents();
+    return queue->hasPendingSignals();
 }
 
 bool Loop::_waitForEventsFor(Duration dur)
 {
-    nxTrace("Loop::_waitForEvents");
+    nxTrace("Loop::_waitForSignalsFor");
     if (!queue) return false;
-    if (queue->hasPendingEvents())
+    if (queue->hasPendingSignals())
          return true;
 
     sleeping.store(true);
-    queue->waitForEvents(dur);
+    queue->waitForSignals(dur);
     sleeping.store(false);
-    return queue->hasPendingEvents();
+    return queue->hasPendingSignals();
 }
 
-bool Loop::_processSingleEntry(EventQueue::Entry& entry)
+bool Loop::_processSingleEntry(SignalQueue::Entry& entry) const
 {
     nxTrace("Loop::_processSingleEntry");
-    //TODO:
-    if (!entry.event)
-    {
-        nxError("Entry with no event");
-        return false;
-    }
 
     if (_redirectEntry(entry))
         return false;
 
-    if (entry.event->type() == Event::Exit) {
-        this->_exitImpl();
-        return true;
-    }
-
-    if (entry.event->type() == Event::Signal) {
-        entry.event->accept();
-        return true;
-    }
-
-    if (entry.receiver)
-    {
-        entry.receiver->onEvent(entry.event);
-        return true;
-    }
-
-    switch (entry.event->type()) {
-        default:
-            nxError("Unknown event type");
-            return true;
-    }
+    entry.signal.activate();
+    return true;
 }
 
-bool Loop::_redirectEntry(EventQueue::Entry &entry) {
+bool Loop::_redirectEntry(SignalQueue::Entry & entry) const {
     nxTrace("Loop::_redirectEntry");
-    auto const recv = entry.receiver;
-    if (!recv)
-        return false;
-
-    auto const tid = recv->attachedThreadId();
+    auto const tid = entry.signal.destination_thread();
     if (attachedThreadId() == tid)
         return false;
 
     auto const thread = detail::ThreadInfo::Instance().threadForId(tid);
     if (!thread) {
         nxCritical("Event's destination thread does not exist, dropping event :( very bad");
-        delete entry.event;
         return true;
     }
 
-    thread->pushEvent(recv, entry.event, entry.priority + 1);
+    thread->pushSignal(std::move(entry.signal), entry.priority + 1);
     return true;
 }
 
 void Loop::_quitImpl()
 {
+    _exitImpl(0);
+}
+
+void Loop::_exitImpl(int code)
+{
+    nxTrace("Loop::_exitImpl");
     flush();
     running.store(false, std::memory_order_relaxed);
     interrupt.store(true, std::memory_order_relaxed);
+    exit_code = code;
 }
 
-void Loop::_exitImpl()
+void Loop::_interruptImpl()
 {
-    nxTrace("Loop::_exitImpl");
-    _quitImpl();
-    _getLocalThread()->pushEvent(nullptr, new Event(Event::Exit), 0);
+    interrupt.store(true, std::memory_order_relaxed);
 }
