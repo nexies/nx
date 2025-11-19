@@ -22,7 +22,7 @@
 namespace nx {
     using Clock         = std::chrono::high_resolution_clock;
     using Duration      = Clock::duration;
-    using TimePoint    = Clock::time_point;
+    using TimePoint     = Clock::time_point;
 
     // using Days    = std::chrono::days;
     using Hours         = std::chrono::hours;

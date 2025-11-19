@@ -227,11 +227,11 @@ Thread* Thread::current()
 
 Thread* Thread::fromCurrentThread()
 {
-    auto out = detail::ThreadInfo::Instance().threadForNativeId(std::this_thread::get_id());
+    auto out = current();
+
     if (!out)
-    {
         out = new LocalThread();
-    }
+
     return out;
 }
 

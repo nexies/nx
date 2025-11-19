@@ -54,10 +54,11 @@ namespace nx
     template<class Class, typename Ret, typename ... Args>
     class Functor<Class, Ret, false, Args...>: public detail::FunctorInput<Args...>
     {
+    public:
         using Signature = Ret(Class::*)(Args...);
         using ReturnType = Ret;
         using ArgsTuple = std::tuple<Args...>;
-
+    private:
         Signature _func;
         Class * _cls;
 
@@ -81,13 +82,13 @@ namespace nx
     template<class Class, typename Ret, typename ... Args>
     class Functor<Class, Ret, true, Args...> : public detail::FunctorInput<Args...>
     {
+    public:
         using Signature = Ret(Class::*)(Args...) const;
         using ReturnType = Ret;
         using ArgsTuple = std::tuple<Args...>;
-
+    private:
         Signature _func;
         Class* _cls;
-
     protected:
         void noreturn_call_impl(Args&&... args) override { operator()(std::forward<Args>(args)...); }
     public:
@@ -103,10 +104,11 @@ namespace nx
     template <typename Ret, typename... Args>
     class Functor<void, Ret, false, Args...> : public detail::FunctorInput<Args...>
     {
+    public:
         using Signature = Ret(*)(Args...);
         using ReturnType = Ret;
         using ArgsTuple = std::tuple<Args...>;
-
+    private:
         Signature _func;
 
     protected:

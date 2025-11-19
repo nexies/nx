@@ -17,7 +17,14 @@ Signal::Signal(Object* receiver, InvokerPtr invoker) :
 
 }
 
-ThreadId Signal::destination_thread() const
+Signal::Signal() :
+    receiver(nullptr),
+    invoker(nullptr)
+{
+
+}
+
+ThreadId Signal::destinationThreadId() const
 {
     if (receiver)
         return receiver->attachedThreadId();
@@ -62,7 +69,7 @@ Signal Signal::Interrupt(Loop* loop)
 
 Signal Signal::NullSignal()
 {
-    return Signal(nullptr, nullptr);
+    return Signal();
 }
 
 SignalQueue::SignalQueue(size_t max_size) :

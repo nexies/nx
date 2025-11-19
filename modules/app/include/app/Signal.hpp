@@ -42,6 +42,14 @@ namespace nx {
             return *this;
         }
 
+        Signal ();
+
+        template<typename... Args>
+        Signal(FunctorPtr functor, Args... args) : Signal(nullptr, nx::make_invoker(functor, args...)) {}
+
+        template<typename... Args>
+        Signal(Object * o, FunctorPtr functor, Args... args) : Signal (o, nx::make_invoker(functor, args...)) {}
+
         template<typename Ret, typename... Args>
         Signal(Ret(*f)(Args...), Args... args) : Signal(nullptr, nx::make_invoker(f, args...)) {}
 
@@ -52,7 +60,7 @@ namespace nx {
         Signal(Class* c, Args... args) : Signal(nullptr, nx::make_invoker(c, args...)) {}
 
         [[nodiscard]]
-        ThreadId destination_thread () const;
+        ThreadId destinationThreadId () const;
         void activate () const;
 
         static Signal Quit (Loop * loop);

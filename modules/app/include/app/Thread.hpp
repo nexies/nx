@@ -49,8 +49,8 @@ namespace nx
         virtual void sleep (Duration);
         void sleepUntil (TimePoint);
 
-        void quit ();                       //TODO: Send event to event loop
-        void exit (int);                    //TODO: Stop the loop execution (gracefully)
+        void quit ();
+        void exit (int);
         void terminate ();                  //TODO: Terminate the working thread
 
         bool waitForExit ();                //TODO: Wait until thread exists

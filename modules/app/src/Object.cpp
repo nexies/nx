@@ -10,13 +10,15 @@
 
 using namespace nx;
 
-Object::Object()
+Object::Object() :
+    connection_info(std::make_unique<ConnectionInfo>(this))
 {
     _reattachToLocalThread();
 }
 
 Object::~Object()
 {
+
 }
 
 ThreadId Object::attachedThreadId() const
@@ -34,52 +36,6 @@ Result Object::attachToThread(Thread* thread)
     _reattachToThread(thread);
     return Result::Ok();
 }
-//
-// Result Object::onEvent(Event* ev)
-// {
-//     if (!ev)
-//         return Result::Err("Empty event!");
-//
-//     switch (ev->type())
-//     {
-//     case Event::Update:     return onUpdate(ev);
-//     case Event::Timer:      return onTimer(static_cast<TimerEvent*>(ev));
-//     case Event::Startup:
-//     case Event::Quit:
-//     case Event::Signal:
-//     default:
-//         return Result::Err("Unhandled event type");
-//     }
-// }
-
-// Result Object::notify(Object* o, Event* ev) const
-// {
-//     if (!o) return Result::Err("Object cannot be nullptr");
-//     if (!ev) return Result::Err("Event cannot be nullptr");
-//
-//     if (o->attachedThreadId() == this->attachedThreadId())
-//         o->onEvent(ev);
-//     else
-//         o->_getLocalThread()->pushSignal(o, ev, 0);
-//
-//     return Result::Ok();;
-// }
-
-// Result Object::onUpdate(Event*)
-// {
-//     nxDebug("Received update event");
-//     return Result::Ok();
-// }
-//
-// Result Object::onTimer(TimerEvent*)
-// {
-//     return Result::Ok();
-// }
-
-// void Object::_generateEvent(Object* o, Event* e, int priority) const
-// {
-//     local_thread->pushSignal(o, e, priority);
-// }
 
 void Object::_generateSignal(Signal&& signal, int priority) const
 {
@@ -99,5 +55,10 @@ void Object::_reattachToLocalThread()
 void Object::_reattachToThread(Thread* thread)
 {
     local_thread = thread;
+}
+
+ConnectionInfo* Object::_getConnectionInfo() const
+{
+    return connection_info.get();
 }
 

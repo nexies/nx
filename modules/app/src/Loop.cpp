@@ -48,7 +48,7 @@ Result Loop::exec()
 
 Result Loop::processEvents()
 {
-    if (!_waitForEvents())
+    if (!_waitForSignals())
         return Result::Err("No events");
     while (not interrupt)
     {
@@ -62,7 +62,7 @@ Result Loop::processEventsFor(Duration dur)
 {
     auto deadline = Clock::now() + dur;
 
-    if (!_waitForEventsFor(dur))
+    if (!_waitForSignalsFor(dur))
         return Result::Err("No events");
 
     while ((not interrupt) and (Clock::now() < deadline))
@@ -106,9 +106,9 @@ void Loop::flush()
     }
 }
 
-bool Loop::_waitForEvents()
+bool Loop::_waitForSignals()
 {
-    nxTrace("Loop::_waitForEvents");
+    nxTrace("Loop::_waitForSignals");
     if (!queue) return false;
     if (queue->hasPendingSignals())
         return true;
@@ -119,7 +119,7 @@ bool Loop::_waitForEvents()
     return queue->hasPendingSignals();
 }
 
-bool Loop::_waitForEventsFor(Duration dur)
+bool Loop::_waitForSignalsFor(Duration dur)
 {
     nxTrace("Loop::_waitForSignalsFor");
     if (!queue) return false;
@@ -145,7 +145,7 @@ bool Loop::_processSingleEntry(SignalQueue::Entry& entry) const
 
 bool Loop::_redirectEntry(SignalQueue::Entry & entry) const {
     nxTrace("Loop::_redirectEntry");
-    auto const tid = entry.signal.destination_thread();
+    auto const tid = entry.signal.destinationThreadId();
     if (attachedThreadId() == tid)
         return false;
 

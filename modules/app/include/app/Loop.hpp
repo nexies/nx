@@ -35,8 +35,8 @@ namespace nx
         std::atomic<bool> sleeping;
         std::atomic<bool> interrupt;
 
-        bool _waitForEvents ();
-        bool _waitForEventsFor (Duration);
+        bool _waitForSignals ();
+        bool _waitForSignalsFor (Duration);
 
         bool _processSingleEntry (SignalQueue::Entry & entry) const;
         bool _redirectEntry (SignalQueue::Entry & entry) const;

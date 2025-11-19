@@ -4,7 +4,10 @@ add_library(nx_app
         src/Thread.cpp
         src/Loop.cpp
         src/Signal.cpp
-#        unused/Event.cpp
+        src/Connection.cpp
+        wip/Connection.cpp
+        wip/Connection.hpp
+        #        unused/Event.cpp
 #        include/app/Thread.hpp
 #        include/app/Loop.hpp
 )
