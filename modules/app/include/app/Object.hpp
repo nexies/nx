@@ -8,6 +8,7 @@
 #include "nxapp.hpp"
 #include "app/Signal.hpp"
 #include "app/Connection.hpp"
+#include "app/Overload.h"
 
 namespace nx {
 
@@ -47,10 +48,10 @@ namespace nx {
 
     public:
         template<typename Sender, typename Signal, typename Receiver, typename Slot>
-        static bool connect (Sender * sender, Signal && signal, Receiver * receiver, Slot && slot, uint8_t flags = Connection::Auto);
+        static bool Сonnect (Sender * sender, Signal && signal, Receiver * receiver, Slot && slot, uint8_t flags = Connection::Auto);
 
         template<typename Sender, typename Signal, typename ... Args>
-        static void emit (Sender * sender, Signal signal, Args&&...);
+        static void Emit (Sender * sender, Signal signal, Args&&...);
     };
 
     template <typename EventType>
@@ -62,7 +63,7 @@ namespace nx {
 #define void_cast(val) reinterpret_cast<void *>(val)
 
     template<typename Sender, typename Signal, typename Receiver, typename Slot>
-    bool Object::connect (Sender * sender, Signal && signal, Receiver * receiver, Slot && slot, uint8_t flags)
+    bool Object::Сonnect (Sender * sender, Signal && signal, Receiver * receiver, Slot && slot, uint8_t flags)
     {
         Functor sig_func (sender, signal);
         Functor slot_func (receiver, slot);
@@ -96,7 +97,7 @@ namespace nx {
     }
 
     template <typename Sender, typename Signal, typename ... Args>
-    void Object::emit(Sender* sender, Signal signal, Args&&... args)
+    void Object::Emit(Sender* sender, Signal signal, Args&&... args)
     {
         static_assert(std::is_base_of<Object, Sender>::value, "Sender object must be a specialisation of nx::Object");
         Object * sender_obj = static_cast<Object *>(sender);
