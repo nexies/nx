@@ -16,7 +16,7 @@ namespace nx
     public:
         Loop ();
         ~Loop();
-        Result exec ();
+        virtual Result exec ();
 
         Result processEvents ();
         Result processEventsFor (Duration);

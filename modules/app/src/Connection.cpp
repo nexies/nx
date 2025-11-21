@@ -79,11 +79,20 @@ void Connection::_transmitImpl(Signal&& s)
         return;
     }
 
-    if (type == Auto && s.destinationThreadId() == Thread::current()->getId())
+    auto dest_thread_id = s.destinationThreadId();
+
+    if (type == Auto && dest_thread_id == Thread::current()->getId())
     {
         s.activate();
         return;
     }
+
+    auto thread = detail::ThreadInfo::Instance().threadForId(dest_thread_id);
+    if (!thread) {
+        nxWarning("Destination thread [{}] for signal does not exist!", dest_thread_id);
+        return;
+    }
+    thread->pushSignal(std::move(s), 0);
 }
 
 

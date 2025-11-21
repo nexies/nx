@@ -53,6 +53,7 @@ Result Loop::processEvents()
     while (not interrupt)
     {
         auto entry = queue->getNext();
+        //TODO: need to break the loop when queue is out of signals
         _processSingleEntry(entry);
     }
     return Result::Ok();
@@ -68,6 +69,7 @@ Result Loop::processEventsFor(Duration dur)
     while ((not interrupt) and (Clock::now() < deadline))
     {
         auto entry = queue->getNext();
+        //TODO: need to break the loop when queue is out of signals
        _processSingleEntry(entry);
     }
 

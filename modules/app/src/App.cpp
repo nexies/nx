@@ -18,7 +18,6 @@
 #include "app/Thread.hpp"
 
 
-
 // namespace log = spdlog;
 namespace po = boost::program_options;
 using namespace std;
@@ -29,7 +28,7 @@ void nx::App::Init(int argc, char *argv[]) {
     if (auto const res = self->_init(argc, argv); !res)
         Exit(res);
 
-    nxInfo("Application initialized");
+    // nxInfo("Application initialized [version {}, build at {}]", version(), build_time_utc());
 }
 
 void nx::App::Free() {
@@ -106,6 +105,8 @@ nx::Result nx::App::_init(int argc, char *argv[]) {
     if (res) res = _readDotEnvFile();
     if (res) res = _createLogger();
     if (res) res = _createEventLoop();
+    // if (res) res = _makeDispatcher();
+    if (res) _printAppInfo();
     return res;
 }
 
@@ -117,6 +118,12 @@ nx::Result nx::App::_makeMainThread(){
         return Result::Ok();
     }
     return Result::Err("Failed to create main thread");
+}
+
+nx::Result nx::App::_makeDispatcher() {
+    m_dispatcher = new MainDispatcher;
+    m_dispatcher->start();
+    return Result::Ok();
 }
 
 nx::Result nx::App::_parseOptions(int argc, char *argv[]) {
@@ -158,12 +165,19 @@ nx::Result nx::App::_createLogger() {
     logger->set_level(m_preferences.log_level);
     logger->set_pattern("[%Y-%m-%d %H:%M:%S] [%n] [%t] [%^%l%$] %v (%s:%#)");
     spdlog::set_default_logger(logger);
-    nxInfo("Application logger installed. Log level=\"{}\"", spdlog::level::to_string_view(m_preferences.log_level));
+    // nxInfo("Application logger installed. Log level=\"{}\"", spdlog::level::to_string_view(m_preferences.log_level));
     return Result::Ok();
 }
 
 nx::Result nx::App::_createEventLoop() {
     return Result::Ok();
+}
+
+void nx::App::_printAppInfo() const {
+    nxInfo("Application '{}'", m_preferences.application_name);
+    nxInfo("   --- powered by nx::app version {}",  version());
+    nxInfo("   --- build date: {}", build_time_utc());
+    nxInfo("   --- log level: {}", spdlog::level::to_string_view(m_preferences.log_level));
 }
 
 nx::Result nx::App::_startEventLoop() {

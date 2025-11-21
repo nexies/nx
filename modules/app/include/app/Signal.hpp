@@ -26,8 +26,8 @@ namespace nx {
         InvokerPtr invoker;
         Object * receiver;
 
-        Signal (Object * receiver, InvokerPtr invoker);
     public:
+        Signal (Object * receiver, InvokerPtr invoker);
         Signal(Signal const&) = default;
         Signal& operator=(Signal const&) = default;
 
@@ -51,13 +51,13 @@ namespace nx {
         Signal(Object * o, FunctorPtr functor, Args... args) : Signal (o, nx::make_invoker(functor, args...)) {}
 
         template<typename Ret, typename... Args>
-        Signal(Ret(*f)(Args...), Args... args) : Signal(nullptr, nx::make_invoker(f, args...)) {}
+        explicit Signal(Ret(*f)(Args...), Args... args) : Signal(nullptr, nx::make_invoker(f, args...)) {}
 
         template<typename Class, typename Ret, typename... Args, typename... Params, std::enable_if_t<std::is_base_of<Object, Class>::value, int> = 0>
         Signal(Class* c, Ret(Class::*f)(Args...), Params&&... params) : Signal(c, nx::make_invoker(c, f, std::forward<Args>(params)...)) {}
 
         template<typename Class, typename... Args, std::enable_if_t<not std::is_base_of<Object, Class>::value, int> = 0>
-        Signal(Class* c, Args... args) : Signal(nullptr, nx::make_invoker(c, args...)) {}
+        explicit Signal(Class* c, Args... args) : Signal(nullptr, nx::make_invoker(c, args...)) {}
 
         [[nodiscard]]
         ThreadId destinationThreadId () const;

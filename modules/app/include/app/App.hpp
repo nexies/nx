@@ -8,6 +8,7 @@
 #include "nxapp.hpp"
 #include "Signal.hpp"
 #include "Object.hpp"
+#include "app/Dispatcher.hpp"
 
 #include <filesystem>
 #include <boost/program_options.hpp>
@@ -53,24 +54,27 @@ namespace nx {
         result_t<Type, const char *> GetEnv (const std::string_view & name);
 
     public: //TODO: signals
-    static NX_SIGNAL(applicationNameChanged, const std::string &);
-    static NX_SIGNAL(executionStart);
-    static NX_SIGNAL(executionEnd);
+        static NX_SIGNAL(applicationNameChanged, const std::string &);
+        static NX_SIGNAL(executionStart);
+        static NX_SIGNAL(executionEnd);
 
     private:
         App();
         Result _init (int argc, char * argv[]);
         Result _makeMainThread ();
+        Result _makeDispatcher ();
         Result _parseOptions (int argc, char * argv[]);
         Result _readDotEnvFile ();
         Result _createLogger (); // <- params ?
         Result _createEventLoop ();
+        void _printAppInfo () const;
         Result _startEventLoop ();
+        void _closeThreads ();
 
     private:
         static App * m_self;
         static App * _Self ();
-        void _closeThreads ();
+
 
         struct Preferences {
             using path = std::filesystem::path;
@@ -80,10 +84,10 @@ namespace nx {
             boost::program_options::variables_map options;
             path env_file {application_name + ".env"};
             path log_file {application_name + ".log"};
-            spdlog::level::level_enum log_level;
+            spdlog::level::level_enum log_level =  spdlog::level::trace;
         } m_preferences;
 
-        // Thread * main_thread { nullptr };
+        Dispatcher * m_dispatcher { nullptr };
     };
 }
 

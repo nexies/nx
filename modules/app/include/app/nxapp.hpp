@@ -36,6 +36,9 @@ namespace nx {
     using NativeThreadId    = std::thread::id;
     using TimerId           = size_t;
 
+    std::string version ();
+    std::string build_time_utc ();
+
 /**
  *      // устарело, но идеи разумные
  *

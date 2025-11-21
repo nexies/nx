@@ -116,7 +116,7 @@ namespace nx {
         void _removeAll (const Connection& connection);
 
     public:
-        ConnectionInfo (Object * obj);
+        explicit ConnectionInfo (Object * obj);
         ~ConnectionInfo();
 
         void addSender (Object * sender);

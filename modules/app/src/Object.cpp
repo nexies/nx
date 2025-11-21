@@ -28,6 +28,10 @@ ThreadId Object::attachedThreadId() const
     return detail::g_invalidThreadId;
 }
 
+Thread * Object::attachedThread() const {
+    return local_thread;
+}
+
 Result Object::attachToThread(Thread* thread)
 {
     if (!thread)

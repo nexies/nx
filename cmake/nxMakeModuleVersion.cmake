@@ -37,6 +37,8 @@ function(nx_make_module_version)
         set(_MODULE_VERSION_PATCH ${NX_VERSION_PATCH})
     endif()
 
+    string(TIMESTAMP _MODULE_BUILD_TIME_STR "%Y-%m-%d %H:%M:%S" UTC)
+
     configure_file(
             "${NX_SOURCE_DIR}/include/nx/module_version.hpp.in"
             "${CMAKE_BINARY_DIR}/generated/nx/${_name}/version.hpp"
@@ -48,4 +50,5 @@ function(nx_make_module_version)
     unset(_MODULE_VERSION_MAJOR)
     unset(_MODULE_VERSION_STR)
     unset(_MODULE_NAME)
+    unset(_MODULE_BUILD_TIME_STR)
 endfunction()

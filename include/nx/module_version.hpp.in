@@ -6,6 +6,7 @@ namespace nx::@_MODULE_NAME@
         static constexpr const char * str = "@_MODULE_VERSION_STR@";
         static constexpr int major = @_MODULE_VERSION_MAJOR@;
         static constexpr int minor = @_MODULE_VERSION_MINOR@;
-        static constexpr int major = @_MODULE_VERSION_PATCH@;
+        static constexpr int patch = @_MODULE_VERSION_PATCH@;
+        static constexpr const char * build_time_utc = "@_MODULE_BUILD_TIME_STR@";
     }
 }

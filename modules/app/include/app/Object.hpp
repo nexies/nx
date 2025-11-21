@@ -21,21 +21,17 @@ namespace nx {
         Object ();
         virtual ~Object ();
 
+        [[nodiscard]]
         ThreadId attachedThreadId () const;
-        Result attachToThread (Thread *);
+        [[nodiscard]]
+        Thread * attachedThread () const;
 
-        // virtual Result onEvent (Event *);
-        // Result notify (Object *, Event *) const;
-        //
-        // virtual Result onUpdate (Event *);
-        // virtual Result onTimer (TimerEvent *);
-        //
+        Result attachToThread (Thread *);
 
         template<typename EventType>
         Result event (EventType &);
 
     protected:
-        // void     _generateEvent (Object *, Event *, int priority = 0) const;
         void _generateSignal (Signal && signal, int priority) const;
         Thread * _getLocalThread () const;
         void _reattachToLocalThread ();

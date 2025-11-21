@@ -33,7 +33,11 @@ namespace nx
 {
     namespace detail
     {
-        class FunctorBase {};
+        class FunctorBase {
+        public:
+            virtual ~FunctorBase() = default;
+            virtual size_t hash() = 0;
+        };
 
         template<typename ... Args>
         class FunctorInput : public FunctorBase
@@ -41,7 +45,6 @@ namespace nx
         protected:
             virtual void noreturn_call_impl (Args&&... args) = 0;
         public:
-            virtual ~FunctorInput() = default;
             template<typename... Params>
             static void noreturn_call (FunctorInput * self, Params&&... params)
             {
@@ -98,6 +101,12 @@ namespace nx
         {
             return (_cls->*_func)(args...);
         }
+
+        size_t hash() override {
+            auto s1 = std::hash<void *>{}(reinterpret_cast<void *>(_cls));
+            auto s2 = std::hash<void *>{}(reinterpret_cast<void *>(_func));
+            return s1 + (s2 << 1);
+        }
     };
 
     /// For storing const class methods
@@ -119,6 +128,12 @@ namespace nx
         ReturnType operator()(Args... args) const
         {
             return (_cls->*_func)(args...);
+        }
+
+        size_t hash() override {
+            auto s1 = std::hash<void *>{}(reinterpret_cast<void *>(_cls));
+            auto s2 = std::hash<void *>{}(reinterpret_cast<void *>(_func));
+            return s1 + (s2 << 1);
         }
     };
 
@@ -142,6 +157,10 @@ namespace nx
         ReturnType operator()(Args... args)
         {
             return _func(args...);
+        }
+
+        size_t hash() override {
+            return std::hash<void *>{}(reinterpret_cast<void *>(_func));
         }
     };
 

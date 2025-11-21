@@ -44,7 +44,7 @@ namespace nx::detail
 
         auto id = _getNextThreadId();
         threads_by_id.insert({ id, thread });
-        nxTrace("Registered thread with id: {}", id);
+        // nxTrace("Registered thread with id: {}", id);
         return id;
     }
 
