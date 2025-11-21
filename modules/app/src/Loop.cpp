@@ -50,10 +50,9 @@ Result Loop::processEvents()
 {
     if (!_waitForSignals())
         return Result::Err("No events");
-    while (not interrupt)
+    while (not interrupt and queue->hasPendingSignals())
     {
         auto entry = queue->getNext();
-        //TODO: need to break the loop when queue is out of signals
         _processSingleEntry(entry);
     }
     return Result::Ok();
@@ -66,10 +65,9 @@ Result Loop::processEventsFor(Duration dur)
     if (!_waitForSignalsFor(dur))
         return Result::Err("No events");
 
-    while ((not interrupt) and (Clock::now() < deadline))
+    while ((not interrupt) and (Clock::now() < deadline) and (queue->hasPendingSignals()))
     {
         auto entry = queue->getNext();
-        //TODO: need to break the loop when queue is out of signals
        _processSingleEntry(entry);
     }
 
@@ -110,7 +108,7 @@ void Loop::flush()
 
 bool Loop::_waitForSignals()
 {
-    nxTrace("Loop::_waitForSignals");
+    // nxTrace("Loop::_waitForSignals");
     if (!queue) return false;
     if (queue->hasPendingSignals())
         return true;
@@ -136,7 +134,7 @@ bool Loop::_waitForSignalsFor(Duration dur)
 
 bool Loop::_processSingleEntry(SignalQueue::Entry& entry) const
 {
-    nxTrace("Loop::_processSingleEntry");
+    // nxTrace("Loop::_processSingleEntry");
 
     if (_redirectEntry(entry))
         return false;
@@ -146,7 +144,7 @@ bool Loop::_processSingleEntry(SignalQueue::Entry& entry) const
 }
 
 bool Loop::_redirectEntry(SignalQueue::Entry & entry) const {
-    nxTrace("Loop::_redirectEntry");
+    // nxTrace("Loop::_redirectEntry");
     auto const tid = entry.signal.destinationThreadId();
     if (attachedThreadId() == tid)
         return false;

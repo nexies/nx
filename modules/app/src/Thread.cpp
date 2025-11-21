@@ -198,7 +198,9 @@ void Thread::exit(int code)
 {
     if (running)
     {
-        pushSignal(Signal::Exit(current_loop, code), 10);
+        Emit(this, &Thread::aboutToExitSignal);
+
+        pushSignal(Signal::Exit(current_loop, code), 0);
     }
 }
 
@@ -254,7 +256,6 @@ SignalQueue* Thread::queue()
 {
     return & signal_queue;
 }
-
 
 void Thread::_sleepImpl(Duration dur)
 {

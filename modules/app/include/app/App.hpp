@@ -16,7 +16,7 @@
 namespace nx {
     using options_description = boost::program_options::options_description;
 
-    class App : Object {
+    class App : public Object {
     public:
         static void Init (int argc, char * argv[]);
         static void Free ();
@@ -71,6 +71,8 @@ namespace nx {
         Result _startEventLoop ();
         void _closeThreads ();
 
+        void _exit(int code);
+
     private:
         static App * m_self;
         static App * _Self ();
@@ -87,7 +89,7 @@ namespace nx {
             spdlog::level::level_enum log_level =  spdlog::level::trace;
         } m_preferences;
 
-        Dispatcher * m_dispatcher { nullptr };
+        MainDispatcher * m_dispatcher { nullptr };
     };
 }
 

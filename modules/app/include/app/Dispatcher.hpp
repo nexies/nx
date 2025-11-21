@@ -10,25 +10,25 @@
 
 namespace nx {
 
-    class ListenLoop : public Loop {
-    public:
-        Result exec() override;
-    };
-
-    class Dispatcher : public Thread {
-    public:
-        Result execute() override;
-    protected:
-    };
-
-    class MainDispatcher final : public Dispatcher {
+    class MainDispatcher final : public Object {
 
     public:
+        MainDispatcher();
         ~MainDispatcher() {}
 
-        Result execute () override;
+        void scanForEvents();
+        void stopScanning ();
+
+
     protected:
+        bool scanning { true };
+
+        void _onThreadExit ();
+        void _setThreadMask ();
+
+        void _scanExitSignal();
         void _installSignalHandlers ();
+        Thread thread;
     };
 
 }

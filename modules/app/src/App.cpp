@@ -17,7 +17,6 @@
 #include "app/Loop.hpp"
 #include "app/Thread.hpp"
 
-
 // namespace log = spdlog;
 namespace po = boost::program_options;
 using namespace std;
@@ -43,7 +42,6 @@ int nx::App::Exec() {
         nxCritical("Application error: {}", res.get_err().str());
         return res.get_err().code();
     }
-    _Self()->_closeThreads();
     nxInfo("exiting with code {}", res.get_ok().code());
     return res.get_ok().code();
 }
@@ -51,7 +49,8 @@ int nx::App::Exec() {
 void nx::App::Exit(int code) {
     nxDebug("App::Exit()");
     auto self = _Self();
-    self->_generateSignal(Signal::Exit(self->_getLocalThread()->loop(), code), 10);
+    self->_generateSignal(Signal::Custom(self, &App::_exit, code), 0);
+    // self->_generateSignal(Signal::Exit(self->_getLocalThread()->loop(), code), 10);
 }
 
 void nx::App::Exit(const Result & res) {
@@ -105,7 +104,7 @@ nx::Result nx::App::_init(int argc, char *argv[]) {
     if (res) res = _readDotEnvFile();
     if (res) res = _createLogger();
     if (res) res = _createEventLoop();
-    // if (res) res = _makeDispatcher();
+    if (res) res = _makeDispatcher();
     if (res) _printAppInfo();
     return res;
 }
@@ -117,12 +116,21 @@ nx::Result nx::App::_makeMainThread(){
         _reattachToThread(thread);
         return Result::Ok();
     }
+
+
+    sigset_t set;
+    sigemptyset(&set);
+    sigaddset(&set, SIGINT);
+    sigaddset(&set, SIGTERM);
+    sigaddset(&set, SIGQUIT);
+    pthread_sigmask(SIG_BLOCK, &set, nullptr);
+
     return Result::Err("Failed to create main thread");
 }
 
 nx::Result nx::App::_makeDispatcher() {
     m_dispatcher = new MainDispatcher;
-    m_dispatcher->start();
+    m_dispatcher->scanForEvents();
     return Result::Ok();
 }
 
@@ -204,8 +212,16 @@ nx::Result nx::App::_startEventLoop() {
 
 void nx::App::_closeThreads()
 {
+    nxDebug("Closing all threads");
     detail::ThreadInfo::Instance().exitAllThreads();
     detail::ThreadInfo::Instance().waitForAllThreadsExit();
+}
+
+void nx::App::_exit(int code)
+{
+    auto self = _Self();
+    self->_closeThreads();
+    // self->_generateSignal(Signal::Exit(self->_getLocalThread()->loop(), code), 10);
 }
 
 nx::App * nx::App::_Self() {

@@ -53,6 +53,8 @@ namespace nx
         void exit (int);
         void terminate ();                  //TODO: Terminate the working thread
 
+        void aboutToExitSignal() {}
+
         bool waitForExit ();                //TODO: Wait until thread exists
 
         static Thread * current ();
@@ -62,6 +64,9 @@ namespace nx
 
         Loop * loop () const;
         SignalQueue * queue();
+
+        void setSigmaskBlock (sigset_t & set);
+        void setSigmaskAllow (sigset_t & set);
     protected:
 
         void _sleepImpl (Duration);

@@ -113,12 +113,17 @@ void ConnectionInfo::_cleanupAfter(const Connection& connection)
     if (!conn_list_exists && connections_for_sender.contains(send_id))
     {
         connections_for_sender[send_id].erase(conn_id);
+        if (connections_for_sender[send_id].empty())
+            connections_for_sender.erase(send_id);
     }
 
-    if (!conn_list_exists && recv_id && connections_for_sender.contains(send_id))
+    if (!conn_list_exists && recv_id && connections_for_receiver.contains(recv_id))
     {
         connections_for_receiver[recv_id].erase(conn_id);
+        if (connections_for_receiver[recv_id].empty())
+            connections_for_receiver.erase(recv_id);
     }
+
 }
 
 void ConnectionInfo::_removeAll(const Connection& connection)
@@ -179,8 +184,10 @@ void ConnectionInfo::receiverDestroyed(receiver_id receiver)
     // }
     if (!receiver) return;
 
-    for (auto conn_id: connections_for_receiver[receiver])
+    // for (auto & conn_id: connections_for_receiver[receiver])
+    while (connections_for_receiver.contains(receiver))
     {
+        auto conn_id = *connections_for_receiver[receiver].begin();
         if (!connections.contains(conn_id))
             continue;
 
@@ -243,7 +250,7 @@ bool ConnectionInfo::removeConnection(const Connection& connection, bool remove_
 ConnectionInfo::List<std::shared_ptr<Connection>> ConnectionInfo::getConnections(sender_id sender) const
 {
     List<ConnectionPtr> out;
-    if (connections.contains(sender))
+    if (!connections_for_sender.contains(sender))
         return {};
 
     auto & set = connections_for_sender.at(sender);
