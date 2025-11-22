@@ -24,6 +24,8 @@ target_link_libraries(nx_app PUBLIC
         Boost::system
 )
 
+target_compile_options(nx_app PUBLIC "-Wno-pmf-conversions")
+
 include(nxMakeModule)
 nx_make_module(
         TARGET nx_app
