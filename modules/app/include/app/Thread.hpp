@@ -53,7 +53,7 @@ namespace nx
         void exit (int);
         void terminate ();                  //TODO: Terminate the working thread
 
-        void aboutToExitSignal() {}
+        NX_SIGNAL(aboutToQuit)
 
         bool waitForExit ();                //TODO: Wait until thread exists
 

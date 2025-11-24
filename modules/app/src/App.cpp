@@ -130,7 +130,7 @@ nx::Result nx::App::_makeMainThread(){
 
 nx::Result nx::App::_makeDispatcher() {
     m_dispatcher = new MainDispatcher;
-    m_dispatcher->scanForEvents();
+    m_dispatcher->start();
     return Result::Ok();
 }
 

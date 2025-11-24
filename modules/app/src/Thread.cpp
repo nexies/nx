@@ -198,7 +198,7 @@ void Thread::exit(int code)
 {
     if (running)
     {
-        Emit(this, &Thread::aboutToExitSignal);
+        aboutToQuit();
 
         pushSignal(Signal::Exit(current_loop, code), 0);
     }
