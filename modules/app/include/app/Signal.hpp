@@ -11,9 +11,13 @@
 #include "nxapp.hpp"
 #include "core/Result.hpp"
 
-#define NX_SIGNAL(signalName, ...) \
-    void signalName(__VA_ARGS__) \
-    {}
+#include "detail/signal_defs.hpp"
+
+// #define NX_SIGNAL(signalName, ...) \
+//     void signalName(__VA_ARGS__) \
+//     {}
+
+
 
 
 namespace nx {

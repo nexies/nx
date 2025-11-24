@@ -9,6 +9,7 @@
 #include "app/Signal.hpp"
 #include "app/Connection.hpp"
 #include "app/Overload.h"
+#include "detail/signal_defs.hpp"
 
 namespace nx {
 

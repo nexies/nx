@@ -25,7 +25,7 @@ nx::App * nx::App::m_self { nullptr };
 void nx::App::Init(int argc, char *argv[]) {
     auto self = _Self ();
     if (auto const res = self->_init(argc, argv); !res)
-        Exit(res);
+        Exit(res.get_err().code());
 
     // nxInfo("Application initialized [version {}, build at {}]", version(), build_time_utc());
 }
@@ -53,19 +53,19 @@ void nx::App::Exit(int code) {
     // self->_generateSignal(Signal::Exit(self->_getLocalThread()->loop(), code), 10);
 }
 
-void nx::App::Exit(const Result & res) {
-    if (!res) { // <- is error
-        std::cerr << "Exiting with error: " << res.get_err().str() << " (code:" << res.get_err().code() << ")" << std::endl;
-        std::exit(res.get_err().code());
-    }
-    else {
-        std::cout << "Exiting with success: " << res.get_ok().str() << " (code:" << res.get_ok().code() << ")" << std::endl;
-        std::exit(res.get_ok().code());
-    }
-}
+// void nx::App::Exit(const Result & res) {
+//     if (!res) { // <- is error
+//         std::cerr << "Exiting with error: " << res.get_err().str() << " (code:" << res.get_err().code() << ")" << std::endl;
+//         std::exit(res.get_err().code());
+//     }
+//     else {
+//         std::cout << "Exiting with success: " << res.get_ok().str() << " (code:" << res.get_ok().code() << ")" << std::endl;
+//         std::exit(res.get_ok().code());
+//     }
+// }
 
 void nx::App::Quit() {
-    _Self()->_getLocalThread()->quit();
+    Exit(0);
 }
 
 void nx::App::Abort() {
@@ -79,7 +79,7 @@ nx::Result nx::App::AddProgramOptions(const options_description &desc) {
 
 void nx::App::SetApplicationName(const std::string &name) {
     if (name != ApplicationName())
-        nx::emit_signal(applicationNameChanged, name);
+        _Self()->applicationNameChanged(name);
     _Self()->m_preferences.application_name = name;
 }
 

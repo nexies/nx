@@ -237,6 +237,14 @@ Thread* Thread::fromCurrentThread()
     return out;
 }
 
+ThreadId Thread::currentId()
+{
+    auto c = current();
+    if (!c)
+        return detail::g_invalidThreadId;
+    return c->getId();
+}
+
 Loop* Thread::currentLoop()
 {
     return current()->current_loop;

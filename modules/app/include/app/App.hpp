@@ -29,9 +29,9 @@ namespace nx {
         //! @param code exit code
         static void Exit (int code);
 
-        //! Exit the application (Gracefully)
-        //! @param res exit result (code + comment)
-        static void Exit (const Result & res);
+        // //! Exit the application (Gracefully)
+        // //! @param res exit result (code + comment)
+        // static void Exit (const Result & res);
 
         //! Gracefully exit the application
         //! @param code exit code
@@ -46,17 +46,15 @@ namespace nx {
         static void SetApplicationName (const std::string & name);
         static std::string ApplicationName();
 
-        // static Result Notify (Object *, Event *);
-
         template<typename Type>
         result_t<Type, const char *> GetParam (const std::string_view & name);
         template<typename Type>
         result_t<Type, const char *> GetEnv (const std::string_view & name);
 
     public: //TODO: signals
-        static NX_SIGNAL(applicationNameChanged, const std::string &);
-        static NX_SIGNAL(executionStart);
-        static NX_SIGNAL(executionEnd);
+        NX_SIGNAL(applicationNameChanged, const std::string &);
+        NX_SIGNAL(executionStart);
+        NX_SIGNAL(executionEnd);
 
     private:
         App();
