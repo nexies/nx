@@ -32,15 +32,42 @@
 ///
 ///     void signalName (arg_type1 _arg1, arg_type2 _arg2, arg_type3 _arg3)
 
-// #define __NX_ARGS_COUNT_SEQ \
-//     63, 62, 61, 60, \
-//     59, 58, 57, 56, 55, 54, 53, 52, 51, 50, \
-//     49, 48, 47, 46, 45, 44, 43, 42, 41, 40, \
-//     39, 38, 37, 36, 35, 34, 33, 32, 31, 30, \
-//     29, 28, 27, 26, 25, 24, 23, 22, 21, 20, \
-//     19, 18, 17, 16, 15, 14, 13, 12, 11, 10, \
-//     9, 8, 7, 6, 5, 4, 3, 2, 1, 0
 
+#include "core/macro/repeat.hpp"
+#include "core/macro/choose.hpp"
+#include "core/macro/arg_count.hpp"
 
+#include "app/Overload.h"
 
+#define __NX_SIGNAL_ARGUMENT_MAKER_MACRO(n, prefix, ...) \
+    NX_CHOOSE(n,,__VA_ARGS__) NX_CONCAT(prefix, n)
+
+#define __NX_SIGNAL_MAKE_ARGUMENTS(...) \
+    NX_REPEAT(NX_ARGS_COUNT(__VA_ARGS__), __NX_SIGNAL_ARGUMENT_MAKER_MACRO, _arg, __VA_ARGS__)
+
+#define __NX_SIGNAL_PARAMS_MAKER_MACRO(n, prefix, ...) \
+    NX_CONCAT(prefix, n)
+
+#define __NX_SIGNAL_MAKE_PARAMS(...) \
+    NX_REPEAT(NX_ARGS_COUNT(__VA_ARGS__), __NX_SIGNAL_PARAMS_MAKER_MACRO, _arg, __VA_ARGS__)
+
+#define __NX_SIGNAL_HELPER_0(signalName, ...) \
+void signalName (__NX_SIGNAL_MAKE_ARGUMENTS(__VA_ARGS__)) \
+    { \
+        using This = std::remove_cv_t<std::remove_reference_t<decltype(*this)>>; \
+        nx::Object::Emit(this, ::nx::overload<__VA_ARGS__>(&This::signalName), __NX_SIGNAL_MAKE_PARAMS(__VA_ARGS__)); \
+    } \
+
+#define __NX_SIGNAL_HELPER_1(signalName, ...) \
+    void signalName () \
+    { \
+        using This = std::remove_cv_t<std::remove_reference_t<decltype(*this)>>; \
+        ::nx::Object::Emit(this, ::nx::overload<>(&This::signalName)); \
+    } \
+
+#define __NX_SIGNAL_HELPER(signalName, ...) \
+    NX_CONCAT(__NX_SIGNAL_HELPER_, __NX_PP_ISEMPTY(__VA_ARGS__))(signalName, __VA_ARGS__)
+
+#define NX_SIGNAL(signalName, ...) \
+    __NX_SIGNAL_HELPER(signalName, __VA_ARGS__)
 #endif //SIGNAL_DEFS_HPP

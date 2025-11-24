@@ -9,6 +9,7 @@
 #include "app/Signal.hpp"
 #include "app/Connection.hpp"
 #include "app/Overload.h"
+#include "detail/signal_defs.hpp"
 
 namespace nx {
 
@@ -44,7 +45,7 @@ namespace nx {
 
     public:
         template<typename Sender, typename Signal, typename Receiver, typename Slot>
-        static bool Сonnect (Sender * sender, Signal && signal, Receiver * receiver, Slot && slot, uint8_t flags = Connection::Auto);
+        static bool Connect (Sender * sender, Signal && signal, Receiver * receiver, Slot && slot, uint8_t flags = Connection::Auto);
 
         template<typename Sender, typename Signal, typename ... Args>
         static void Emit (Sender * sender, Signal signal, Args&&...);
@@ -59,7 +60,7 @@ namespace nx {
 #define void_cast(val) reinterpret_cast<void *>(val)
 
     template<typename Sender, typename Signal, typename Receiver, typename Slot>
-    bool Object::Сonnect (Sender * sender, Signal && signal, Receiver * receiver, Slot && slot, uint8_t flags)
+    bool Object::Connect (Sender * sender, Signal && signal, Receiver * receiver, Slot && slot, uint8_t flags)
     {
         Functor sig_func (sender, signal);
         Functor slot_func (receiver, slot);

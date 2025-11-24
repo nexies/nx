@@ -69,19 +69,26 @@ nx::Result nx::MainDispatcher::execute() {
 
     while (running) {
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        // nxDebug("Scanning signals");
 
         if (g_exitSignals > 0) {
+            nxDebug("Received exit signal");
             int count = g_exitSignals.exchange(0);
             for (int i = 0; i < count; i++)
+            {
                 nx::App::Quit();
+                running.store(false);
+            }
         }
     }
+    return Result::Ok();
 }
 
 void nx::MainDispatcher::_installSignalHandlers() {
 
     auto install_signal_handler= [] (int signal) {
-        std::cerr << "installing handler for signal " << signal << std::endl;
+        // std::cerr << "installing handler for signal " << signal << std::endl;
+        nxTrace("Installing signal handler for signal {}", signal);
         std::signal(signal, signal_handler);
     };
 

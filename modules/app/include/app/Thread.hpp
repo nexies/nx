@@ -57,6 +57,7 @@ namespace nx
 
         static Thread * current ();
         static Thread * fromCurrentThread ();
+        static ThreadId currentId ();
         static Loop * currentLoop ();
         static SignalQueue * currentQueue ();
 
