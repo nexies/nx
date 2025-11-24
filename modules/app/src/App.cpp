@@ -20,6 +20,32 @@
 // namespace log = spdlog;
 namespace po = boost::program_options;
 using namespace std;
+
+namespace
+{
+#include "spdlog/pattern_formatter.h"
+    class ThreadFormaterFlag : public spdlog::custom_flag_formatter
+    {
+    public:
+        void format(const spdlog::details::log_msg &, const std::tm &, spdlog::memory_buf_t &dest) override
+        {
+            std::string txt = "n/a";
+            auto id = ::nx::Thread::currentId();
+            if (id != ::nx::detail::g_invalidThreadId)
+            {
+                txt = std::to_string(id);
+            }
+            dest.append(txt.data(), txt.data() + txt.size());
+        }
+
+        std::unique_ptr<custom_flag_formatter> clone() const override
+        {
+            return spdlog::details::make_unique<ThreadFormaterFlag>();
+        }
+    };
+}
+
+
 nx::App * nx::App::m_self { nullptr };
 
 void nx::App::Init(int argc, char *argv[]) {
@@ -171,7 +197,10 @@ nx::Result nx::App::_createLogger() {
     combined->set_level(m_preferences.log_level);
     auto logger = std::make_shared<spdlog::logger>(MAIN_LOGGER_NAME, combined);
     logger->set_level(m_preferences.log_level);
-    logger->set_pattern("[%Y-%m-%d %H:%M:%S] [%n] [%t] [%^%l%$] %v (%s:%#)");
+    auto formatter = std::make_unique<spdlog::pattern_formatter>();
+    formatter->add_flag<ThreadFormaterFlag>('T').set_pattern("[%Y-%m-%d %H:%M:%S] [%n] [%t|%T] [%^%l%$] %v (%s:%#)");
+    logger->set_formatter(std::move(formatter));
+    // logger->set_pattern("[%Y-%m-%d %H:%M:%S] [%n] [%t] [%^%l%$] %v (%s:%#)");
     spdlog::set_default_logger(logger);
     // nxInfo("Application logger installed. Log level=\"{}\"", spdlog::level::to_string_view(m_preferences.log_level));
     return Result::Ok();

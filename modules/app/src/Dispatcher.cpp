@@ -87,8 +87,7 @@ nx::Result nx::MainDispatcher::execute() {
 void nx::MainDispatcher::_installSignalHandlers() {
 
     auto install_signal_handler= [] (int signal) {
-        // std::cerr << "installing handler for signal " << signal << std::endl;
-        nxTrace("Installing signal handler for signal {}", signal);
+        // nxTrace("Installing signal handler for signal {}", signal);
         std::signal(signal, signal_handler);
     };
 
