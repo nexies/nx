@@ -55,7 +55,25 @@
 #define __NX_REPEAT_(count, macro, data) \
     NX_REPEAT_WITH_HELPER(count, __NX_COMMA_HELPER_, macro, data)
 
+/// Allows you to repeat macro execution for N < NX_REPEAT_MAX_COUNT
+/// Usage NX_REPEAT(count, YOUR_MACRO, your_data)
+///     count - number of repetitions
+///     YOUR_MACRO - your macro-parameter you want to repeat.
+///     your_data - your custom data for your YOUR_MACRO
+///
 #define NX_REPEAT(...) __NX_REPEAT_(__VA_ARGS__)
+
+/// Generate sequences like _1, _2, _3, _4, ... _n
+#define NX_PLACEHOLDERS(count) \
+    NX_REPEAT(count, NX_RCONCAT, _)
+
+#define __NX_MAKE_SEQ_MACRO(n, d) n
+#define
+
+#define NX_MAKE_SEQ(count)
+
+
+
 
 // NX_REPEAT(10, TO_NUMBER)
 
