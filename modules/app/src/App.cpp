@@ -167,6 +167,8 @@ nx::Result nx::App::_makeDispatcher() {
 }
 
 nx::Result nx::App::_parseOptions(int argc, char *argv[]) {
+    m_preferences.executable =  argv[0];
+    m_preferences.execution_path = std::filesystem::current_path();
     return Result::Ok();
 }
 
@@ -221,6 +223,8 @@ void nx::App::_printAppInfo() const {
     nxInfo("   --- powered by nx::app version {}",  version());
     nxInfo("   --- build date: {}", build_time_utc());
     nxInfo("   --- log level: {}", spdlog::level::to_string_view(m_preferences.log_level));
+    nxInfo("   --- executable: {}", m_preferences.executable.string());
+    nxInfo("   --- exec path: {}", m_preferences.execution_path.string());
 }
 
 nx::Result nx::App::_startEventLoop() {

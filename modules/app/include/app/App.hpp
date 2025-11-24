@@ -51,10 +51,7 @@ namespace nx {
         template<typename Type>
         result_t<Type, const char *> GetEnv (const std::string_view & name);
 
-    public: //TODO: signals
         NX_SIGNAL(applicationNameChanged, const std::string &);
-        NX_SIGNAL(executionStart);
-        NX_SIGNAL(executionEnd);
         NX_SIGNAL(aboutToQuit)
 
         static App * Get ();
@@ -82,6 +79,7 @@ namespace nx {
             using path = std::filesystem::path;
             std::string application_name {"nx_app"};
             path execution_path {"/"};
+            path executable {"/"};
             options_description opt_desc;
             boost::program_options::variables_map options;
             path env_file {application_name + ".env"};
