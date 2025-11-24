@@ -65,6 +65,7 @@ nx::Result nx::Dispatcher::execute() {
 }
 
 nx::Result nx::MainDispatcher::execute() {
+    nxDebug("Start dispatcher");
     _installSignalHandlers();
 
     while (running) {

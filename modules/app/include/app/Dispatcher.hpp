@@ -24,8 +24,7 @@ namespace nx {
     class MainDispatcher final : public Dispatcher {
 
     public:
-        ~MainDispatcher() {}
-
+        ~MainDispatcher() override = default;
         Result execute () override;
     protected:
         void _installSignalHandlers ();

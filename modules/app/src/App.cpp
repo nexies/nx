@@ -75,8 +75,10 @@ int nx::App::Exec() {
 void nx::App::Exit(int code) {
     nxDebug("App::Exit()");
     auto self = _Self();
+
+    /*emit*/ self->aboutToQuit();
+
     self->_generateSignal(Signal::Custom(self, &App::_exit, code), 0);
-    // self->_generateSignal(Signal::Exit(self->_getLocalThread()->loop(), code), 10);
 }
 
 // void nx::App::Exit(const Result & res) {
@@ -117,6 +119,10 @@ std::string nx::App::ApplicationName() {
 // {
 //     return _Self()->notify(object, event);
 // }
+
+nx::App * nx::App::Get() {
+    return _Self();
+}
 
 nx::App::App() :
     Object()
@@ -198,7 +204,7 @@ nx::Result nx::App::_createLogger() {
     auto logger = std::make_shared<spdlog::logger>(MAIN_LOGGER_NAME, combined);
     logger->set_level(m_preferences.log_level);
     auto formatter = std::make_unique<spdlog::pattern_formatter>();
-    formatter->add_flag<ThreadFormaterFlag>('T').set_pattern("[%Y-%m-%d %H:%M:%S] [%n] [%t|%T] [%^%l%$] %v (%s:%#)");
+    formatter->add_flag<ThreadFormaterFlag>('T').set_pattern("[%Y-%m-%d %H:%M:%S] [%n] ["/*%t|*/"tid:%T] [%^%l%$] %v (%s:%#)");
     logger->set_formatter(std::move(formatter));
     // logger->set_pattern("[%Y-%m-%d %H:%M:%S] [%n] [%t] [%^%l%$] %v (%s:%#)");
     spdlog::set_default_logger(logger);

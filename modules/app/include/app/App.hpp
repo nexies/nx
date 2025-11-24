@@ -55,7 +55,9 @@ namespace nx {
         NX_SIGNAL(applicationNameChanged, const std::string &);
         NX_SIGNAL(executionStart);
         NX_SIGNAL(executionEnd);
+        NX_SIGNAL(aboutToQuit)
 
+        static App * Get ();
     private:
         App();
         Result _init (int argc, char * argv[]);
@@ -84,7 +86,8 @@ namespace nx {
             boost::program_options::variables_map options;
             path env_file {application_name + ".env"};
             path log_file {application_name + ".log"};
-            spdlog::level::level_enum log_level =  spdlog::level::trace;
+            // spdlog::level::level_enum log_level = spdlog::level::trace;
+            spdlog::level::level_enum log_level =  spdlog::level::debug;
         } m_preferences;
 
         MainDispatcher * m_dispatcher { nullptr };
