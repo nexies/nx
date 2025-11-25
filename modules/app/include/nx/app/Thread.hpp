@@ -5,12 +5,12 @@
 #ifndef THREAD_HPP
 #define THREAD_HPP
 
-#include "Object.hpp"
-#include "Signal.hpp"
-#include "core/Singleton.hpp"
+#include "nx/app/Object.hpp"
+#include "nx/app/Signal.hpp"
+#include "nx/core/Singleton.hpp"
 
 #include <thread>
-
+#include <unordered_map>
 
 namespace nx
 {
@@ -116,6 +116,8 @@ namespace nx
 
             Thread * threadForId(ThreadId);
             Thread * threadForNativeId (NativeThreadId);
+
+            size_t threadCount() const;
 
             void exitAllThreads ();
             void waitForAllThreadsExit ();

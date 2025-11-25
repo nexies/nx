@@ -5,8 +5,8 @@
 #ifndef LOOP_HPP
 #define LOOP_HPP
 
-#include "Signal.hpp"
-#include "Object.hpp"
+#include "nx/app/Signal.hpp"
+#include "nx/app/Object.hpp"
 
 namespace nx
 {

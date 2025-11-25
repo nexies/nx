@@ -2,7 +2,7 @@
 // Created by nexie on 14.11.2025.
 //
 
-#include "app/nxapp.hpp"
+#include "nx/app.hpp"
 #include "app/version.hpp"
 
 namespace nx {

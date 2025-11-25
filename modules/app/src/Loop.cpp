@@ -2,11 +2,11 @@
 // Created by nexie on 13.11.2025.
 //
 
-#include "app/Loop.hpp"
+#include "nx/app/Loop.hpp"
 
 #include <boost/asio/local/basic_endpoint.hpp>
 
-#include "app/Thread.hpp"
+#include "nx/app/Thread.hpp"
 #include "tgbot/net/BoostHttpOnlySslClient.h"
 
 using namespace nx;

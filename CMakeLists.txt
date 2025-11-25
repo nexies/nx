@@ -20,8 +20,7 @@ option (NX_BUILD_TESTS "Build tests" OFF)
 list (APPEND CMAKE_MODULE_PATH "${NX_MODULE_PATH}")
 
 
-add_library (nx INTERFACE
-        modules/app/main.cpp)
+add_library (nx INTERFACE )
 add_library (nx::nx ALIAS nx)
 
 include(nxVersionInfo)

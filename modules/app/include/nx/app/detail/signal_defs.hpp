@@ -33,11 +33,11 @@
 ///     void signalName (arg_type1 _arg1, arg_type2 _arg2, arg_type3 _arg3)
 
 
-#include "core/macro/repeat.hpp"
-#include "core/macro/choose.hpp"
-#include "core/macro/arg_count.hpp"
+#include "nx/core/macro/repeat.hpp"
+#include "nx/core/macro/choose.hpp"
+#include "nx/core/macro/arg_count.hpp"
 
-#include "app/Overload.h"
+#include "nx/core/Overload.h"
 
 #define __NX_SIGNAL_ARGUMENT_MAKER_MACRO(n, prefix, ...) \
     NX_CHOOSE(n,,__VA_ARGS__) NX_CONCAT(prefix, n)

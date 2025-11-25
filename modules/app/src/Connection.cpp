@@ -2,13 +2,13 @@
 // Created by nexie on 17.11.2025.
 //
 
-#include "app/Connection.hpp"
+#include "nx/app/Connection.hpp"
 
 #include <boost/asio/execution/sender.hpp>
 #include <sys/socket.h>
 
-#include "app/Object.hpp"
-#include "app/Thread.hpp"
+#include "nx/app/Object.hpp"
+#include "nx/app/Thread.hpp"
 
 using namespace nx;
 

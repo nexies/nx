@@ -2,13 +2,13 @@
 // Created by nexie on 19.11.2025.
 //
 
-#include "app/Dispatcher.hpp"
+#include "nx/app/Dispatcher.hpp"
 
 #include <iostream>
 
-#include "signal.h"
+#include <signal.h>
 #include "csignal"
-#include "app/App.hpp"
+#include "nx/app/App.hpp"
 
 std::atomic_uint32_t g_exitSignals { 0 };
 std::atomic_uint32_t g_abortSignals { 0 };

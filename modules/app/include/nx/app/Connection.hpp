@@ -5,12 +5,11 @@
 #ifndef CONNECTION_HPP
 #define CONNECTION_HPP
 
-#include <list>
+#include <unordered_map>
 #include <set>
 
-// #include "Object.hpp"
-#include "app/Signal.hpp"
-#include "core/store/DataPool.h"
+#include "Signal.hpp"
+#include "nx/core/store/DataPool.h"
 
 
 namespace nx {

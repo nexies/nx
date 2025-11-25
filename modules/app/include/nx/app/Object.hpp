@@ -5,11 +5,10 @@
 #ifndef OBJECT_HPP
 #define OBJECT_HPP
 
-#include "nxapp.hpp"
-#include "app/Signal.hpp"
-#include "app/Connection.hpp"
-#include "app/Overload.h"
-#include "detail/signal_defs.hpp"
+#include "nx/app.hpp"
+#include "Signal.hpp"
+#include "Connection.hpp"
+#include "nx/core/Overload.h"
 
 namespace nx {
 

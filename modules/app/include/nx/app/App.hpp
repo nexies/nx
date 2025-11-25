@@ -5,10 +5,10 @@
 #ifndef APP_HPP
 #define APP_HPP
 
-#include "nxapp.hpp"
+#include "nx/app.hpp"
 #include "Signal.hpp"
-#include "Object.hpp"
-#include "app/Dispatcher.hpp"
+#include "nx/app/Object.hpp"
+#include "Dispatcher.hpp"
 
 #include <filesystem>
 #include <boost/program_options.hpp>

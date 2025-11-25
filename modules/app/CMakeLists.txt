@@ -7,11 +7,6 @@ add_library(nx_app
         src/Connection.cpp
         src/Dispatcher.cpp
         src/nxapp.cpp
-#        wip/Connection.cpp
-#        wip/Connection.hpp
-        #        unused/Event.cpp
-#        include/app/Thread.hpp
-#        include/app/Loop.hpp
 )
 
 find_package(spdlog REQUIRED)

@@ -1,11 +1,11 @@
 //
-// Created by nexie on 12.11.2025.
+// Created by nexie on 25.11.2025.
 //
 
-#ifndef NXAPP_HPP
-#define NXAPP_HPP
+#ifndef NX_APP_HPP
+#define NX_APP_HPP
 
-#include "core/Result.hpp"
+#include "nx/core/Result.hpp"
 
 #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE
 #include <spdlog/spdlog.h>
@@ -80,5 +80,4 @@ namespace nx {
 
 }
 
-
-#endif //NXAPP_HPP
+#endif //NX_APP_HPP

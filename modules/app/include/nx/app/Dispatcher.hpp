@@ -5,8 +5,8 @@
 #ifndef DISPATCHER_HPP
 #define DISPATCHER_HPP
 
-#include "Loop.hpp"
-#include "app/Thread.hpp"
+#include "nx/app/Loop.hpp"
+#include "nx/app/Thread.hpp"
 
 namespace nx {
 

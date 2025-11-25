@@ -2,7 +2,8 @@
 // Created by nexie on 09.11.2025.
 //
 
-#include "app/App.hpp"
+#include "nx/app.hpp"
+#include "nx/app/App.hpp"
 #include <iostream>
 #include <signal.h>
 
@@ -14,8 +15,7 @@
 
 #define MAIN_LOGGER_NAME "main"
 
-#include "app/Loop.hpp"
-#include "app/Thread.hpp"
+#include "nx/app/Thread.hpp"
 
 // namespace log = spdlog;
 namespace po = boost::program_options;
@@ -232,26 +232,9 @@ nx::Result nx::App::_startEventLoop() {
     return loop.exec();
 }
 
-// nx::Result nx::App::onTimer(TimerEvent* timer_event)
-// {
-//     return Object::onTimer(timer_event);
-// }
-//
-// nx::Result nx::App::onEvent(Event* event)
-// {
-//     if (!event)
-//         return Result::Err("Bad nullptr event");
-//
-//     switch (event->type())
-//     {
-//         case Event::Type::Exit: _closeThreads(); return Result::Ok();
-//     }
-//     return Object::onEvent(event);
-// }
-
 void nx::App::_closeThreads()
 {
-    nxDebug("Closing all threads");
+    nxDebug("Closing all threads ({})", detail::ThreadInfo::Instance().threadCount());
     detail::ThreadInfo::Instance().exitAllThreads();
     detail::ThreadInfo::Instance().waitForAllThreadsExit();
 }
@@ -260,7 +243,6 @@ void nx::App::_exit(int code)
 {
     auto self = _Self();
     self->_closeThreads();
-    // self->_generateSignal(Signal::Exit(self->_getLocalThread()->loop(), code), 10);
 }
 
 nx::App * nx::App::_Self() {

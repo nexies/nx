@@ -2,12 +2,12 @@
 // Created by nexie on 12.11.2025.
 //
 
-#include "app/Thread.hpp"
+#include "nx/app/Thread.hpp"
 #include <mutex>
 #include <boost/asio.hpp>
 
-#include "app/nxapp.hpp"
-#include "app/Loop.hpp"
+#include "nx/app.hpp"
+#include "nx/app/Loop.hpp"
 
 
 using namespace nx;
@@ -104,6 +104,11 @@ namespace nx::detail
         if (threads_by_native_id.count(id))
             return threads_by_native_id[id];
         return nullptr;
+    }
+
+    size_t ThreadInfoInstance::threadCount() const
+    {
+        return threads_by_id.size();
     }
 
     void ThreadInfoInstance::exitAllThreads()

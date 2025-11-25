@@ -1,8 +1,6 @@
 add_library(nx_core
         src/core.cpp
-        include/core/Exception.hpp
-        include/core/store/DataPool.h
-        include/core/macro/choose.hpp
+
 )
 
 include(nxMakeModule)

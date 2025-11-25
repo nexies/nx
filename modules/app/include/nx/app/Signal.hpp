@@ -6,19 +6,13 @@
 #define SIGNAL_HPP
 
 #include <queue>
+#include <atomic>
+#include <condition_variable>
 
-#include "Invoker.hpp"
-#include "nxapp.hpp"
-#include "core/Result.hpp"
-
-#include "detail/signal_defs.hpp"
-
-// #define NX_SIGNAL(signalName, ...) \
-//     void signalName(__VA_ARGS__) \
-//     {}
-
-
-
+#include "nx/app.hpp"
+#include "nx/core/Invoker.hpp"
+#include "nx/core/Result.hpp"
+#include "nx/app/detail/signal_defs.hpp"
 
 namespace nx {
     class Thread;
