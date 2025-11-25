@@ -36,6 +36,12 @@ namespace nx {
     using NativeThreadId    = std::thread::id;
     using TimerId           = size_t;
 
+    enum class TimerType
+    {
+        SingleShot,
+        Periodic,
+    };
+
     std::string version ();
     std::string build_time_utc ();
 

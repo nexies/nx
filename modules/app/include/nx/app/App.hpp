@@ -29,10 +29,6 @@ namespace nx {
         //! @param code exit code
         static void Exit (int code);
 
-        // //! Exit the application (Gracefully)
-        // //! @param res exit result (code + comment)
-        // static void Exit (const Result & res);
-
         //! Gracefully exit the application
         //! @param code exit code
         static void Quit ();
@@ -40,10 +36,17 @@ namespace nx {
         //! Abort execution (hard-exit)
         static void Abort ();
 
+        static TimerId AddTimer(TimerType, Duration, detail::timer_callback_t);
+
+        static Result CancelTimer (TimerId timerId);
+
         //! Set command-line application options
         //! @return
         static Result AddProgramOptions (const options_description & desc);
+
+        //! Application name setter
         static void SetApplicationName (const std::string & name);
+        //! Application name getter
         static std::string ApplicationName();
 
         template<typename Type>

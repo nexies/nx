@@ -227,14 +227,14 @@ void Thread::quit()
     this->exit(0);
 }
 
-Thread* Thread::current()
+Thread* Thread::Current()
 {
     return detail::ThreadInfo::Instance().threadForNativeId(std::this_thread::get_id());
 }
 
-Thread* Thread::fromCurrentThread()
+Thread* Thread::FromCurrentThread()
 {
-    auto out = current();
+    auto out = Current();
 
     if (!out)
         out = new LocalThread();
@@ -242,22 +242,22 @@ Thread* Thread::fromCurrentThread()
     return out;
 }
 
-ThreadId Thread::currentId()
+ThreadId Thread::CurrentId()
 {
-    auto c = current();
+    auto c = Current();
     if (!c)
         return detail::g_invalidThreadId;
     return c->getId();
 }
 
-Loop* Thread::currentLoop()
+Loop* Thread::CurrentLoop()
 {
-    return current()->current_loop;
+    return Current()->current_loop;
 }
 
-SignalQueue* Thread::currentQueue()
+SignalQueue* Thread::CurrentQueue()
 {
-    return current()->queue();
+    return Current()->queue();
 }
 
 Loop* Thread::loop() const

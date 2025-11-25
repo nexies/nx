@@ -30,7 +30,7 @@ namespace
         void format(const spdlog::details::log_msg &, const std::tm &, spdlog::memory_buf_t &dest) override
         {
             std::string txt = "n/a";
-            auto id = ::nx::Thread::currentId();
+            auto id = ::nx::Thread::CurrentId();
             if (id != ::nx::detail::g_invalidThreadId)
             {
                 txt = std::to_string(id);
@@ -100,6 +100,23 @@ void nx::App::Abort() {
     std::abort();
 }
 
+nx::TimerId nx::App::AddTimer(TimerType type, Duration dur, detail::timer_callback_t cb)
+{
+    auto self = _Self();
+    if (!self->m_dispatcher)
+        return detail::invalid_timer;
+
+    return self->m_dispatcher->addTimer(type, dur, std::move(cb));
+}
+
+nx::Result nx::App::CancelTimer(TimerId timerId)
+{
+    auto self = _Self();
+    if (!self->m_dispatcher)
+        return Result::Err("Dispatcher is not initialized");
+    return self->m_dispatcher->cancelTimer(timerId);
+}
+
 nx::Result nx::App::AddProgramOptions(const options_description &desc) {
     _Self()->m_preferences.opt_desc.add(desc);
     return Result::Ok();
@@ -142,7 +159,7 @@ nx::Result nx::App::_init(int argc, char *argv[]) {
 }
 
 nx::Result nx::App::_makeMainThread(){
-    auto thread = Thread::fromCurrentThread();
+    auto thread = Thread::FromCurrentThread();
     if (thread)
     {
         _reattachToThread(thread);

@@ -55,14 +55,14 @@
 void signalName (__NX_SIGNAL_MAKE_ARGUMENTS(__VA_ARGS__)) \
     { \
         using This = std::remove_cv_t<std::remove_reference_t<decltype(*this)>>; \
-        nx::Object::Emit(this, ::nx::overload<__VA_ARGS__>(&This::signalName), __NX_SIGNAL_MAKE_PARAMS(__VA_ARGS__)); \
+        ::nx::emit(this, ::nx::overload<__VA_ARGS__>(&This::signalName), __NX_SIGNAL_MAKE_PARAMS(__VA_ARGS__)); \
     } \
 
 #define __NX_SIGNAL_HELPER_1(signalName, ...) \
     void signalName () \
     { \
         using This = std::remove_cv_t<std::remove_reference_t<decltype(*this)>>; \
-        ::nx::Object::Emit(this, ::nx::overload<>(&This::signalName)); \
+        ::nx::emit(this, ::nx::overload<>(&This::signalName)); \
     } \
 
 #define __NX_SIGNAL_HELPER(signalName, ...) \

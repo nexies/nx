@@ -15,8 +15,21 @@ namespace nx {
     class Thread;
     class ConnectionInfo;
 
+    template<typename Sender, typename Signal, typename Receiver, typename Slot>
+    bool connect (Sender * sender, Signal && signal, Receiver * receiver, Slot && slot, uint8_t flags);
+
+    template<typename Sender, typename Signal, typename ... Args>
+    void emit (Sender * sender, Signal signal, Args&&...);
+
+
     class Object {
         friend class ConnectionInfo;
+        template<typename Sender, typename Signal, typename Receiver, typename Slot>
+        friend bool connect (Sender * sender, Signal && signal, Receiver * receiver, Slot && slot, uint8_t flags);
+
+        template<typename Sender, typename Signal, typename ... Args>
+        friend void emit (Sender * sender, Signal signal, Args&&...);
+
     public:
         Object ();
         virtual ~Object ();
@@ -25,29 +38,27 @@ namespace nx {
         ThreadId attachedThreadId () const;
         [[nodiscard]]
         Thread * attachedThread () const;
-
-        Result attachToThread (Thread *);
+        [[nodiscard]]
+        Result attachToThread (Thread *) const;
 
         template<typename EventType>
         Result event (EventType &);
 
+        std::string objectName () const;
+        void setObjectName (const std::string &);
+        NX_SIGNAL(objectNameChanged, std::string);
+
+        NX_SIGNAL(destroyed)
     protected:
         void _generateSignal (Signal && signal, int priority = 0) const;
         Thread * _getLocalThread () const;
-        void _reattachToLocalThread ();
-        void _reattachToThread (Thread *);
-
+        void _reattachToLocalThread () const;
+        void _reattachToThread (Thread *) const;
         ConnectionInfo * _getConnectionInfo () const;
     private:
-        Thread * local_thread;
-        std::unique_ptr<ConnectionInfo> connection_info;
 
-    public:
-        template<typename Sender, typename Signal, typename Receiver, typename Slot>
-        static bool Connect (Sender * sender, Signal && signal, Receiver * receiver, Slot && slot, uint8_t flags = Connection::Auto);
-
-        template<typename Sender, typename Signal, typename ... Args>
-        static void Emit (Sender * sender, Signal signal, Args&&...);
+        class Impl;
+        Impl * impl;
     };
 
     template <typename EventType>
@@ -58,8 +69,8 @@ namespace nx {
 
 #define void_cast(val) reinterpret_cast<void *>(val)
 
-    template<typename Sender, typename Signal, typename Receiver, typename Slot>
-    bool Object::Connect (Sender * sender, Signal && signal, Receiver * receiver, Slot && slot, uint8_t flags)
+    template <typename Sender, typename Signal, typename Receiver, typename Slot>
+    bool connect(Sender* sender, Signal&& signal, Receiver* receiver, Slot&& slot, uint8_t flags)
     {
         Functor sig_func (sender, signal);
         Functor slot_func (receiver, slot);
@@ -92,8 +103,15 @@ namespace nx {
         return true;
     }
 
+    template <typename Sender, typename Signal, typename Receiver, typename Slot>
+    bool connect(Sender* sender, Signal&& signal, Receiver* receiver, Slot&& slot)
+    {
+        return connect(sender, signal, receiver, slot, Connection::Auto);
+    }
+
+
     template <typename Sender, typename Signal, typename ... Args>
-    void Object::Emit(Sender* sender, Signal signal, Args&&... args)
+    void emit(Sender* sender, Signal signal, Args&&... args)
     {
         static_assert(std::is_base_of<Object, Sender>::value, "Sender object must be a specialisation of nx::Object");
         Object * sender_obj = static_cast<Object *>(sender);

@@ -70,19 +70,37 @@ nx::Result nx::MainDispatcher::execute() {
 
     while (running) {
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
-        // nxDebug("Scanning signals");
 
-        if (g_exitSignals > 0) {
-            nxDebug("Received exit signal");
-            int count = g_exitSignals.exchange(0);
-            for (int i = 0; i < count; i++)
-            {
-                nx::App::Quit();
-                running.store(false);
-            }
-        }
+        _scanExitSignals();
+        _rotateTimers();
+        _scanInputChars();
     }
     return Result::Ok();
+}
+
+nx::TimerId nx::MainDispatcher::addTimer(TimerType type, Duration dur, detail::timer_callback_t cb)
+{
+    TimerId out;
+    switch (type)
+    {
+    case TimerType::SingleShot:
+        out = timerWheel.add_singleshot(std::chrono::duration_cast<Milliseconds>(dur), cb);
+        break;
+    case TimerType::Periodic:
+        out = timerWheel.add_periodic(std::chrono::duration_cast<Milliseconds>(dur), cb);
+        break;
+    default:
+        out = detail::invalid_timer;
+    }
+
+    return out;
+}
+
+nx::Result nx::MainDispatcher::cancelTimer(TimerId id)
+{
+    if (timerWheel.cancel_timer(id))
+        return Result::Ok();
+    return Result::Err("Failure canceling timer");
 }
 
 void nx::MainDispatcher::_installSignalHandlers() {
@@ -95,4 +113,30 @@ void nx::MainDispatcher::_installSignalHandlers() {
     for (int i = 0; i < std::ranges::size(g_catch_signals); i++) {
         install_signal_handler(g_catch_signals[i]);
     }
+}
+
+void nx::MainDispatcher::_scanExitSignals()
+{
+    if (g_exitSignals > 0) {
+        nxDebug("Received exit signal");
+        int count = g_exitSignals.exchange(0);
+        for (int i = 0; i < count; i++)
+        {
+            nx::App::Quit();
+            running.store(false);
+        }
+    }
+}
+
+void nx::MainDispatcher::_rotateTimers()
+{
+    thread_local TimePoint lastTime = Clock::now();
+    auto now = Clock::now();
+    timerWheel.process_time_elapsed(now - lastTime);
+    lastTime = now;
+}
+
+void nx::MainDispatcher::_scanInputChars()
+{
+
 }

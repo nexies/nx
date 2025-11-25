@@ -57,11 +57,11 @@ namespace nx
 
         bool waitForExit ();                //TODO: Wait until thread exists
 
-        static Thread * current ();
-        static Thread * fromCurrentThread ();
-        static ThreadId currentId ();
-        static Loop * currentLoop ();
-        static SignalQueue * currentQueue ();
+        static Thread * Current ();
+        static Thread * FromCurrentThread ();
+        static ThreadId CurrentId ();
+        static Loop * CurrentLoop ();
+        static SignalQueue * CurrentQueue ();
 
         Loop * loop () const;
         SignalQueue * queue();

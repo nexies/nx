@@ -7,6 +7,7 @@
 
 #include "nx/app/Loop.hpp"
 #include "nx/app/Thread.hpp"
+#include "nx/core/TimerWheel.h"
 
 namespace nx {
 
@@ -26,8 +27,19 @@ namespace nx {
     public:
         ~MainDispatcher() override = default;
         Result execute () override;
+
+        TimerId addTimer(TimerType, Duration, detail::timer_callback_t);
+        Result cancelTimer(TimerId);
+
     protected:
         void _installSignalHandlers ();
+
+        void _scanExitSignals ();
+        void _rotateTimers ();
+        void _scanInputChars ();
+
+    private:
+        TimerWheel<1024> timerWheel;
     };
 
 }

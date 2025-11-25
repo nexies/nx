@@ -81,7 +81,7 @@ void Connection::_transmitImpl(Signal&& s)
 
     auto dest_thread_id = s.destinationThreadId();
 
-    if (type == Auto && dest_thread_id == Thread::currentId())
+    if (type == Auto && dest_thread_id == Thread::CurrentId())
     {
         s.activate();
         return;
