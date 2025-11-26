@@ -16,10 +16,11 @@ namespace nx
     public:
         Loop ();
         ~Loop();
+
         virtual Result exec ();
 
-        Result processEvents ();
-        Result processEventsFor (Duration);
+        virtual Result processEvents ();
+        virtual Result processEventsFor (Duration);
         Result processEventsUntil (TimePoint);
 
         Result exit ();
@@ -31,9 +32,9 @@ namespace nx
         void flush ();
 
     protected:
-        std::atomic<bool> running;
-        std::atomic<bool> sleeping;
-        std::atomic<bool> interrupt;
+        bool running {false};
+        bool sleeping {false};
+        bool interrupt {false};
 
         bool _waitForSignals ();
         bool _waitForSignalsFor (Duration);

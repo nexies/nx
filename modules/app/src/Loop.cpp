@@ -33,13 +33,13 @@ Result Loop::exec()
     queue = thread->queue();
 
     //TODO: pre loop procedures
-    running.store(true);
+    running = true;
     while (running)
     {
         // processEventsFor(Seconds(1));
         processEvents();
     }
-    running.store(false);
+    running = false;
 
     //TODO: post loop procedures
 
@@ -84,7 +84,7 @@ Result Loop::processEventsUntil(TimePoint t)
 Result Loop::exit()
 {
     nxDebug("Loop will exit");
-    running.store(false);
+    running = false;
     return Result::Ok();
 }
 
@@ -113,9 +113,9 @@ bool Loop::_waitForSignals()
     if (queue->hasPendingSignals())
         return true;
 
-    sleeping.store(true);
+    sleeping = true;
     queue->waitForSignals();
-    sleeping.store(false);
+    sleeping = false;
     return queue->hasPendingSignals();
 }
 
@@ -126,9 +126,9 @@ bool Loop::_waitForSignalsFor(Duration dur)
     if (queue->hasPendingSignals())
          return true;
 
-    sleeping.store(true);
+    sleeping = true;
     queue->waitForSignals(dur);
-    sleeping.store(false);
+    sleeping = false;
     return queue->hasPendingSignals();
 }
 
@@ -168,12 +168,12 @@ void Loop::_exitImpl(int code)
 {
     nxTrace("Loop::_exitImpl");
     flush();
-    running.store(false, std::memory_order_relaxed);
-    interrupt.store(true, std::memory_order_relaxed);
+    running = false;//, std::memory_order_relaxed);
+    interrupt = true;//, std::memory_order_relaxed);
     exit_code = code;
 }
 
 void Loop::_interruptImpl()
 {
-    interrupt.store(true, std::memory_order_relaxed);
+    interrupt = true; //, std::memory_order_relaxed);
 }

@@ -5,24 +5,72 @@
 #ifndef DISPATCHER_HPP
 #define DISPATCHER_HPP
 
+#include <boost/asio/io_service.hpp>
+
 #include "nx/app/Loop.hpp"
 #include "nx/app/Thread.hpp"
 #include "nx/core/TimerWheel.h"
 
 namespace nx {
 
-    class ListenLoop : public Loop {
+    class PollService {
     public:
-        Result exec() override;
+        virtual ~PollService() = default;
+
+        virtual Result init ();
+        virtual Result cleanup ();
+
+        virtual bool isInit() const;
+        virtual bool initFailed () const;
+
+        virtual size_t poll ();
+        virtual size_t poll_for (Duration dur);
+        virtual bool poll_one() = 0;
     };
 
-    class Dispatcher : public Thread {
+    class BoostPollService : public PollService {
     public:
-        Result execute() override;
-    protected:
+        explicit BoostPollService (boost::asio::io_service& io_service);
+        bool poll_one () override;
+    private:
+        boost::asio::io_service& io_service;
     };
 
-    class MainDispatcher final : public Dispatcher {
+    class SystemSignalPollService final : public  PollService {
+        static std::atomic_int s_exit_signals;
+        static std::atomic_int s_abort_signals;
+        static void system_signal_handler (int signal);
+        Result _installSignalHandler ();
+    public:
+        Result init () override;
+        Result cleanup () override;
+        bool poll_one () override;
+    private:
+        bool is_init { false };
+    };
+
+    // TODO: class TimersPollService final : public  PollService {};
+
+    class PollLoop final : public Loop {
+        std::set<std::shared_ptr<PollService>> services;
+        // Duration single_poll_duration { Milliseconds(16) }; // ~ 60 times per second
+        Duration single_poll_duration { Milliseconds(1000) }; // ~ 60 times per second
+    public:
+        PollLoop () = default;
+        Result processEvents() override;
+
+        bool addService (std::shared_ptr<PollService> service);
+        bool removeService (std::shared_ptr<PollService> service);
+    };
+
+    class PollThread final : public Thread {
+        PollLoop loop;
+    public:
+        PollThread (PollLoop && loop);
+        Result execute () override;
+    };
+
+    class MainDispatcher final : public Thread {
 
     public:
         ~MainDispatcher() override = default;

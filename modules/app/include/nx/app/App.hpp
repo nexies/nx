@@ -91,7 +91,8 @@ namespace nx {
             spdlog::level::level_enum log_level =  spdlog::level::debug;
         } m_preferences;
 
-        MainDispatcher * m_dispatcher { nullptr };
+        // MainDispatcher * m_dispatcher { nullptr };
+        PollThread * m_poll_thread { nullptr };
     };
 }
 

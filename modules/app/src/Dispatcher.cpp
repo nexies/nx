@@ -10,24 +10,24 @@
 #include "csignal"
 #include "nx/app/App.hpp"
 
-std::atomic_uint32_t g_exitSignals { 0 };
-std::atomic_uint32_t g_abortSignals { 0 };
+std::atomic_uint32_t g_exitSignals{0};
+std::atomic_uint32_t g_abortSignals{0};
 
-const int g_catch_signals [] =
-    {
-        SIGINT,
-        SIGABRT,
-        SIGTERM,
-        SIGHUP,
-        SIGQUIT,
-        SIGKILL,
+const int g_catch_signals[] =
+{
+    SIGINT,
+    // SIGABRT,
+    // SIGTERM,
+    // SIGHUP,
+    // SIGQUIT,
+    // SIGKILL,
+    //
+    // SIGILL,
+    // SIGFPE,
+    // SIGSEGV,
+};
 
-        SIGILL,
-        SIGFPE,
-        SIGSEGV,
-    };
-
-void signal_handler (int signal) {
+void signal_handler(int signal) {
     switch (signal) {
         case SIGINT:
         case SIGABRT:
@@ -47,21 +47,161 @@ void signal_handler (int signal) {
     }
 }
 
-nx::Result nx::ListenLoop::exec() {
-    return Loop::exec();
+nx::Result nx::PollService::init() {
+    return Result::Ok();
 }
 
-nx::Result nx::Dispatcher::execute() {
-    // do pre-main loop procedures
+nx::Result nx::PollService::cleanup() {
+    return Result::Ok();
+}
 
-    // enter main loop
-    // while (running)
-    //      iterate through EventListeners
-    //      react to each event in a corresponding routine
-    //      generate signal according the event
+bool nx::PollService::isInit() const {
+    return true;
+}
 
+bool nx::PollService::initFailed() const {
+    return false;
+}
 
-    return Thread::execute();
+size_t nx::PollService::poll() {
+    size_t result = 0;
+    while (poll_one())
+        ++result;
+    return result;
+}
+
+size_t nx::PollService::poll_for(Duration dur) {
+    TimePoint deadline = Clock::now() + dur;
+    size_t result = 0;
+    while (poll_one() and Clock::now() < deadline) {
+        ++result;
+    }
+    return result;
+}
+
+nx::BoostPollService::BoostPollService(boost::asio::io_service &io_service) :
+    io_service(io_service)
+{
+
+}
+
+bool nx::BoostPollService::poll_one(){
+    try {
+        io_service.poll_one();
+    } catch (boost::system::system_error &e) {
+        nxError("BoostPollService::poll_one() failed: {}", e.what());
+        return false;
+    } catch (std::exception &e) {
+        nxError("BoostPollService::poll_one() failed: {}", e.what());
+        return false;
+    } catch ( ... ) {
+        nxError("BoostPollService::poll_one() failed: unknown exception");
+        return false;
+    }
+    return true;
+
+}
+
+std::atomic_int nx::SystemSignalPollService::s_abort_signals { 0 };
+std::atomic_int nx::SystemSignalPollService::s_exit_signals { 0 };
+
+void nx::SystemSignalPollService::system_signal_handler(int signal) {
+    switch (signal) {
+        case SIGINT:
+        case SIGABRT:
+        case SIGTERM:
+        case SIGHUP:
+        case SIGQUIT:
+        case SIGKILL:
+            s_exit_signals.fetch_add(1, std::memory_order_release);
+            break;
+        case SIGILL:
+        case SIGFPE:
+        case SIGSEGV:
+            s_abort_signals.fetch_add(1, std::memory_order_release);
+            break;
+        default:
+            std::cerr << "Received unhandled signal " << signal << std::endl;
+    }
+}
+
+nx::Result nx::SystemSignalPollService::_installSignalHandler() {
+    for (int i = 0; i < std::ranges::size(g_catch_signals); i++) {
+        auto res = std::signal(g_catch_signals[i], system_signal_handler);
+        if (res == SIG_ERR) {
+            static char errbuf [1024];
+            psignal(g_catch_signals[i], errbuf);
+            return Result::Err(errbuf);
+        }
+    }
+    return Result::Ok();
+}
+
+nx::Result nx::SystemSignalPollService::init() {
+    return _installSignalHandler();
+}
+
+nx::Result nx::SystemSignalPollService::cleanup() {
+    return PollService::cleanup();
+}
+
+bool nx::SystemSignalPollService::poll_one() {
+    if (s_exit_signals.load(std::memory_order_acquire)) {
+        s_exit_signals.fetch_sub(1, std::memory_order_release);
+        nx::App::Quit();
+        return true;
+    }
+
+    if (s_abort_signals.load(std::memory_order_acquire)) {
+        s_abort_signals.fetch_sub(1, std::memory_order_release);
+        nx::App::Exit(123);
+        return true;
+    }
+    return false;
+}
+
+nx::Result nx::PollLoop::processEvents() {
+    nxTrace("PollLoop::processEvents()");
+    auto poll_duration = single_poll_duration / services.size();
+    auto deadline = Clock::now() + single_poll_duration;
+    for (auto & service: services) {
+        service->poll_for(poll_duration);
+    }
+
+    auto res = Loop::processEvents();
+    std::this_thread::sleep_until(deadline);
+    return res;
+}
+
+bool nx::PollLoop::addService(std::shared_ptr<PollService> service) {
+    if (services.contains(service))
+        return false;
+
+    auto res = service->init();
+    if (res) {
+        services.insert(std::move(service));
+        return true;
+    }
+    nxError("Failed to add poll service: {}", res.get_err().str());
+    return false;
+}
+
+bool nx::PollLoop::removeService(std::shared_ptr<PollService> service) {
+    if (!services.contains(service))
+        return false;
+    service->cleanup();
+    services.erase(service);
+    return true;
+}
+
+nx::PollThread::PollThread(PollLoop && loop) :
+    loop(std::forward<PollLoop>(loop))
+{
+}
+
+nx::Result nx::PollThread::execute() {
+    nxDebug("PollThread start");
+    return loop.exec();
 }
 
 nx::Result nx::MainDispatcher::execute() {
@@ -78,34 +218,30 @@ nx::Result nx::MainDispatcher::execute() {
     return Result::Ok();
 }
 
-nx::TimerId nx::MainDispatcher::addTimer(TimerType type, Duration dur, detail::timer_callback_t cb)
-{
+nx::TimerId nx::MainDispatcher::addTimer(TimerType type, Duration dur, detail::timer_callback_t cb) {
     TimerId out;
-    switch (type)
-    {
-    case TimerType::SingleShot:
-        out = timerWheel.add_singleshot(std::chrono::duration_cast<Milliseconds>(dur), cb);
-        break;
-    case TimerType::Periodic:
-        out = timerWheel.add_periodic(std::chrono::duration_cast<Milliseconds>(dur), cb);
-        break;
-    default:
-        out = detail::invalid_timer;
+    switch (type) {
+        case TimerType::SingleShot:
+            out = timerWheel.add_singleshot(std::chrono::duration_cast<Milliseconds>(dur), cb);
+            break;
+        case TimerType::Periodic:
+            out = timerWheel.add_periodic(std::chrono::duration_cast<Milliseconds>(dur), cb);
+            break;
+        default:
+            out = detail::invalid_timer;
     }
 
     return out;
 }
 
-nx::Result nx::MainDispatcher::cancelTimer(TimerId id)
-{
+nx::Result nx::MainDispatcher::cancelTimer(TimerId id) {
     if (timerWheel.cancel_timer(id))
         return Result::Ok();
     return Result::Err("Failure canceling timer");
 }
 
 void nx::MainDispatcher::_installSignalHandlers() {
-
-    auto install_signal_handler= [] (int signal) {
+    auto install_signal_handler = [](int signal) {
         // nxTrace("Installing signal handler for signal {}", signal);
         std::signal(signal, signal_handler);
     };
@@ -115,28 +251,23 @@ void nx::MainDispatcher::_installSignalHandlers() {
     }
 }
 
-void nx::MainDispatcher::_scanExitSignals()
-{
+void nx::MainDispatcher::_scanExitSignals() {
     if (g_exitSignals > 0) {
         nxDebug("Received exit signal");
         int count = g_exitSignals.exchange(0);
-        for (int i = 0; i < count; i++)
-        {
+        for (int i = 0; i < count; i++) {
             nx::App::Quit();
             running.store(false);
         }
     }
 }
 
-void nx::MainDispatcher::_rotateTimers()
-{
+void nx::MainDispatcher::_rotateTimers() {
     thread_local TimePoint lastTime = Clock::now();
     auto now = Clock::now();
     timerWheel.process_time_elapsed(now - lastTime);
     lastTime = now;
 }
 
-void nx::MainDispatcher::_scanInputChars()
-{
-
+void nx::MainDispatcher::_scanInputChars() {
 }

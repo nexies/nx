@@ -102,19 +102,21 @@ void nx::App::Abort() {
 
 nx::TimerId nx::App::AddTimer(TimerType type, Duration dur, detail::timer_callback_t cb)
 {
-    auto self = _Self();
-    if (!self->m_dispatcher)
-        return detail::invalid_timer;
+    // auto self = _Self();
+    // if (!self->m_dispatcher)
+        // return detail::invalid_timer;
 
-    return self->m_dispatcher->addTimer(type, dur, std::move(cb));
+    // return self->m_dispatcher->addTimer(type, dur, std::move(cb));
+    return 0;
 }
 
 nx::Result nx::App::CancelTimer(TimerId timerId)
 {
-    auto self = _Self();
-    if (!self->m_dispatcher)
-        return Result::Err("Dispatcher is not initialized");
-    return self->m_dispatcher->cancelTimer(timerId);
+//    auto self = _Self();
+//     if (!self->m_dispatcher)
+//         return Result::Err("Dispatcher is not initialized");
+//     return self->m_dispatcher->cancelTimer(timerId);
+    return Result::Ok();
 }
 
 nx::Result nx::App::AddProgramOptions(const options_description &desc) {
@@ -166,21 +168,22 @@ nx::Result nx::App::_makeMainThread(){
         return Result::Ok();
     }
 
-
-    sigset_t set;
-    sigemptyset(&set);
-    sigaddset(&set, SIGINT);
-    sigaddset(&set, SIGTERM);
-    sigaddset(&set, SIGQUIT);
-    pthread_sigmask(SIG_BLOCK, &set, nullptr);
+    //
+    // sigset_t set;
+    // sigemptyset(&set);
+    // sigaddset(&set, SIGINT);
+    // sigaddset(&set, SIGTERM);
+    // sigaddset(&set, SIGQUIT);
+    // pthread_sigmask(SIG_BLOCK, &set, nullptr);
 
     return Result::Err("Failed to create main thread");
 }
 
 nx::Result nx::App::_makeDispatcher() {
-    m_dispatcher = new MainDispatcher;
-    m_dispatcher->start();
-    return Result::Ok();
+    PollLoop pollLoop;
+    pollLoop.addService(std::make_shared<SystemSignalPollService>());
+    m_poll_thread = new PollThread(std::move(pollLoop));
+    m_poll_thread->start();
 }
 
 nx::Result nx::App::_parseOptions(int argc, char *argv[]) {
