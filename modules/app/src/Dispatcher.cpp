@@ -106,7 +106,8 @@ std::atomic_int nx::SystemSignalPollService::s_abort_signals { 0 };
 std::atomic_int nx::SystemSignalPollService::s_exit_signals { 0 };
 
 void nx::SystemSignalPollService::system_signal_handler(int signal) {
-    std::cerr << "Received signal " << signal << std::endl;
+    // std::cerr << "Received signal " << signal << std::endl;
+    nxInfo("Received {}", strsignal(signal));
     switch (signal) {
         case SIGINT:
         case SIGABRT:
@@ -165,7 +166,7 @@ nx::PollLoop::PollLoop(std::set<std::shared_ptr<PollService>>& services) :
     Loop (),
     services(services)
 {
-    setWaitDuration(Milliseconds(1000));
+    setWaitDuration(Milliseconds(30));
 }
 
 nx::Result nx::PollLoop::exec()
@@ -209,21 +210,6 @@ nx::Result nx::PollLoop::processEvents() {
 
     return res;
 }
-
-// bool nx::PollLoop::addService(std::shared_ptr<PollService> service) {
-//
-//
-//
-// }
-//
-// bool nx::PollLoop::removeService(std::shared_ptr<PollService> service) {
-//     if (!services.contains(service))
-//         return false;
-//
-//     service->cleanup();
-//     services.erase(service);
-//     return true;
-// }
 
 bool nx::PollLoop::_doServicePoll(std::shared_ptr<PollService>& service, Duration timeout)
 {
