@@ -41,7 +41,9 @@ namespace nx
         [[nodiscard]]
         NativeThreadId getNativeId () const;
 
-        bool pushSignal (Signal && signal, int priority);
+        // bool pushSignal (Signal && signal, int priority);
+
+        bool schedule (Signal && signal, int priority = 0);
 
         bool isRunning () const;
         bool isSleeping () const;
@@ -51,6 +53,7 @@ namespace nx
 
         void quit ();
         void exit (int);
+        void exitAndWait (int);
         void terminate ();                  //TODO: Terminate the working thread
 
         NX_SIGNAL(aboutToQuit)

@@ -61,16 +61,17 @@ namespace nx {
     private:
         App();
         Result _init (int argc, char * argv[]);
-        Result _makeMainThread ();
-        Result _makeDispatcher ();
         Result _parseOptions (int argc, char * argv[]);
         Result _readDotEnvFile ();
         Result _createLogger (); // <- params ?
+        Result _makeMainThread ();
+        Result _makeDispatcher ();
         Result _createEventLoop ();
         void _printAppInfo () const;
         Result _startEventLoop ();
         void _closeThreads ();
 
+        NX_SIGNAL(_signalForExit, int)
         void _exit(int code);
 
     private:
@@ -87,8 +88,8 @@ namespace nx {
             boost::program_options::variables_map options;
             path env_file {application_name + ".env"};
             path log_file {application_name + ".log"};
-            // spdlog::level::level_enum log_level = spdlog::level::trace;
-            spdlog::level::level_enum log_level =  spdlog::level::debug;
+            spdlog::level::level_enum log_level = spdlog::level::trace;
+            // spdlog::level::level_enum log_level =  spdlog::level::debug;
         } m_preferences;
 
         // MainDispatcher * m_dispatcher { nullptr };

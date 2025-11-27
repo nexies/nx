@@ -7,9 +7,6 @@ add_library(nx_app
         src/Connection.cpp
         src/Dispatcher.cpp
         src/nxapp.cpp
-        include/nx/app/Timer.hpp
-        src/Timer.cpp
-        include/nx/app/detail/property_defs.hpp
 )
 
 find_package(spdlog REQUIRED)

@@ -27,7 +27,7 @@ Signal::Signal() :
 ThreadId Signal::destinationThreadId() const
 {
     if (receiver)
-        return receiver->attachedThreadId();
+        return receiver->threadId();
     return detail::g_invalidThreadId;
 }
 

@@ -35,9 +35,9 @@ namespace nx {
         virtual ~Object ();
 
         [[nodiscard]]
-        ThreadId attachedThreadId () const;
+        ThreadId threadId () const;
         [[nodiscard]]
-        Thread * attachedThread () const;
+        Thread * thread () const;
         [[nodiscard]]
         Result attachToThread (Thread *) const;
 
@@ -47,10 +47,12 @@ namespace nx {
         std::string objectName () const;
         void setObjectName (const std::string &);
         NX_SIGNAL(objectNameChanged, std::string);
-
         NX_SIGNAL(destroyed)
+
     protected:
-        void _generateSignal (Signal && signal, int priority = 0) const;
+        // void _schedule(Signal && signal, int priority = 0) const;
+        // void _generateSignal (Signal && signal, int priority = 0) const;
+
         Thread * _getLocalThread () const;
         void _reattachToLocalThread () const;
         void _reattachToThread (Thread *) const;

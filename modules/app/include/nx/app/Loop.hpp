@@ -31,10 +31,13 @@ namespace nx
 
         void flush ();
 
+        void setWaitDuration (Duration);
+        Duration waitDuration () const;
+
     protected:
-        bool running {false};
-        bool sleeping {false};
-        bool interrupt {false};
+        std::atomic_bool running {false};
+        std::atomic_bool sleeping {false};
+        std::atomic_bool interrupt {false};
 
         bool _waitForSignals ();
         bool _waitForSignalsFor (Duration);
@@ -46,10 +49,14 @@ namespace nx
         void _exitImpl (int code);
         void _interruptImpl ();
 
+        void _installLoopOntoThread();
+        void _uninstallLoopFromThread();
+
     private:
         SignalQueue * queue;
         Loop * underlying_loop { nullptr };
         int exit_code { 0 };
+        Duration wait_duration { 0 };
     };
 }
 

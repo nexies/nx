@@ -50,6 +50,7 @@ namespace nx {
         template<typename... Args>
         void transmit (Args&&...);
 
+
         [[nodiscard]] bool isUnique () const;
         [[nodiscard]] bool isSingleShot () const;
         [[nodiscard]] bool isBlocking () const;

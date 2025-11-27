@@ -73,24 +73,16 @@ int nx::App::Exec() {
 }
 
 void nx::App::Exit(int code) {
-    nxDebug("App::Exit()");
+    nxDebug("App::Exit called");
+    nxTrace("App::Exit(), code {}", code);
     auto self = _Self();
 
     /*emit*/ self->aboutToQuit();
 
-    self->_generateSignal(Signal::Custom(self, &App::_exit, code), 0);
+    // self->_generateSignal(Signal::Custom(self, &App::_exit, code), 0);
+    nxTrace("emit signal for exit", code);
+    self->_signalForExit(code);
 }
-
-// void nx::App::Exit(const Result & res) {
-//     if (!res) { // <- is error
-//         std::cerr << "Exiting with error: " << res.get_err().str() << " (code:" << res.get_err().code() << ")" << std::endl;
-//         std::exit(res.get_err().code());
-//     }
-//     else {
-//         std::cout << "Exiting with success: " << res.get_ok().str() << " (code:" << res.get_ok().code() << ")" << std::endl;
-//         std::exit(res.get_ok().code());
-//     }
-// }
 
 void nx::App::Quit() {
     Exit(0);
@@ -165,8 +157,10 @@ nx::Result nx::App::_makeMainThread(){
     if (thread)
     {
         _reattachToThread(thread);
+        nx::connect (this, &App::_signalForExit, this, &App::_exit, nx::Connection::Queued | nx::Connection::Unique);
         return Result::Ok();
     }
+
 
     //
     // sigset_t set;
@@ -180,10 +174,11 @@ nx::Result nx::App::_makeMainThread(){
 }
 
 nx::Result nx::App::_makeDispatcher() {
-    PollLoop pollLoop;
-    pollLoop.addService(std::make_shared<SystemSignalPollService>());
-    m_poll_thread = new PollThread(std::move(pollLoop));
+    m_poll_thread = new PollThread();
+    m_poll_thread->addService(std::make_shared<SystemSignalPollService>());
     m_poll_thread->start();
+
+    return Result::Ok();
 }
 
 nx::Result nx::App::_parseOptions(int argc, char *argv[]) {
@@ -209,10 +204,10 @@ nx::Result nx::App::_createLogger() {
     else
         return Result::Err("Failed to create console log sink");
 
-    // if (auto const trace_sink = std::make_shared<stdout_color_sink_mt>(); trace_sink)
-    // {
-    //     trace_sink->set_color_mode(spdlog::color_mode::always);
-    // }
+    if (auto const trace_sink = std::make_shared<stdout_color_sink_mt>(); trace_sink)
+    {
+        trace_sink->set_color_mode(spdlog::color_mode::always);
+    }
 
     if (auto const file_sink = std::make_shared<basic_file_sink_mt>(m_preferences.log_file); file_sink)
     {
@@ -226,7 +221,11 @@ nx::Result nx::App::_createLogger() {
     auto logger = std::make_shared<spdlog::logger>(MAIN_LOGGER_NAME, combined);
     logger->set_level(m_preferences.log_level);
     auto formatter = std::make_unique<spdlog::pattern_formatter>();
-    formatter->add_flag<ThreadFormaterFlag>('T').set_pattern("[%Y-%m-%d %H:%M:%S] [%n] ["/*%t|*/"tid:%T] [%^%l%$] %v (%s:%#)");
+    if (m_preferences.log_level == spdlog::level::trace)
+        formatter->add_flag<ThreadFormaterFlag>('T').set_pattern("[%Y-%m-%d %H:%M:%S] [%n] ["/*%t|*/"tid:%T] [%^%l%$] %v (%!)");
+    else
+        formatter->add_flag<ThreadFormaterFlag>('T').set_pattern("[%Y-%m-%d %H:%M:%S] [%n] ["/*%t|*/"tid:%T] [%^%l%$] %v (%s:%#)");
+
     logger->set_formatter(std::move(formatter));
     // logger->set_pattern("[%Y-%m-%d %H:%M:%S] [%n] [%t] [%^%l%$] %v (%s:%#)");
     spdlog::set_default_logger(logger);
@@ -248,13 +247,19 @@ void nx::App::_printAppInfo() const {
 }
 
 nx::Result nx::App::_startEventLoop() {
+
+    // PollLoop loop;
+    // loop.setWaitDuration(Milliseconds(1));
+    // loop.addService(std::make_shared<SystemSignalPollService>());
+    // return loop.exec();
+
     Loop loop;
     return loop.exec();
 }
 
 void nx::App::_closeThreads()
 {
-    nxDebug("Closing all threads ({})", detail::ThreadInfo::Instance().threadCount());
+    nxTrace("Closing all threads ({})", detail::ThreadInfo::Instance().threadCount());
     detail::ThreadInfo::Instance().exitAllThreads();
     detail::ThreadInfo::Instance().waitForAllThreadsExit();
 }
@@ -262,6 +267,8 @@ void nx::App::_closeThreads()
 void nx::App::_exit(int code)
 {
     auto self = _Self();
+    nxTrace("App::_exit");
+    nxTrace("App attached thread id {}", self->threadId());
     self->_closeThreads();
 }
 

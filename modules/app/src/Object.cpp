@@ -61,11 +61,19 @@ public:
         return Result::Ok();
     }
 
-    Result pushSignal(Signal&& signal, int priority = 0) const
+    // Result pushSignal(Signal&& signal, int priority = 0) const
+    // {
+    //     if (!local_thread)
+    //         return Result::Err("pushSignal(): object is not attached to a thread");
+    //     local_thread->pushSignal(std::move(signal), priority);
+    //     return Result::Ok();
+    // }
+
+    Result localThreadSchedule (Signal && signal, int priority) const
     {
         if (!local_thread)
             return Result::Err("pushSignal(): object is not attached to a thread");
-        local_thread->pushSignal(std::move(signal), priority);
+        local_thread->schedule(std::move(signal), priority);
         return Result::Ok();
     }
 
@@ -97,12 +105,12 @@ Object::~Object()
     delete impl;
 }
 
-ThreadId Object::attachedThreadId() const
+ThreadId Object::threadId() const
 {
     return impl->localThreadId();
 }
 
-Thread * Object::attachedThread() const {
+Thread * Object::thread() const {
     return impl->localThread();
 }
 
@@ -125,11 +133,16 @@ void Object::setObjectName(const std::string& name)
     impl->setObjectName(name);
 }
 
-void Object::_generateSignal(Signal&& signal, int priority) const
-{
-    if (auto res = impl->pushSignal(std::move(signal), priority); !res)
-        nxWarning("_generateSignal: {}", res.get_err().str());
-}
+// void Object::_schedule(Signal&& signal, int priority) const
+// {
+//     auto res = impl->localThreadSchedule(std::forward<Signal>(signal), priority);
+// }
+
+// void Object::_generateSignal(Signal&& signal, int priority) const
+// {
+//     if (auto res = impl->pushSignal(std::move(signal), priority); !res)
+//         nxWarning("_generateSignal: {}", res.get_err().str());
+// }
 
 Thread* Object::_getLocalThread() const
 {

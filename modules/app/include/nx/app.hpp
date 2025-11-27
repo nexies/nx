@@ -8,6 +8,7 @@
 #include "nx/core/Result.hpp"
 
 #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE
+#define SPDLOG_FUNCTION static_cast<const char *>(__PRETTY_FUNCTION__)
 #include <spdlog/spdlog.h>
 
 #define nxTrace(...)    SPDLOG_LOGGER_TRACE(::spdlog::default_logger(), __VA_ARGS__)

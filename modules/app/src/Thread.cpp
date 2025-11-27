@@ -113,15 +113,30 @@ namespace nx::detail
 
     void ThreadInfoInstance::exitAllThreads()
     {
+        auto local_id = Thread::CurrentId();
+        nxTrace("exitAllThreads. Local ID: {}", local_id);
         for (auto [id, thread] : threads_by_id)
-            thread->exit(0);
+        {
+            // if (local_id != id)
+            // {
+                nxTrace("closing thread id {}", id);
+                // thread->exit(0);
+                thread->exit(0);
+            // }
+        }
     }
 
     void ThreadInfoInstance::waitForAllThreadsExit()
     {
+        auto local_id = Thread::CurrentId();
+        nxTrace("waitForAllThreadsExit. Local ID: {}", local_id);
         for (auto [id, thread] : threads_by_id)
         {
-            thread->waitForExit();
+            if (local_id != id)
+            {
+                nxTrace("wait for exit id {}", id);
+                thread->waitForExit();
+            }
         }
     }
 }
@@ -171,10 +186,9 @@ NativeThreadId Thread::getNativeId() const
     return native_id;
 }
 
-
-bool Thread::pushSignal(Signal&& signal, int priority)
+bool Thread::schedule(Signal && signal, int priority)
 {
-    return signal_queue.pushSignal(std::move(signal), priority);
+    return signal_queue.pushSignal(std::forward<Signal>(signal), priority);
 }
 
 bool Thread::isRunning() const
@@ -189,7 +203,7 @@ bool Thread::isSleeping() const
 
 void Thread::sleep(Duration duration)
 {
-    this-pushSignal(Signal::Sleep(this, duration), 10);
+    this->schedule(Signal::Sleep(this, duration), 10);
 }
 
 void Thread::sleepUntil(TimePoint t)
@@ -201,11 +215,23 @@ void Thread::sleepUntil(TimePoint t)
 
 void Thread::exit(int code)
 {
+    nxTrace("Thread[{}]::exit", getId());
     if (running)
     {
         aboutToQuit();
+        schedule(Signal::Exit(current_loop, code), 0);
+    }
+}
 
-        pushSignal(Signal::Exit(current_loop, code), 0);
+void Thread::exitAndWait(int code)
+{
+    nxTrace("Thread[{}]::exitAndWait", getId());
+    if (running)
+    {
+        aboutToQuit();
+        schedule(Signal::Exit(current_loop, code), 0);
+        thread->join();
+        thread.reset(nullptr);
     }
 }
 
@@ -297,11 +323,11 @@ Result Thread::_startExecute()
     try {
         res = this->execute();
     } catch (const nx::Exception & e) {
-        nxError("Exception while executing thread[id:{}]: %s", this->getId(), e.what());
+        nxError("Exception while executing thread {}: {}", this->getId(), e.what());
     } catch (const std::exception& e) {
-        nxError("Exception while executing thread[id:{}]: %s", this->getId(), e.what());
+        nxError("Exception while executing thread {}: {}", this->getId(), e.what());
     } catch ( ... ) {
-        nxError("Exception while executing thread[id:{}]", this->getId());
+        nxError("Exception while executing thread {}", this->getId());
     }
     running.store(false, std::memory_order_relaxed);
 

@@ -65,15 +65,15 @@ bool nx::PollService::initFailed() const {
 
 size_t nx::PollService::poll() {
     size_t result = 0;
-    while (poll_one())
+    while (pollOne())
         ++result;
     return result;
 }
 
-size_t nx::PollService::poll_for(Duration dur) {
+size_t nx::PollService::pollFor(Duration dur) {
     TimePoint deadline = Clock::now() + dur;
     size_t result = 0;
-    while (poll_one() and Clock::now() < deadline) {
+    while (pollOne() and Clock::now() < deadline) {
         ++result;
     }
     return result;
@@ -85,7 +85,7 @@ nx::BoostPollService::BoostPollService(boost::asio::io_service &io_service) :
 
 }
 
-bool nx::BoostPollService::poll_one(){
+bool nx::BoostPollService::pollOne(){
     try {
         io_service.poll_one();
     } catch (boost::system::system_error &e) {
@@ -106,6 +106,7 @@ std::atomic_int nx::SystemSignalPollService::s_abort_signals { 0 };
 std::atomic_int nx::SystemSignalPollService::s_exit_signals { 0 };
 
 void nx::SystemSignalPollService::system_signal_handler(int signal) {
+    std::cerr << "Received signal " << signal << std::endl;
     switch (signal) {
         case SIGINT:
         case SIGABRT:
@@ -145,7 +146,7 @@ nx::Result nx::SystemSignalPollService::cleanup() {
     return PollService::cleanup();
 }
 
-bool nx::SystemSignalPollService::poll_one() {
+bool nx::SystemSignalPollService::pollOne() {
     if (s_exit_signals.load(std::memory_order_acquire)) {
         s_exit_signals.fetch_sub(1, std::memory_order_release);
         nx::App::Quit();
@@ -160,48 +161,121 @@ bool nx::SystemSignalPollService::poll_one() {
     return false;
 }
 
-nx::Result nx::PollLoop::processEvents() {
-    nxTrace("PollLoop::processEvents()");
-    auto poll_duration = single_poll_duration / services.size();
-    auto deadline = Clock::now() + single_poll_duration;
-    for (auto & service: services) {
-        service->poll_for(poll_duration);
+nx::PollLoop::PollLoop(std::set<std::shared_ptr<PollService>>& services) :
+    Loop (),
+    services(services)
+{
+    setWaitDuration(Milliseconds(1000));
+}
+
+nx::Result nx::PollLoop::exec()
+{
+    nxTrace("PollLoop::exec() start");
+    for (auto & service: services)
+    {
+        nxTrace("PollLoop::exec() service init");
+        auto res = service->init();
+        if (!res)
+        {
+            nxError("Failed to initialize service");
+            return Result::Err("Failed to initialize service");
+        }
     }
 
-    auto res = Loop::processEvents();
-    std::this_thread::sleep_until(deadline);
+    nxTrace("PollLoop: Call to Loop::exec()");
+    auto rv = Loop::exec();
+
+    for (auto & service: services)
+    {
+        nxTrace("PollLoop::exec() service cleanup");
+        service->cleanup();
+    }
+    return rv;
+}
+
+nx::Result nx::PollLoop::processEvents() {
+    nxTrace("PollLoop::processEvents()");
+    auto poll_duration = waitDuration() / services.size();
+    auto deadline = Clock::now() + waitDuration();
+    for (auto & service: services) {
+        nxTrace("PollLoop::processEvents() - service poll");
+        service->pollFor(poll_duration);
+    }
+
+    auto res = Loop::processEventsUntil(deadline);
+
+    if (running and not interrupt)
+        std::this_thread::sleep_until(deadline);
+
     return res;
 }
 
-bool nx::PollLoop::addService(std::shared_ptr<PollService> service) {
-    if (services.contains(service))
-        return false;
+// bool nx::PollLoop::addService(std::shared_ptr<PollService> service) {
+//
+//
+//
+// }
+//
+// bool nx::PollLoop::removeService(std::shared_ptr<PollService> service) {
+//     if (!services.contains(service))
+//         return false;
+//
+//     service->cleanup();
+//     services.erase(service);
+//     return true;
+// }
 
-    auto res = service->init();
-    if (res) {
-        services.insert(std::move(service));
-        return true;
-    }
-    nxError("Failed to add poll service: {}", res.get_err().str());
-    return false;
-}
-
-bool nx::PollLoop::removeService(std::shared_ptr<PollService> service) {
-    if (!services.contains(service))
-        return false;
-    service->cleanup();
-    services.erase(service);
-    return true;
-}
-
-nx::PollThread::PollThread(PollLoop && loop) :
-    loop(std::forward<PollLoop>(loop))
+bool nx::PollLoop::_doServicePoll(std::shared_ptr<PollService>& service, Duration timeout)
 {
+    if(!service->isInit() && !service->initFailed())
+    {
+        try
+        {
+            service->init();
+        } catch ( ... )
+        {
+            return false;
+        }
+    }
+}
+
+nx::PollThread::PollThread() :
+    Thread()
+{
+
 }
 
 nx::Result nx::PollThread::execute() {
+    PollLoop loop (services);
     nxDebug("PollThread start");
-    return loop.exec();
+    auto res = loop.exec();
+    nxDebug("PollThread finish");
+    return res;
+}
+
+bool nx::PollThread::addService(std::shared_ptr<PollService> service)
+{
+    if (isRunning())
+        return false;
+
+    if (services.contains(service))
+        return false;
+    services.insert(service);
+    return true;
+
+}
+
+bool nx::PollThread::removeService(std::shared_ptr<PollService> service)
+{
+    if (isRunning())
+        return false;
+
+    if (!services.contains(service))
+        return false;
+
+    service->cleanup();
+    services.erase(service);
+    return true;
 }
 
 nx::Result nx::MainDispatcher::execute() {

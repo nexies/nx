@@ -33,6 +33,7 @@ Connection::Connection(FunctorPtr functor, void* sender, void* signal, void* rec
         flags(flags),
         object_receiver(object_receiver)
 {
+
 }
 
 bool Connection::isUnique() const
@@ -73,15 +74,16 @@ size_t Connection::getId() const
 void Connection::_transmitImpl(Signal&& s)
 {
     // TODO: have to have much more logic than this
+    auto dest_thread_id = s.destinationThreadId();
+    nxTrace("signal dest thread = {}, conn_type = {}", dest_thread_id, (int)type);
     if (type == Direct)
     {
         s.activate();
         return;
     }
 
-    auto dest_thread_id = s.destinationThreadId();
 
-    if (type == Auto && dest_thread_id == Thread::CurrentId())
+    if ((type == Auto) and (dest_thread_id == Thread::CurrentId()))
     {
         s.activate();
         return;
@@ -92,7 +94,9 @@ void Connection::_transmitImpl(Signal&& s)
         nxWarning("Destination thread [{}] for signal does not exist!", dest_thread_id);
         return;
     }
-    thread->pushSignal(std::move(s), 0);
+
+    nxTrace("redirecting signal into thread {}", thread->getId());
+    thread->schedule(std::move(s));
 }
 
 

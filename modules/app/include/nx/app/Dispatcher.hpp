@@ -24,14 +24,14 @@ namespace nx {
         virtual bool initFailed () const;
 
         virtual size_t poll ();
-        virtual size_t poll_for (Duration dur);
-        virtual bool poll_one() = 0;
+        virtual size_t pollFor (Duration dur);
+        virtual bool pollOne() = 0;
     };
 
     class BoostPollService : public PollService {
     public:
         explicit BoostPollService (boost::asio::io_service& io_service);
-        bool poll_one () override;
+        bool pollOne () override;
     private:
         boost::asio::io_service& io_service;
     };
@@ -44,7 +44,7 @@ namespace nx {
     public:
         Result init () override;
         Result cleanup () override;
-        bool poll_one () override;
+        bool pollOne () override;
     private:
         bool is_init { false };
     };
@@ -52,22 +52,29 @@ namespace nx {
     // TODO: class TimersPollService final : public  PollService {};
 
     class PollLoop final : public Loop {
-        std::set<std::shared_ptr<PollService>> services;
-        // Duration single_poll_duration { Milliseconds(16) }; // ~ 60 times per second
-        Duration single_poll_duration { Milliseconds(1000) }; // ~ 60 times per second
+        std::set<std::shared_ptr<PollService>> & services;
+        // // Duration single_poll_duration { Milliseconds(16) }; // ~ 60 times per second
+        // Duration single_poll_duration { Milliseconds(1000) }; // ~ 60 times per second
     public:
-        PollLoop () = default;
+        PollLoop (std::set<std::shared_ptr<PollService>> & services);
+        Result exec () override;
         Result processEvents() override;
 
-        bool addService (std::shared_ptr<PollService> service);
-        bool removeService (std::shared_ptr<PollService> service);
+        // bool addService (std::shared_ptr<PollService> service);
+        // bool removeService (std::shared_ptr<PollService> service);
+
+    private:
+        bool _doServicePoll (std::shared_ptr<PollService> & service, Duration timeout);
     };
 
     class PollThread final : public Thread {
-        PollLoop loop;
+        std::set<std::shared_ptr<PollService>> services;
     public:
-        PollThread (PollLoop && loop);
+        PollThread ();
         Result execute () override;
+
+        bool addService (std::shared_ptr<PollService> service);
+        bool removeService (std::shared_ptr<PollService> service);
     };
 
     class MainDispatcher final : public Thread {
@@ -78,6 +85,9 @@ namespace nx {
 
         TimerId addTimer(TimerType, Duration, detail::timer_callback_t);
         Result cancelTimer(TimerId);
+
+
+
 
     protected:
         void _installSignalHandlers ();
