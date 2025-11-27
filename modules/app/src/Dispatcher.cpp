@@ -16,10 +16,10 @@ std::atomic_uint32_t g_abortSignals{0};
 const int g_catch_signals[] =
 {
     SIGINT,
-    // SIGABRT,
-    // SIGTERM,
-    // SIGHUP,
-    // SIGQUIT,
+    SIGABRT,
+    SIGTERM,
+    SIGHUP,
+    SIGQUIT,
     // SIGKILL,
     //
     // SIGILL,
