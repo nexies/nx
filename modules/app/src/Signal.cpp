@@ -72,6 +72,11 @@ Signal Signal::NullSignal()
     return Signal();
 }
 
+void Signal::operator()() const
+{
+    activate();
+}
+
 SignalQueue::SignalQueue(size_t max_size) :
     max_size(max_size)
 {

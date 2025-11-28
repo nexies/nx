@@ -59,6 +59,7 @@ namespace nx {
 
         [[nodiscard]]
         ThreadId destinationThreadId () const;
+
         void activate () const;
 
         static Signal Quit (Loop * loop);
@@ -78,6 +79,8 @@ namespace nx {
 
         template<typename Class, typename... Args, std::enable_if_t<not std::is_base_of<Object, Class>::value, int> = 0>
         static Signal Custom(Class* c, Args... args);
+
+        void operator () () const;
     };
 
     template <typename ... Args>

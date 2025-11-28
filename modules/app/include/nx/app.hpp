@@ -35,6 +35,7 @@ namespace nx {
 
     using ThreadId          = size_t;
     using NativeThreadId    = std::thread::id;
+    using ThreadHandle      = std::thread::native_handle_type;
     using TimerId           = size_t;
 
     enum class TimerType
