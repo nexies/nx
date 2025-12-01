@@ -7,8 +7,6 @@ add_library(nx_app
         src/Connection.cpp
         src/Dispatcher.cpp
         src/nxapp.cpp
-        include/nx/app/ThreadContext.hpp
-        src/ThreadContext.cpp
 )
 
 find_package(spdlog REQUIRED)

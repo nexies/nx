@@ -6,6 +6,7 @@
 #define RESULT_HPP
 
 #include <type_traits>
+#include <utility>
 #include <variant>
 #include <optional>
 #include <utility>
@@ -136,22 +137,24 @@ namespace nx
     namespace common {
         struct common_result_t {
         protected:
-            const char * _str;
+            // const char * _str;
+            std::string _str;
             int32_t _code;
         public:
-            common_result_t(int32_t code, const char * str) : _str(str), _code(code) {};
-            int32_t code () { return _code; }
-            const char * str () { return _str; }
+            common_result_t(int32_t code, std::string str) : _str(std::move(str)), _code(code) {};
+            int32_t code () const { return _code; }
+            const char * str () const { return _str.data(); }
         };
 
         struct common_ok_t : public common_result_t {
-            common_ok_t(const char * str = "Success") : common_result_t(0, str) {};
+            common_ok_t(const std::string & str = "Success") : common_result_t(0, str) {};
             common_ok_t(int32_t code) : common_result_t(code, "Success") {};
             common_ok_t(int32_t code, const char * str) : common_result_t(code, str) {}
         };
 
         struct common_err_t : public common_result_t {
-            common_err_t(const char * str) : common_result_t(-1, str) {};
+            common_err_t(const char * str) : common_result_t(-1, str) {}
+            common_err_t(const std::string & str = "Error") : common_result_t(-1, str) {};
             common_err_t(int32_t code) : common_result_t(code, "Error") {};
             common_err_t(int32_t code, const char * str) : common_result_t(code, str) {}
         };

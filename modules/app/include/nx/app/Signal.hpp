@@ -101,65 +101,51 @@ namespace nx {
         return Signal(nullptr, nx::make_invoker(c, args...));
     }
 
-    class SignalQueue {
-    public:
-        struct Entry
-        {
-            int priority { 0 };
-            Signal signal;
-            bool operator < (const Entry& other) const { return priority < other.priority; }
-
-            // Entry() : signal(Signal::NullSignal()), priority(-1) {}
-
-            // Entry& operator = (const Entry& other) = delete;
-            // Entry (const Entry& other) = delete;
-            // Entry& operator = (Entry && other)
-            // {
-            //     this->signal = std::move(other.signal);
-            //     priority = other.priority;
-            //     return *this;
-            // }
-            // Entry(Entry && other)
-            // {
-            //     *this = std::move(other);
-            // }
-        };
-        using queue_type = std::priority_queue<Entry>;
-
-        SignalQueue (size_t max_size);
-        ~SignalQueue();
-
-        Entry getNext ();
-        bool pushSignal (Signal && signal, int priority);
-        bool waitForSignals ();
-        bool waitForSignals (Duration dur);
-
-        size_t count () const;
-        bool hasPendingSignals () const;
-
-    private:
-        queue_type queue { };
-        std::mutex mutex { };
-        std::condition_variable cv { };
-        std::atomic_bool accepting_signals { true };
-        size_t max_size { 0 };
-    };
-
-
-    template<typename SignalType, typename... Args>
-    Result emit_signal(SignalType signal, Args&&... args) {
-        return Result::Err("Signal mechanism is not yet implemented");
-
-        /// calculate hash by passed arguments?... + signal function address ??
-        ///
-        /// I CAN DO static_cast<something<Args...>> here.
-        /// Connection has to be type-definible by only passed arguments
-        /// plan:
-        /// - get Functor(s) from Connection object(s)
-        ///     - Functor is stored as FunctorBase. Need to cast it to correct type
-        /// - create Invoker with Functor and arguments
-        /// - pass Invoker into the event loop according to the connection policy
-    }
+    // class SignalQueue {
+    // public:
+    //     struct Entry
+    //     {
+    //         int priority { 0 };
+    //         Signal signal;
+    //         bool operator < (const Entry& other) const { return priority < other.priority; }
+    //
+    //     };
+    //     using queue_type = std::priority_queue<Entry>;
+    //
+    //     SignalQueue (size_t max_size);
+    //     ~SignalQueue();
+    //
+    //     Entry getNext ();
+    //     bool pushSignal (Signal && signal, int priority);
+    //     bool waitForSignals ();
+    //     bool waitForSignals (Duration dur);
+    //
+    //     size_t count () const;
+    //     bool hasPendingSignals () const;
+    //
+    // private:
+    //     queue_type queue { };
+    //     std::mutex mutex { };
+    //     std::condition_variable cv { };
+    //     std::atomic_bool accepting_signals { true };
+    //     size_t max_size { 0 };
+    // };
+    //
+    //
+    // template<typename SignalType, typename... Args>
+    // Result emit_signal(SignalType signal, Args&&... args) {
+    //     return Result::Err("Signal mechanism is not yet implemented");
+    //
+    //     /// calculate hash by passed arguments?... + signal function address ??
+    //     ///
+    //     /// I CAN DO static_cast<something<Args...>> here.
+    //     /// Connection has to be type-definible by only passed arguments
+    //     /// plan:
+    //     /// - get Functor(s) from Connection object(s)
+    //     ///     - Functor is stored as FunctorBase. Need to cast it to correct type
+    //     /// - create Invoker with Functor and arguments
+    //     /// - pass Invoker into the event loop according to the connection policy
+    // }
 
 }
 

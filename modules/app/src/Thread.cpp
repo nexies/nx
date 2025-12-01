@@ -143,8 +143,8 @@ namespace nx::detail
 
 Thread::Thread() :
     Object (),
-    id (detail::g_invalidThreadId),
-    signal_queue(1024)
+    id (detail::g_invalidThreadId)
+    // signal_queue(1024)
 {
     id = detail::ThreadInfo::Instance().registerThread(this);
     // _reattachToLocalThread();
@@ -188,7 +188,8 @@ NativeThreadId Thread::getNativeId() const
 
 bool Thread::schedule(Signal && signal, int priority)
 {
-    return signal_queue.pushSignal(std::forward<Signal>(signal), priority);
+    boost::asio::post(io_context, [signal] () { signal.activate(); });
+    return true;
 }
 
 bool Thread::isRunning() const
@@ -219,7 +220,7 @@ void Thread::exit(int code)
     if (running)
     {
         aboutToQuit();
-        schedule(Signal::Exit(current_loop, code), 0);
+        schedule(Signal::Exit(loop(), code), 0);
     }
 }
 
@@ -229,7 +230,7 @@ void Thread::exitAndWait(int code)
     if (running)
     {
         aboutToQuit();
-        schedule(Signal::Exit(current_loop, code), 0);
+        schedule(Signal::Exit(loop(), code), 0);
         thread->join();
         thread.reset(nullptr);
     }
@@ -278,23 +279,33 @@ ThreadId Thread::CurrentId()
 
 Loop* Thread::CurrentLoop()
 {
-    return Current()->current_loop;
+    return Current()->loop();
 }
 
-SignalQueue* Thread::CurrentQueue()
+Thread::Context& Thread::CurrentContext()
 {
-    return Current()->queue();
+    return Current()->context();
 }
+
+// SignalQueue* Thread::CurrentQueue()
+// {
+//     return Current()->queue();
+// }
 
 Loop* Thread::loop() const
 {
-    return current_loop;
+    return _topLoop();
 }
 
-SignalQueue* Thread::queue()
+Thread::Context& Thread::context()
 {
-    return & signal_queue;
+    return io_context;
 }
+
+// SignalQueue* Thread::queue()
+// {
+//     return & signal_queue;
+// }
 
 void Thread::_sleepImpl(Duration dur)
 {
@@ -337,6 +348,13 @@ Result Thread::_startExecute()
         return Result::Err("Failed to unregister thread native id");
     }
     return res;
+}
+
+Loop* Thread::_topLoop() const
+{
+    if (loops.empty())
+        return nullptr;
+    return loops.top();
 }
 
 LocalThread::LocalThread() :

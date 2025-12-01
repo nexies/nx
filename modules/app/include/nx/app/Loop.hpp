@@ -5,6 +5,9 @@
 #ifndef LOOP_HPP
 #define LOOP_HPP
 
+#include <boost/asio/executor_work_guard.hpp>
+#include <boost/asio/io_context.hpp>
+
 #include "nx/app/Signal.hpp"
 #include "nx/app/Object.hpp"
 
@@ -42,8 +45,8 @@ namespace nx
         bool _waitForSignals ();
         bool _waitForSignalsFor (Duration);
 
-        bool _processSingleEntry (SignalQueue::Entry & entry) const;
-        bool _redirectEntry (SignalQueue::Entry & entry) const;
+        // bool _processSingleEntry (SignalQueue::Entry & entry) const;
+        // bool _redirectEntry (SignalQueue::Entry & entry) const;
 
         void _quitImpl ();
         void _exitImpl (int code);
@@ -53,7 +56,7 @@ namespace nx
         void _uninstallLoopFromThread();
 
     private:
-        SignalQueue * queue;
+        // SignalQueue * queue;
         Loop * underlying_loop { nullptr };
         int exit_code { 0 };
         Duration wait_duration { 0 };

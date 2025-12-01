@@ -12,6 +12,7 @@
 
 #include <filesystem>
 #include <boost/program_options.hpp>
+#include <boost/asio/signal_set.hpp>
 
 namespace nx {
     using options_description = boost::program_options::options_description;
@@ -94,6 +95,7 @@ namespace nx {
 
         // MainDispatcher * m_dispatcher { nullptr };
         PollThread * m_poll_thread { nullptr };
+        // boost::asio::signal_set m_signal;
     };
 }
 

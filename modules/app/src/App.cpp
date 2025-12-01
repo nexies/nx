@@ -174,9 +174,27 @@ nx::Result nx::App::_makeMainThread(){
 }
 
 nx::Result nx::App::_makeDispatcher() {
-    m_poll_thread = new PollThread();
-    m_poll_thread->addService(std::make_shared<SystemSignalPollService>());
-    m_poll_thread->start();
+
+    auto & context = this->thread()->context();
+    auto signal = new boost::asio::signal_set(thread()->context(), SIGINT, SIGTERM);
+
+    signal->async_wait([] (const boost::system::error_code & err, int signal)
+    {
+        if (!err) {
+            // A signal occurred.
+            std::cout << "Received signal: " << signal << std::endl;
+            // Perform cleanup or graceful shutdown here.
+            nx::App::Quit();
+        } else {
+            // An error occurred during signal wait.
+            std::cerr << "Signal wait error: " << err.message() << std::endl;
+        }
+    });
+
+    // m_signal = boost::asio::signal_set (thread()->context(), SIGINT, SIGTERM);
+    // m_poll_thread = new PollThread();
+    // m_poll_thread->addService(std::make_shared<SystemSignalPollService>());
+    // m_poll_thread->start();
 
     return Result::Ok();
 }

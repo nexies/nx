@@ -4,6 +4,8 @@ endif()
 
 if (NX_BUILD_MODULE_CORE)
     add_subdirectory(core)
+    set(NX_BUILD_MODULE_CORE2 ON)
+    add_subdirectory(core2)
 endif ()
 
 if (NX_BUILD_MODULE_APP)
