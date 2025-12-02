@@ -57,7 +57,7 @@ namespace nx
 
     private:
         // SignalQueue * queue;
-        Loop * underlying_loop { nullptr };
+        // Loop * underlying_loop { nullptr };
         int exit_code { 0 };
         Duration wait_duration { 0 };
     };

@@ -26,6 +26,7 @@
 ///
 ///     signalName(1, 2, 3);
 ///
+///     signalName.emit(1, 3, 4); !!!!!
 ///
 ///
 ///     NX_SIGNAL(signalName, arg_type1, arg_type2, arg_type3) -->
@@ -70,4 +71,6 @@ void signalName (__NX_SIGNAL_MAKE_ARGUMENTS(__VA_ARGS__)) \
 
 #define NX_SIGNAL(signalName, ...) \
     __NX_SIGNAL_HELPER(signalName, __VA_ARGS__)
+
+
 #endif //SIGNAL_DEFS_HPP

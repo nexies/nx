@@ -12,8 +12,8 @@
 using namespace nx;
 
 Loop::Loop() :
-    Object(),
-    underlying_loop(nullptr)
+    Object()
+    // underlying_loop(nullptr)
     // queue { nullptr },
 {
     // _getLocalThread()->current_loop = this;
