@@ -78,6 +78,7 @@ void nx::App::Exit(int code) {
     auto self = _Self();
 
     /*emit*/ self->aboutToQuit();
+    // self->aboutToQuit.emit();
 
     // self->_generateSignal(Signal::Custom(self, &App::_exit, code), 0);
     nxTrace("emit signal for exit", code);
