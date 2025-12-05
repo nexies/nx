@@ -72,7 +72,8 @@ namespace nx
 
         // bool pushSignal (Signal && signal, int priority);
 
-        bool schedule(Signal&& signal, int priority = 0);
+        bool schedule(Signal&& signal);
+        bool schedule(Signal&& signal, Duration delay);
 
         bool isRunning() const;
         bool isSleeping() const;

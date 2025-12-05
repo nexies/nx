@@ -379,25 +379,22 @@ namespace nx
 
         template<typename Function, std::enable_if<FunctionDescriptor<Function>::Member, int>::type = 0>
         Callable(
-        typename FunctionDescriptor<Function>::MemberOf &&,
-        Function)
+            typename FunctionDescriptor<Function>::MemberOf &&,
+            Function)
         -> Callable<
-        FunctionRef<Function, typename FunctionDescriptor<Function>::InvokeArguments>,
-        true,
-        typename FunctionDescriptor<Function>::MemberOf,
-        typename FunctionDescriptor<Function>::Arguments>;
+            FunctionRef<Function, typename FunctionDescriptor<Function>::InvokeArguments>,
+            true,
+            typename FunctionDescriptor<Function>::MemberOf,
+            typename FunctionDescriptor<Function>::Arguments>;
 
         template<typename Invokable, std::enable_if<FunctionDescriptor<decltype(&Invokable::operator())>::Member, int>::type = 0>
         Callable(Invokable &&)
-        -> Callable<
-        FunctionRef<decltype(&Invokable::operator()), typename FunctionDescriptor<decltype(&Invokable::operator())>::InvokeArguments>,
-        true,
-        Invokable,
-        typename FunctionDescriptor<decltype(&Invokable::operator())>::Arguments>;
+            -> Callable<
+            FunctionRef<decltype(&Invokable::operator()), typename FunctionDescriptor<decltype(&Invokable::operator())>::InvokeArguments>,
+            true,
+            Invokable,
+            typename FunctionDescriptor<decltype(&Invokable::operator())>::Arguments>;
     }
-
-
-
 }
 
 #endif //CALLABLE_HPP

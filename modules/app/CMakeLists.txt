@@ -6,6 +6,7 @@ add_library(nx_app
         src/Signal.cpp
         src/Connection.cpp
         src/Dispatcher.cpp
+        src/Timer.cpp
         src/nxapp.cpp
 )
 

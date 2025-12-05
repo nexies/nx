@@ -1,6 +1,8 @@
 add_library(nx_core
         src/core.cpp
-#        include/nx/core/Callable.hpp
+        include/nx/core/Context.hpp
+        include/nx/core/Object.hpp
+        #        include/nx/core/Callable.hpp
 #        include/nx/core/Tuple.hpp
 )
 

@@ -73,7 +73,7 @@ public:
     {
         if (!local_thread)
             return Result::Err("pushSignal(): object is not attached to a thread");
-        local_thread->schedule(std::move(signal), priority);
+        local_thread->schedule(std::move(signal));
         return Result::Ok();
     }
 

@@ -186,7 +186,7 @@ NativeThreadId Thread::getNativeId() const
     return native_id;
 }
 
-bool Thread::schedule(Signal && signal, int priority)
+bool Thread::schedule(Signal && signal)
 {
     boost::asio::post(io_context, [signal] () { signal.activate(); });
     return true;
@@ -204,7 +204,7 @@ bool Thread::isSleeping() const
 
 void Thread::sleep(Duration duration)
 {
-    this->schedule(Signal::Sleep(this, duration), 10);
+    this->schedule(Signal::Sleep(this, duration));
 }
 
 void Thread::sleepUntil(TimePoint t)
@@ -220,7 +220,7 @@ void Thread::exit(int code)
     if (running)
     {
         aboutToQuit();
-        schedule(Signal::Exit(loop(), code), 0);
+        schedule(Signal::Exit(loop(), code));
     }
 }
 
@@ -230,7 +230,7 @@ void Thread::exitAndWait(int code)
     if (running)
     {
         aboutToQuit();
-        schedule(Signal::Exit(loop(), code), 0);
+        schedule(Signal::Exit(loop(), code));
         thread->join();
         thread.reset(nullptr);
     }
