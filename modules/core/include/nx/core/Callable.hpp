@@ -237,12 +237,12 @@ namespace nx
         class FunctionRef;
 
         template <typename Invokable, typename... Args>
-        class FunctionRef<Invokable, Tuple<Args...>>
+        class FunctionRef<Invokable, Tuple<Args...>> : public FunctionDescriptor<Invokable>
         {
             using Desc = detail::FunctionDescriptor<Invokable>;
             using Pointer = typename Desc::Pointer;
             Pointer f;
-
+        public:
             using Return = typename Desc::Return;
 
         public:
@@ -271,69 +271,133 @@ namespace nx
             typename detail::FunctionDescriptor<Invokable>::InvokeArguments
         >;
 
-        template<typename Invokable, bool isStrong, bool isMember, typename ArgsTuple>
+        // template<typename Invokable, bool isStrong, bool isMember, typename ArgsTuple>
+        // class Callable;
+        //
+        // template<typename Invokable, bool isStrongT, typename ... Args>
+        // class Callable<Invokable, isStrongT, false, Tuple<Args...>> : public FunctionRef<Invokable, Tuple<Args...>>
+        // {
+        //     using Base = FunctionRef<Invokable, Tuple<Args...>>;
+        // public:
+        //     Callable(typename Base::Pointer f) : Base(f) {}
+        //     constexpr bool isStrong() const { return false; }
+        // };
+        //
+        // template<typename Invokable, typename ... Args>
+        // class Callable<Invokable, false, true, Tuple<Args...>> :
+        //     protected FunctionRef<Invokable, Tuple<typename FunctionDescriptor<Invokable>::MemberOf *, Args...>>
+        // {
+        //     using Class = typename FunctionDescriptor<Invokable>::MemberOf;
+        //     using Base = FunctionRef<Invokable, Tuple<Class*, Args...>>;
+        //
+        //     Class & o;
+        // public:
+        //     Callable(std::reference_wrapper<Class> o, typename Base::Pointer f) : Base(f), o(o.get()) {}
+        //     constexpr bool isStrong() const { return false; }
+        //
+        //     typename Base::Return operator () (Args... args)
+        //     {
+        //         return Tuple{&o, args...}.apply_to(this->f);
+        //     }
+        // };
+        //
+        // template<typename Invokable, typename ... Args>
+        // class Callable<Invokable, true, true, Tuple<Args...>> :
+        // protected FunctionRef<Invokable, Tuple<typename FunctionDescriptor<Invokable>::MemberOf *, Args...>>
+        // {
+        //     using Class = typename FunctionDescriptor<Invokable>::MemberOf;
+        //     using Base = FunctionRef<Invokable, Tuple<Class*, Args...>>;
+        //
+        //     Class o;
+        // public:
+        //     Callable(Class && o, typename Base::Pointer f) : Base(f), o(std::move(o)) {}
+        //     constexpr bool isStrong() const { return true; }
+        //
+        //     typename Base::Return operator () (Args... args)
+        //     {
+        //         return Tuple{&o, args...}.apply_to(this->f);
+        //     }
+        // };
+        //
+        // template<typename Invokable, std::enable_if<not FunctionDescriptor<Invokable>::Member>>
+        // Callable(Invokable)
+        //     -> Callable<Invokable, false, false, typename FunctionDescriptor<Invokable>::InvokeArguments>;
+        //
+        // template<typename Invokable, std::enable_if<FunctionDescriptor<Invokable>::Member>>
+        // Callable (std::reference_wrapper<typename FunctionDescriptor<Invokable>::MemberOf>,
+        //          typename FunctionDescriptor<Invokable>::Pointer)
+        //     -> Callable<Invokable, false, true, typename FunctionDescriptor<Invokable>::Arguments>;
+        //
+        // template<typename Invokable, std::enable_if<FunctionDescriptor<Invokable>::Member>>
+        // Callable (typename FunctionDescriptor<Invokable>::MemberOf &&,
+        //         typename FunctionDescriptor<Invokable>::Pointer)
+        //     -> Callable<Invokable, true, true, typename FunctionDescriptor<Invokable>::Arguments>;
+
+        template<typename FunctionRefT, bool isMember, typename ...>
         class Callable;
 
-        template<typename Invokable, bool isStrongT, typename ... Args>
-        class Callable<Invokable, isStrongT, false, Tuple<Args...>> : public FunctionRef<Invokable, Tuple<Args...>>
+        // function callable
+        template<typename FunctionRefT>
+        class Callable<FunctionRefT, false> : public FunctionRefT
         {
-            using Base = FunctionRef<Invokable, Tuple<Args...>>;
         public:
-            Callable(typename Base::Pointer f) : Base(f) {}
-            constexpr bool isStrong() const { return false; }
+            Callable(FunctionRefT && f) : FunctionRefT(std::move(f)) {}
         };
 
-        template<typename Invokable, typename ... Args>
-        class Callable<Invokable, false, true, Tuple<Args...>> :
-            protected FunctionRef<Invokable, Tuple<typename FunctionDescriptor<Invokable>::MemberOf *, Args...>>
+        template<typename Function, std::enable_if<not FunctionDescriptor<Function>::Member, int>::type = 0>
+        Callable(Function) -> Callable<FunctionRef<Function, typename FunctionDescriptor<Function>::InvokeArguments>, false>;
+
+        // member function as reference
+        template<typename FunctionRefT, typename Class, typename ... CallArgs>
+        class Callable<FunctionRefT, true, Class, Tuple<CallArgs...>>
         {
-            using Class = typename FunctionDescriptor<Invokable>::MemberOf;
-            using Base = FunctionRef<Invokable, Tuple<Class*, Args...>>;
-
-            Class & o;
-        public:
-            Callable(std::reference_wrapper<Class> o, typename Base::Pointer f) : Base(f), o(o.get()) {}
-            constexpr bool isStrong() const { return false; }
-
-            typename Base::Return operator () (Args... args)
-            {
-                return Tuple{&o, args...}.apply_to(this->f);
-            }
-        };
-
-        template<typename Invokable, typename ... Args>
-        class Callable<Invokable, true, true, Tuple<Args...>> :
-        protected FunctionRef<Invokable, Tuple<typename FunctionDescriptor<Invokable>::MemberOf *, Args...>>
-        {
-            using Class = typename FunctionDescriptor<Invokable>::MemberOf;
-            using Base = FunctionRef<Invokable, Tuple<Class*, Args...>>;
+            using Return = typename FunctionRefT::Return;
+            using ClassDecay = std::remove_reference_t<Class>;
 
             Class o;
+            FunctionRefT f;
         public:
-            Callable(Class && o, typename Base::Pointer f) : Base(f), o(std::move(o)) {}
-            constexpr bool isStrong() const { return true; }
+            Callable(std::reference_wrapper<ClassDecay> o, FunctionRefT && f) : o(o.get()), f(std::move(f)) {}
+            Callable(ClassDecay && o, FunctionRefT && f) : o(std::move(o)), f(std::move(f)) {}
+            Callable(ClassDecay && o) : Callable(std::forward<ClassDecay>(o), &ClassDecay::operator()) {}
 
-            typename Base::Return operator () (Args... args)
+            Return operator () (CallArgs ... args)
             {
-                return Tuple{&o, args...}.apply_to(this->f);
+                return Tuple<ClassDecay*, CallArgs...>{&o, args...}.apply_to(f);
             }
         };
 
-        template<typename Invokable, std::enable_if<not FunctionDescriptor<Invokable>::Member>>
-        Callable(Invokable)
-            -> Callable<Invokable, false, false, typename FunctionDescriptor<Invokable>::InvokeArguments>;
+        template<typename Function, std::enable_if<FunctionDescriptor<Function>::Member, int>::type = 0>
+        Callable(
+            std::reference_wrapper<typename FunctionDescriptor<Function>::MemberOf>,
+            Function)
+        -> Callable<
+            FunctionRef<Function, typename FunctionDescriptor<Function>::InvokeArguments>,
+            true,
+            typename FunctionDescriptor<Function>::MemberOf &,
+            typename FunctionDescriptor<Function>::Arguments>;
 
-        template<typename Invokable, std::enable_if<FunctionDescriptor<Invokable>::Member>>
-        Callable (std::reference_wrapper<typename FunctionDescriptor<Invokable>::MemberOf>,
-                 typename FunctionDescriptor<Invokable>::Pointer)
-            -> Callable<Invokable, false, true, typename FunctionDescriptor<Invokable>::Arguments>;
+        template<typename Function, std::enable_if<FunctionDescriptor<Function>::Member, int>::type = 0>
+        Callable(
+        typename FunctionDescriptor<Function>::MemberOf &&,
+        Function)
+        -> Callable<
+        FunctionRef<Function, typename FunctionDescriptor<Function>::InvokeArguments>,
+        true,
+        typename FunctionDescriptor<Function>::MemberOf,
+        typename FunctionDescriptor<Function>::Arguments>;
 
-        template<typename Invokable, std::enable_if<FunctionDescriptor<Invokable>::Member>>
-        Callable (typename FunctionDescriptor<Invokable>::MemberOf &&,
-                typename FunctionDescriptor<Invokable>::Pointer)
-            -> Callable<Invokable, true, true, typename FunctionDescriptor<Invokable>::Arguments>;
-
+        template<typename Invokable, std::enable_if<FunctionDescriptor<decltype(&Invokable::operator())>::Member, int>::type = 0>
+        Callable(Invokable &&)
+        -> Callable<
+        FunctionRef<decltype(&Invokable::operator()), typename FunctionDescriptor<decltype(&Invokable::operator())>::InvokeArguments>,
+        true,
+        Invokable,
+        typename FunctionDescriptor<decltype(&Invokable::operator())>::Arguments>;
     }
+
+
+
 }
 
 #endif //CALLABLE_HPP
