@@ -1,9 +1,13 @@
 add_library(nx_core
         src/core.cpp
-        include/nx/core/Callable.hpp
-        include/nx/core/Tuple.hpp
-
+#        include/nx/core/Callable.hpp
+#        include/nx/core/Tuple.hpp
 )
+
+#target_sources(nx_core PUBLIC
+#    FILE_SET CXX_MODULES FILES
+#        src/reflect.cppm
+#)
 
 include(nxMakeModule)
 nx_make_module(

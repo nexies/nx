@@ -69,7 +69,7 @@ function(nx_make_module)
         add_library(${_alias} ALIAS ${_t})
     endif()
 
-#    target_compile_features(${_t} PUBLIC cxx_std_${NX_CXX_STANDARD})
+    target_compile_options(${_t} PUBLIC -std=c++${NX_CXX_STANDARD})
 
     nx_make_module_version(NAME ${_name})
 

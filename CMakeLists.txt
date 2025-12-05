@@ -10,7 +10,7 @@ set (NX_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 set (NX_NAMESPACE nx)
 set (NX_EXPORT_SET nxTargets)
 set (NX_INSTALL_INCLUDEDIR include/nx)
-set (NX_CXX_STANDARD 20)
+set (NX_CXX_STANDARD 26)
 set (NX_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 option (NX_BUILD_MODULE_CORE "Build nx::core module" ON)

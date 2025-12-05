@@ -17,6 +17,18 @@ namespace nx
         static constexpr std::size_t size = 0;
 
         Tuple() = default;
+
+        template<typename F>
+        decltype(auto) apply_to(F&& f) &&
+        {
+            return std::invoke(std::forward<F>(f));
+        }
+
+        template<typename F>
+        decltype(auto) apply_to(F&& f) &
+        {
+            return std::invoke(std::forward<F>(f));
+        }
     };
 
     template<typename Head, typename... Tail>

@@ -6,6 +6,8 @@
 #define CORE_HPP
 #include <string>
 
+#include "../../../../../../src/reflect-test/reflect"
+
 namespace nx::core
 {
     std::string version ();
