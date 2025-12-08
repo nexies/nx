@@ -26,4 +26,7 @@
 #define NX_TO_STRING(...) __NX_TO_STRING_(__VA_ARGS__)
 #define NX_TO_STRING_FLAT(v) #v
 
+#define __NX_APPLY_(macro, ...) macro(__VA_ARGS__)
+#define NX_APPLY(...) __NX_APPLY_(__VA_ARGS__)
+
 #endif //PLATFORM_HPP

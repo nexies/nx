@@ -52,6 +52,8 @@
 #define __NX_COMMA_HELPER_1(m, n, ...) m(n, __VA_ARGS__)
 #define __NX_COMMA_HELPER_(c, m, n, ...) NX_CONCAT(__NX_COMMA_HELPER_, c)(m, n, __VA_ARGS__)
 
+#define __NX_NO_COMMA_HELPER(c, m, n, ...) m(n, __VA_ARGS__)
+
 #define __NX_REPEAT_(count, macro, ...) \
     NX_REPEAT_WITH_HELPER(count, __NX_COMMA_HELPER_, macro, __VA_ARGS__)
 
@@ -66,6 +68,11 @@
 /// Generate sequences like _1, _2, _3, _4, ... _n
 #define NX_PLACEHOLDERS(count) \
     NX_REPEAT(count, NX_RCONCAT, _)
+
+#define __NX_REPEAT_NO_COMMA_(count, macro, ...) \
+    NX_REPEAT_WITH_HELPER(count, __NX_NO_COMMA_HELPER, macro, __VA_ARGS__)
+
+#define NX_REPEAT_NO_COMMA(...) __NX_REPEAT_NO_COMMA_(__VA_ARGS__)
 
 #define __NX_MAKE_SEQ_MACRO(n) n
 

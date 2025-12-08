@@ -70,4 +70,6 @@ void signalName (__NX_SIGNAL_MAKE_ARGUMENTS(__VA_ARGS__)) \
 
 #define NX_SIGNAL(signalName, ...) \
     __NX_SIGNAL_HELPER(signalName, __VA_ARGS__)
+
+#define NX_EMIT(signalName, ...) signalName( __VA_ARGS__ )
 #endif //SIGNAL_DEFS_HPP

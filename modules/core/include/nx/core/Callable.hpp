@@ -338,15 +338,23 @@ namespace nx
         class Callable;
 
         // function callable
-        template<typename FunctionRefT>
-        class Callable<FunctionRefT, false> : public FunctionRefT
+        template<typename FunctionRefT, typename ... CallArgs>
+        class Callable<FunctionRefT, false, Tuple<CallArgs...>>
         {
+            FunctionRefT f;
+            using Return = typename FunctionRefT::Return;
         public:
-            Callable(FunctionRefT && f) : FunctionRefT(std::move(f)) {}
+            explicit Callable(FunctionRefT && f) : f(std::move(f)) {}
+
+            Return operator()(CallArgs... args)
+            {
+                return Tuple<CallArgs...>{args...}.apply_to(f);
+            }
         };
 
         template<typename Function, std::enable_if<not FunctionDescriptor<Function>::Member, int>::type = 0>
-        Callable(Function) -> Callable<FunctionRef<Function, typename FunctionDescriptor<Function>::InvokeArguments>, false>;
+        Callable(Function) -> Callable<FunctionRef<Function, typename FunctionDescriptor<Function>::InvokeArguments>,
+                                        false, typename FunctionDescriptor<Function>::InvokeArguments>;
 
         // member function as reference
         template<typename FunctionRefT, typename Class, typename ... CallArgs>
@@ -360,7 +368,7 @@ namespace nx
         public:
             Callable(std::reference_wrapper<ClassDecay> o, FunctionRefT && f) : o(o.get()), f(std::move(f)) {}
             Callable(ClassDecay && o, FunctionRefT && f) : o(std::move(o)), f(std::move(f)) {}
-            Callable(ClassDecay && o) : Callable(std::forward<ClassDecay>(o), &ClassDecay::operator()) {}
+            explicit Callable(ClassDecay && o) : Callable(std::forward<ClassDecay>(o), &ClassDecay::operator()) {}
 
             Return operator () (CallArgs ... args)
             {

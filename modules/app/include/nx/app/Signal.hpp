@@ -146,20 +146,6 @@ namespace nx {
     //     /// - create Invoker with Functor and arguments
     //     /// - pass Invoker into the event loop according to the connection policy
     // }
-
-    class Connection;
-    template<typename ... Args>
-    struct SignalEmitter {
-    private:
-        std::vector<Connection *> connections;
-
-    public:
-        void emit(Args... args);
-        void connect();
-        void disconnect();
-    };
-
-
 }
 
 #endif //SIGNAL_HPP
