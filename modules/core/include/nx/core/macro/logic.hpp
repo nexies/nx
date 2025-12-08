@@ -22,7 +22,7 @@
 #define __NX_AND_11 1
 
 #define __NX_XOR(a, b) __NX_XOR_(a, b)
-#define __XN_XOR_(a, b) NX_CONCAT(__NX_XOR_, NX_CONCAT(a, b))
+#define __NX_XOR_(a, b) NX_CONCAT(__NX_XOR_, NX_CONCAT(a, b))
 #define __NX_XOR_00 0
 #define __NX_XOR_01 1
 #define __NX_XOR_10 1

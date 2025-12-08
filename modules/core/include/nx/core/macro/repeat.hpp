@@ -7,6 +7,8 @@
 
 #include "platform.hpp"
 
+// clang-tidy: -cppcoreguidelines-avoid-non-const-global-variables
+
 #define NX_REPEAT_MAX_COUNT 32
 
 #define __NX_REPEAT_0(c, h, m, ...)

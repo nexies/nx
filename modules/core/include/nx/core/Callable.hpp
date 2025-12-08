@@ -333,18 +333,30 @@ namespace nx
         //         typename FunctionDescriptor<Invokable>::Pointer)
         //     -> Callable<Invokable, true, true, typename FunctionDescriptor<Invokable>::Arguments>;
 
+        template<typename ... Args>
+        struct CallableInput {
+            virtual ~CallableInput() = default;
+            virtual void call (Args... args) = 0;
+        };
+
+        template<typename ... Args>
+        using CallableInputPtr = std::shared_ptr<CallableInput<Args...>>;
 
         template<typename FunctionRefT, bool isMember, typename ...>
         class Callable;
 
         // function callable
         template<typename FunctionRefT, typename ... CallArgs>
-        class Callable<FunctionRefT, false, Tuple<CallArgs...>>
+        class Callable<FunctionRefT, false, Tuple<CallArgs...>> : public CallableInput<CallArgs...>
         {
             FunctionRefT f;
             using Return = typename FunctionRefT::Return;
         public:
             explicit Callable(FunctionRefT && f) : f(std::move(f)) {}
+
+            void call(CallArgs... args) override {
+                operator()(args...);
+            }
 
             Return operator()(CallArgs... args)
             {
@@ -358,7 +370,7 @@ namespace nx
 
         // member function as reference
         template<typename FunctionRefT, typename Class, typename ... CallArgs>
-        class Callable<FunctionRefT, true, Class, Tuple<CallArgs...>>
+        class Callable<FunctionRefT, true, Class, Tuple<CallArgs...>> :  public CallableInput<CallArgs...>
         {
             using Return = typename FunctionRefT::Return;
             using ClassDecay = std::remove_reference_t<Class>;
@@ -369,6 +381,10 @@ namespace nx
             Callable(std::reference_wrapper<ClassDecay> o, FunctionRefT && f) : o(o.get()), f(std::move(f)) {}
             Callable(ClassDecay && o, FunctionRefT && f) : o(std::move(o)), f(std::move(f)) {}
             explicit Callable(ClassDecay && o) : Callable(std::forward<ClassDecay>(o), &ClassDecay::operator()) {}
+
+            void call(CallArgs... args) override {
+                operator() (args...);
+            }
 
             Return operator () (CallArgs ... args)
             {

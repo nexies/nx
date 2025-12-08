@@ -4,7 +4,7 @@ add_library(nx_core
         include/nx/core/Object.hpp
         include/nx/core/macro/logic.hpp
         include/nx/core/macro/argname.hpp
-        include/nx/core/Connection.hpp
+        include/nx/core/Signal.hpp
         #        include/nx/core/Callable.hpp
 #        include/nx/core/Tuple.hpp
 )
