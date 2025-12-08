@@ -333,6 +333,7 @@ namespace nx
         //         typename FunctionDescriptor<Invokable>::Pointer)
         //     -> Callable<Invokable, true, true, typename FunctionDescriptor<Invokable>::Arguments>;
 
+
         template<typename FunctionRefT, bool isMember, typename ...>
         class Callable;
 

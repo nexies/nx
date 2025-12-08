@@ -89,8 +89,8 @@ namespace nx {
             boost::program_options::variables_map options;
             path env_file {application_name + ".env"};
             path log_file {application_name + ".log"};
-            // spdlog::level::level_enum log_level = spdlog::level::trace;
-            spdlog::level::level_enum log_level =  spdlog::level::debug;
+            spdlog::level::level_enum log_level = spdlog::level::trace;
+            // spdlog::level::level_enum log_level =  spdlog::level::debug;
         } m_preferences;
 
         // MainDispatcher * m_dispatcher { nullptr };

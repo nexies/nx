@@ -10,11 +10,12 @@ set (NX_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 set (NX_NAMESPACE nx)
 set (NX_EXPORT_SET nxTargets)
 set (NX_INSTALL_INCLUDEDIR include/nx)
-set (NX_CXX_STANDARD 26)
+set (NX_CXX_STANDARD 20)
 set (NX_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 option (NX_BUILD_MODULE_CORE "Build nx::core module" ON)
 option (NX_BUILD_MODULE_APP "Build nx::app module" ON)
+option (NX_ENABLE_CXX_20_FEATURES "Enable std::c++20 features" ON)
 option (NX_BUILD_TESTS "Build tests" OFF)
 
 list (APPEND CMAKE_MODULE_PATH "${NX_MODULE_PATH}")
