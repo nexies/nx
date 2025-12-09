@@ -27,6 +27,8 @@ namespace nx
 
         bool start();
         bool start(Duration dur);
+        bool startNow();
+        bool startNow(Duration dur);
 
         void stop ();
 

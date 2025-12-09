@@ -40,6 +40,22 @@ bool Timer::start(Duration dur)
     return _set();
 }
 
+bool Timer::startNow()
+{
+    auto ret = start();
+    if (ret)
+        this->timeout();
+    return ret;
+}
+
+bool Timer::startNow(Duration dur)
+{
+    auto ret = start(dur);
+    if (ret)
+        this->timeout();
+    return ret;
+}
+
 void Timer::stop()
 {
     _unset();

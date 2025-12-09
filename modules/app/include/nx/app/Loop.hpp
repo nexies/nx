@@ -63,4 +63,22 @@ namespace nx
     };
 }
 
+///
+/// Thoughts about Loop:
+///
+///     Needs to implement conditional loop on current thread()->context() blocking the execution of the following code.
+///         loop.while([&] { return some_local_condition; });
+///
+///     Executing poll from event pool for some period of time:
+///         loop.for(Seconds(10))
+///         loop.until(Clock::now() + Seconds(10));
+///
+///     Default current Loop::loop() method will translate into:
+///         loop.while([&] { return this->running; });
+///
+///     Exiting the current active loop may be caused by:
+///         1) Satisfying the condition on which the loop is entered
+///         2) Receiving Exit event from the pool
+///
+
 #endif //LOOP_HPP

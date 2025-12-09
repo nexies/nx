@@ -221,6 +221,7 @@ void Loop::_exitImpl(int code)
     nxTrace("Loop::_exitImpl");
     flush();
     thread()->context_locker.unlock();
+    thread()->context().stop();
     running = false;//, std::memory_order_relaxed);
     interrupt = true;//, std::memory_order_relaxed);
     exit_code = code;
