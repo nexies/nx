@@ -28,4 +28,12 @@
 #define __NX_XOR_10 1
 #define __NX_XOR_11 0
 
+#define __NX_NOT(a) __NX_NOT_(a)
+#define __NX_NOT_(a) NX_CONCAT(__NX_NOT_, a)
+#define __NX_NOT_1 0
+#define __NX_NOT_0 1
+
+#define __NX_NAND(a, b) __NX_NAND_(a, b)
+#define __NX_NAND_(a, b) NX_EXPAND(__NX_NOT(__NX_AND(a, b)))
+
 #endif //NX_MACRO_LOGIC_HPP

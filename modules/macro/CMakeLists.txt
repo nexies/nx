@@ -1,6 +1,7 @@
 add_library(nx_macro
         include/nx/macro.hpp
         macro.cpp
+        include/nx/macro/overload.hpp
 )
 
 include(nxMakeModule)
