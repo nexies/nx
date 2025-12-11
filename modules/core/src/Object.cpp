@@ -16,7 +16,7 @@ class Object::Impl
 
     Object * obj;
     Thread * local_thread;
-    std::string object_name;
+    // std::string object_name;
     std::unique_ptr<ConnectionInfo> connection_info;
     std::vector<TimerId> timers;
 
@@ -79,17 +79,17 @@ public:
 
     void cancelTimers() const;
 
-    std::string objectName() const
-    {
-        return object_name;
-    }
-
-    void setObjectName(const std::string& name)
-    {
-        if (name != object_name)
-            obj->objectNameChanged(name);
-        object_name = name;
-    }
+    // std::string objectName() const
+    // {
+    //     return object_name;
+    // }
+    //
+    // void setObjectName(const std::string& name)
+    // {
+    //     if (name != object_name)
+    //         obj->objectNameChanged(name);
+    //     object_name = name;
+    // }
 };
 
 
@@ -123,15 +123,15 @@ Result Object::attachToThread(Thread* thread) const
     return Result::Ok();
 }
 
-std::string Object::objectName() const
-{
-    return impl->objectName();
-}
-
-void Object::setObjectName(const std::string& name)
-{
-    impl->setObjectName(name);
-}
+// std::string Object::objectName() const
+// {
+//     return impl->objectName();
+// }
+//
+// void Object::setObjectName(const std::string& name)
+// {
+//     impl->setObjectName(name);
+// }
 
 // void Object::_schedule(Signal&& signal, int priority) const
 // {

@@ -285,4 +285,35 @@
     __NX_PROPERTY(__VA_ARGS__)
 
 // NOLINTEND(readability-identifier-naming)
+
+///
+/// Plan for improving usability of NX_PROPERTY:
+///
+///     1) NX_PROPERTY should not only declare new member functions for accessing a certain member field, but also should
+///         define a meta-struct, defining the property's meta information
+///     2) NX_PROPERTY should be able to use existing member functions and fields to define object's property.
+///     This is especially useful when setters/getters are non-trivial.
+///     For example:
+///
+///         struct Auth : public Object
+///         {
+///             private:
+///             std::size_t password_hash;
+///
+///             public:
+///
+///             void setPassword(std::string new_password)
+///             {
+///                 password_hash = std::hash<std::string>{}(new_password);
+///             }
+///
+///             NX_PROPERTY(TYPE std::size_t, MEMBER NAME password_hash, MEMBER WRITE setPassword);
+///         }
+///
+///         NX_PROPERTY macro should expand into something like this:
+///         struct : public :: nx::property_descriptor_t
+///         {
+///
+///         }
+
 #endif //PROPERTY_DEFS_HPP
