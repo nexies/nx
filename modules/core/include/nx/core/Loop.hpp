@@ -8,8 +8,8 @@
 #include <boost/asio/executor_work_guard.hpp>
 #include <boost/asio/io_context.hpp>
 
-#include "nx/app/Signal.hpp"
-#include "nx/app/Object.hpp"
+#include <nx/core/Signal.hpp>
+#include <nx/core/Object.hpp>
 
 namespace nx
 {
@@ -63,8 +63,10 @@ namespace nx
     };
 }
 
-///
-/// Thoughts about Loop:
+namespace nx::experimental
+{
+
+/// Thoughts on Loop:
 ///
 ///     Needs to implement conditional loop on current thread()->context() blocking the execution of the following code.
 ///         loop.while([&] { return some_local_condition; });
@@ -80,5 +82,41 @@ namespace nx
 ///         1) Satisfying the condition on which the loop is entered
 ///         2) Receiving Exit event from the pool
 ///
+
+    class Loop : public Object
+    {
+    public:
+        enum ExitReason
+        {
+            ConditionMet,
+            ExitEvent,
+            Abnormal,
+        };
+
+        struct res_ok
+        {
+            ExitReason reason;
+            size_t events_processed;
+        };
+
+        using Result = nx::result_t<res_ok, nx::common::common_err_t>;
+
+        using Condition = std::function<bool()>;
+
+        Loop();
+        ~Loop();
+
+        Result loop_while(Condition && condition);
+        Result loop_forever();
+        Result loop_for(Duration dur);
+        Result loop_until(TimePoint tp);
+
+    protected:
+        bool _checkCondition ();
+        bool _hasCondition ();
+        Condition _condition;
+
+    };
+}
 
 #endif //LOOP_HPP

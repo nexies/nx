@@ -1,18 +1,24 @@
 add_library(nx_core
         src/core.cpp
-        include/nx/core/Context.hpp
-        include/nx/core/Object.hpp
-        include/nx/core/macro/logic.hpp
-        include/nx/core/macro/argname.hpp
-        include/nx/core/Signal.hpp
-        #        include/nx/core/Callable.hpp
-#        include/nx/core/Tuple.hpp
+        src/Connection.cpp
+        src/Object.cpp
+        src/Loop.cpp
+        src/Signal.cpp
+        src/Thread.cpp
+        src/Timer.cpp
 )
 
-#target_sources(nx_core PUBLIC
-#    FILE_SET CXX_MODULES FILES
-#        src/reflect.cppm
-#)
+find_package(spdlog REQUIRED)
+find_package(Boost COMPONENTS REQUIRED program_options system)
+
+target_link_libraries(nx_core PUBLIC
+        nx::macro
+        spdlog
+        Boost::program_options
+        Boost::system
+)
+
+target_compile_options(nx_core PUBLIC "-Wno-pmf-conversions")
 
 include(nxMakeModule)
 nx_make_module(

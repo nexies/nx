@@ -6,9 +6,9 @@
 #define APP_HPP
 
 #include "nx/app.hpp"
-#include "Signal.hpp"
-#include "nx/app/Object.hpp"
-#include "Dispatcher.hpp"
+#include <nx/core/Signal.hpp>
+#include <nx/core/Object.hpp>
+// #include "Dispatcher.hpp"
 
 #include <filesystem>
 #include <boost/program_options.hpp>
@@ -37,9 +37,9 @@ namespace nx {
         //! Abort execution (hard-exit)
         static void Abort ();
 
-        static TimerId AddTimer(TimerType, Duration, detail::timer_callback_t);
+        // static TimerId AddTimer(TimerType, Duration, detail::timer_callback_t);
 
-        static Result CancelTimer (TimerId timerId);
+        // static Result CancelTimer (TimerId timerId);
 
         //! Set command-line application options
         //! @return
@@ -94,7 +94,7 @@ namespace nx {
         } m_preferences;
 
         // MainDispatcher * m_dispatcher { nullptr };
-        PollThread * m_poll_thread { nullptr };
+        // PollThread * m_poll_thread { nullptr };
         // boost::asio::signal_set m_signal;
     };
 }

@@ -7,7 +7,7 @@
 
 #include <boost/asio/deadline_timer.hpp>
 
-#include "nx/app/Object.hpp"
+#include <nx/core/Object.hpp>
 
 namespace nx
 {
@@ -32,25 +32,18 @@ namespace nx
 
         void stop ();
 
-        Duration getDuration () const;
-        void setDuration (Duration dur);
-
-        Type getType() const;
-        void setType(Type type);
-
-
         NX_SIGNAL(timeout)
-        NX_SIGNAL(durationChanged, Duration)
-        NX_SIGNAL(typeChanged, Type)
+
+        NX_PROPERTY(TYPE Type, NAME timer_type, READ type, WRITE setType, NOTIFY typeChanged, DEFAULT SingleShot)
+        NX_PROPERTY(TYPE Duration, NAME duration, READ duration, WRITE setDuration, NOTIFY durationChanged, DEFAULT Seconds(1))
 
     private:
         using timer_type = boost::asio::deadline_timer;
         std::unique_ptr<timer_type> timer;
 
-        Duration dur;
         TimePoint time_started;
         int reps;
-        Type type;
+        // Type type;
         int reps_left;
 
         bool _set();

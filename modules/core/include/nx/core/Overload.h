@@ -5,8 +5,6 @@
 #ifndef OVERLOAD_H
 #define OVERLOAD_H
 
-#include "Functor.hpp"
-
 namespace nx
 {
     namespace detail

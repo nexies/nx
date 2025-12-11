@@ -7,9 +7,9 @@
 
 #include <stack>
 
-#include "nx/app/Object.hpp"
-#include "nx/app/Signal.hpp"
-#include "nx/core/Singleton.hpp"
+#include <nx/core/Object.hpp>
+#include <nx/core/Signal.hpp>
+#include <nx/core/Singleton.hpp>
 
 #include <thread>
 #include <unordered_map>

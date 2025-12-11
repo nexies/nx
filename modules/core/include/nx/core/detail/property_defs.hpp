@@ -5,10 +5,10 @@
 #ifndef PROPERTY_DEFS_HPP
 #define PROPERTY_DEFS_HPP
 
-#include "nx/core/macro/repeat.hpp"
-#include "nx/core/macro/arg_count.hpp"
-#include "nx/core/macro/choose.hpp"
-#include "nx/core/macro/logic.hpp"
+#include <nx/macro/repeat.hpp>
+#include <nx/macro/arg_count.hpp>
+#include <nx/macro/choose.hpp>
+#include <nx/macro/logic.hpp>
 
 // clang-tidy: -cppcoreguidelines-avoid-non-const-global-variables
 
@@ -203,7 +203,9 @@
 #define __NX_PROPERTY_CREATE_DECL_1(...) NX_CONSUME(__VA_ARGS__)
 
 #define __NX_PROPERTY_CREATE_DECL(type, name, has_default, default_value, is_member) \
-    NX_CONCAT(__NX_PROPERTY_CREATE_DECL_, is_member)(type, name, default_value, has_default)
+    private: \
+    NX_CONCAT(__NX_PROPERTY_CREATE_DECL_, is_member)(type, name, default_value, has_default) \
+    public:
 
 #define __NX_PROPERTY_CREATE_GETTER_0(...) NX_CONSUME(__VA_ARGS__)
 #define __NX_PROPERTY_CREATE_GETTER_1(type, name, getter_name) \

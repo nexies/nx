@@ -1,28 +1,14 @@
 add_library(nx_app
         src/App.cpp
-        src/Object.cpp
-        src/Thread.cpp
-        src/Loop.cpp
-        src/Signal.cpp
-        src/Connection.cpp
-        src/Dispatcher.cpp
-        src/Timer.cpp
         src/nxapp.cpp
 )
 
-find_package(spdlog REQUIRED)
-find_package(Boost COMPONENTS REQUIRED program_options system)
+include(nxMakeModule)
 
 target_link_libraries(nx_app PUBLIC
         nx::core
-        spdlog
-        Boost::program_options
-        Boost::system
 )
 
-target_compile_options(nx_app PUBLIC "-Wno-pmf-conversions")
-
-include(nxMakeModule)
 nx_make_module(
         TARGET nx_app
         NAME app

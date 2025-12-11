@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 3.20)
-project (nx VERSION 0.2.1 LANGUAGES CXX)
+project (nx VERSION 0.3.0 LANGUAGES CXX)
 
 set (CMAKE_CXX_STANDARD 20)
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -23,7 +23,8 @@ list (APPEND CMAKE_MODULE_PATH "${NX_MODULE_PATH}")
 
 add_library (nx INTERFACE
         modules/core2/include/nx/core2/Functor.hpp
-        modules/core2/src/core2.cpp)
+        modules/core2/src/core2.cpp
+        modules/macro/include/nx/macro.hpp)
 add_library (nx::nx ALIAS nx)
 
 include(nxVersionInfo)

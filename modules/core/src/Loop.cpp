@@ -2,11 +2,11 @@
 // Created by nexie on 13.11.2025.
 //
 
-#include "nx/app/Loop.hpp"
+#include "../include/nx/core/Loop.hpp"
 
 #include <boost/asio/local/basic_endpoint.hpp>
 
-#include "nx/app/Thread.hpp"
+#include "../include/nx/core/Thread.hpp"
 #include "tgbot/net/BoostHttpOnlySslClient.h"
 
 using namespace nx;
@@ -133,12 +133,14 @@ Result Loop::quit()
 
 void Loop::flush()
 {
-    nxTrace("Loop::flush()");
+    // nxTrace("Loop::flush()");
     // while (queue->hasPendingSignals())
     // {
         // auto entry = queue->getNext();
         // _processSingleEntry(entry);
     // }
+
+    thread()->context().poll();
 }
 
 void Loop::setWaitDuration(Duration dur)
@@ -218,7 +220,7 @@ void Loop::_quitImpl()
 
 void Loop::_exitImpl(int code)
 {
-    nxTrace("Loop::_exitImpl");
+    // nxTrace("Loop::_exitImpl");
     flush();
     thread()->context_locker.unlock();
     thread()->context().stop();

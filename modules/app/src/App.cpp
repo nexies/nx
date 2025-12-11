@@ -15,7 +15,14 @@
 
 #define MAIN_LOGGER_NAME "main"
 
-#include "nx/app/Thread.hpp"
+#include <nx/core/Thread.hpp>
+#include <nx/core/Loop.hpp>
+
+#ifndef NX_TRACE_SIGNALS
+#define NX_TRACE_SIGNALS 0
+#define NX_TRACE_SIGNALS_LOGGER_NAME "signal"
+#endif
+
 
 // namespace log = spdlog;
 namespace po = boost::program_options;
@@ -74,15 +81,10 @@ int nx::App::Exec() {
 
 void nx::App::Exit(int code) {
     nxDebug("App::Exit called");
-    nxTrace("App::Exit(), code {}", code);
     auto self = _Self();
 
-    /*emit*/ self->aboutToQuit();
-    // self->aboutToQuit.emit();
-
-    // self->_generateSignal(Signal::Custom(self, &App::_exit, code), 0);
-    nxTrace("emit signal for exit", code);
-    self->_signalForExit(code);
+    NX_EMIT(self->aboutToQuit);
+    NX_EMIT(self->_signalForExit, code);
 }
 
 void nx::App::Quit() {
@@ -93,24 +95,24 @@ void nx::App::Abort() {
     std::abort();
 }
 
-nx::TimerId nx::App::AddTimer(TimerType type, Duration dur, detail::timer_callback_t cb)
-{
-    // auto self = _Self();
-    // if (!self->m_dispatcher)
-        // return detail::invalid_timer;
+// nx::TimerId nx::App::AddTimer(TimerType type, Duration dur, detail::timer_callback_t cb)
+// {
+//     // auto self = _Self();
+//     // if (!self->m_dispatcher)
+//         // return detail::invalid_timer;
+//
+//     // return self->m_dispatcher->addTimer(type, dur, std::move(cb));
+//     return 0;
+// }
 
-    // return self->m_dispatcher->addTimer(type, dur, std::move(cb));
-    return 0;
-}
-
-nx::Result nx::App::CancelTimer(TimerId timerId)
-{
-//    auto self = _Self();
-//     if (!self->m_dispatcher)
-//         return Result::Err("Dispatcher is not initialized");
-//     return self->m_dispatcher->cancelTimer(timerId);
-    return Result::Ok();
-}
+// nx::Result nx::App::CancelTimer(TimerId timerId)
+// {
+// //    auto self = _Self();
+// //     if (!self->m_dispatcher)
+// //         return Result::Err("Dispatcher is not initialized");
+// //     return self->m_dispatcher->cancelTimer(timerId);
+//     return Result::Ok();
+// }
 
 nx::Result nx::App::AddProgramOptions(const options_description &desc) {
     _Self()->m_preferences.opt_desc.add(desc);
@@ -240,15 +242,27 @@ nx::Result nx::App::_createLogger() {
     auto logger = std::make_shared<spdlog::logger>(MAIN_LOGGER_NAME, combined);
     logger->set_level(m_preferences.log_level);
     auto formatter = std::make_unique<spdlog::pattern_formatter>();
-    if (m_preferences.log_level == spdlog::level::trace)
-        formatter->add_flag<ThreadFormaterFlag>('T').set_pattern("[%Y-%m-%d %H:%M:%S] [%n] ["/*%t|*/"tid:%T] [%^%l%$] %v (%!)");
-    else
-        formatter->add_flag<ThreadFormaterFlag>('T').set_pattern("[%Y-%m-%d %H:%M:%S] [%n] ["/*%t|*/"tid:%T] [%^%l%$] %v (%s:%#)");
+    formatter->add_flag<ThreadFormaterFlag>('T').set_pattern("[%Y-%m-%d %H:%M:%S.%f] [%n] ["/*%t|*/"tid:%T] [%^%l%$] %v (%s:%#)");
 
     logger->set_formatter(std::move(formatter));
-    // logger->set_pattern("[%Y-%m-%d %H:%M:%S] [%n] [%t] [%^%l%$] %v (%s:%#)");
     spdlog::set_default_logger(logger);
-    // nxInfo("Application logger installed. Log level=\"{}\"", spdlog::level::to_string_view(m_preferences.log_level));
+
+#if NX_TRACE_SIGNALS
+    {
+        auto const console_sink = std::make_shared<stdout_color_sink_mt>();
+        console_sink->set_color_mode(spdlog::color_mode::always);
+        console_sink->set_level(spdlog::level::trace);
+        auto signal_logger = std::make_shared<spdlog::logger>(NX_TRACE_SIGNALS_LOGGER_NAME, console_sink);
+        signal_logger->set_level(spdlog::level::trace);
+
+        formatter = std::make_unique<spdlog::pattern_formatter>();
+        formatter->add_flag<ThreadFormaterFlag>('T').set_pattern("%^[%Y-%m-%d %H:%M:%S:%f] [%n] ["/*%t|*/"tid:%T] [%l] %v %$(%s:%#)");
+        signal_logger->set_formatter(std::move(formatter));
+
+        spdlog::register_logger(signal_logger);
+    }
+#endif
+
     return Result::Ok();
 }
 
@@ -278,7 +292,7 @@ nx::Result nx::App::_startEventLoop() {
 
 void nx::App::_closeThreads()
 {
-    nxTrace("Closing all threads ({})", detail::ThreadInfo::Instance().threadCount());
+    // nxTrace("Closing all threads ({})", detail::ThreadInfo::Instance().threadCount());
     detail::ThreadInfo::Instance().exitAllThreads();
     detail::ThreadInfo::Instance().waitForAllThreadsExit();
 }
@@ -287,7 +301,6 @@ void nx::App::_exit(int code)
 {
     auto self = _Self();
     nxTrace("App::_exit");
-    nxTrace("App attached thread id {}", self->threadId());
     self->_closeThreads();
 }
 

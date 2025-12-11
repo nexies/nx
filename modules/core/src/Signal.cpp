@@ -2,11 +2,11 @@
 // Created by nexie on 14.11.2025.
 //
 
-#include "nx/app/Signal.hpp"
+#include "../include/nx/core/Signal.hpp"
 
-#include "nx/app/Loop.hpp"
-#include "nx/app/Object.hpp"
-#include "nx/app/Thread.hpp"
+#include "../include/nx/core/Loop.hpp"
+#include "../include/nx/core/Object.hpp"
+#include "../include/nx/core/Thread.hpp"
 
 using namespace nx;
 

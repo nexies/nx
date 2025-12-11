@@ -9,7 +9,7 @@
 #include <sys/stat.h>
 
 #include "Result.hpp"
-#include "nx/core/Exception.hpp"
+#include <nx/core/Exception.hpp>
 
 namespace nx {
     template <class Class>

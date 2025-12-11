@@ -8,8 +8,8 @@
 #include <unordered_map>
 #include <set>
 
-#include "Signal.hpp"
-#include "nx/core/store/DataPool.h"
+#include <nx/core/Signal.hpp>
+#include <nx/core/store/DataPool.h>
 
 
 namespace nx {

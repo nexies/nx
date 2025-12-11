@@ -33,11 +33,12 @@
 ///     void signalName (arg_type1 _arg1, arg_type2 _arg2, arg_type3 _arg3)
 
 
-#include "nx/core/macro/repeat.hpp"
-#include "nx/core/macro/choose.hpp"
-#include "nx/core/macro/arg_count.hpp"
+#include <nx/macro/repeat.hpp>
+#include <nx/macro/choose.hpp>
+#include <nx/macro/arg_count.hpp>
 
-#include "nx/core/Overload.h"
+#include <nx/core.hpp>
+#include <nx/core/Overload.h>
 
 #define __NX_SIGNAL_ARGUMENT_MAKER_MACRO(n, prefix, ...) \
     NX_CHOOSE(n,,__VA_ARGS__) NX_CONCAT(prefix, n)
@@ -71,5 +72,25 @@ void signalName (__NX_SIGNAL_MAKE_ARGUMENTS(__VA_ARGS__)) \
 #define NX_SIGNAL(signalName, ...) \
     __NX_SIGNAL_HELPER(signalName, __VA_ARGS__)
 
-#define NX_EMIT(signalName, ...) signalName( __VA_ARGS__ )
+#ifndef NX_TRACE_SIGNALS
+#define NX_TRACE_SIGNALS 0
+#define NX_TRACE_SIGNALS_LOGGER_NAME "signals"
+#endif
+
+#if NX_TRACE_SIGNALS
+#   define __NX_SIGNAL_LOGGER_CALL_0(signalName, ...) \
+        SPDLOG_LOGGER_TRACE(::spdlog::get(NX_TRACE_SIGNALS_LOGGER_NAME), "emmiting " #signalName "()")
+
+#   define __NX_SIGNAL_LOGGER_CALL_1(signalName, ...) \
+        SPDLOG_LOGGER_TRACE(::spdlog::get(NX_TRACE_SIGNALS_LOGGER_NAME), "emmiting " #signalName "(" #__VA_ARGS__")")
+
+#   define __NX_SIGNAL_LOGGER_CALL(signalName, ...) \
+        NX_CONCAT(__NX_SIGNAL_LOGGER_CALL_, NX_HAS_ARGS(__VA_ARGS__))(signalName, __VA_ARGS__)
+#else
+#   define __NX_SIGNAL_LOGGER_CALL(...) NX_CONSUME(__VA_ARGS__)
+#endif
+
+#define NX_EMIT(signalName, ...)  \
+    __NX_SIGNAL_LOGGER_CALL(signalName, __VA_ARGS__); \
+    signalName( __VA_ARGS__ );
 #endif //SIGNAL_DEFS_HPP

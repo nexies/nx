@@ -2,13 +2,13 @@
 // Created by nexie on 17.11.2025.
 //
 
-#include "nx/app/Connection.hpp"
+#include "../include/nx/core/Connection.hpp"
 
 #include <boost/asio/execution/sender.hpp>
 #include <sys/socket.h>
 
-#include "nx/app/Object.hpp"
-#include "nx/app/Thread.hpp"
+#include "../include/nx/core/Object.hpp"
+#include "../include/nx/core/Thread.hpp"
 
 using namespace nx;
 
@@ -75,7 +75,7 @@ void Connection::_transmitImpl(Signal&& s)
 {
     // TODO: have to have much more logic than this
     auto dest_thread_id = s.destinationThreadId();
-    nxTrace("signal dest thread = {}, conn_type = {}", dest_thread_id, (int)type);
+    // nxTrace("signal dest thread = {}, conn_type = {}", dest_thread_id, (int)type);
     if (type == Direct)
     {
         s.activate();
@@ -95,7 +95,7 @@ void Connection::_transmitImpl(Signal&& s)
         return;
     }
 
-    nxTrace("redirecting signal into thread {}", thread->getId());
+    // nxTrace("redirecting signal into thread {}", thread->getId());
     thread->schedule(std::move(s));
 }
 

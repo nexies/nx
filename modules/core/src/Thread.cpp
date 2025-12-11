@@ -2,12 +2,12 @@
 // Created by nexie on 12.11.2025.
 //
 
-#include "nx/app/Thread.hpp"
+#include <nx/core/Thread.hpp>
 #include <mutex>
 #include <boost/asio.hpp>
 
-#include "nx/app.hpp"
-#include "nx/app/Loop.hpp"
+#include <nx/core.hpp>
+#include <nx/core/Loop.hpp>
 
 
 using namespace nx;
@@ -114,12 +114,12 @@ namespace nx::detail
     void ThreadInfoInstance::exitAllThreads()
     {
         auto local_id = Thread::CurrentId();
-        nxTrace("exitAllThreads. Local ID: {}", local_id);
+        // nxTrace("exitAllThreads. Local ID: {}", local_id);
         for (auto [id, thread] : threads_by_id)
         {
             // if (local_id != id)
             // {
-                nxTrace("closing thread id {}", id);
+                nxTrace("Closing thread [tid:{}]", id);
                 // thread->exit(0);
                 thread->exit(0);
             // }
@@ -129,12 +129,12 @@ namespace nx::detail
     void ThreadInfoInstance::waitForAllThreadsExit()
     {
         auto local_id = Thread::CurrentId();
-        nxTrace("waitForAllThreadsExit. Local ID: {}", local_id);
+        // nxTrace("waitForAllThreadsExit. Local ID: {}", local_id);
         for (auto [id, thread] : threads_by_id)
         {
             if (local_id != id)
             {
-                nxTrace("wait for exit id {}", id);
+                nxTrace("Wait for thread exit [tid:{}]", id);
                 thread->waitForExit();
             }
         }
@@ -147,6 +147,8 @@ Thread::Thread() :
     // signal_queue(1024)
 {
     id = detail::ThreadInfo::Instance().registerThread(this);
+    // io_context.get_executor()
+
     // _reattachToLocalThread();
 }
 
@@ -216,7 +218,7 @@ void Thread::sleepUntil(TimePoint t)
 
 void Thread::exit(int code)
 {
-    nxTrace("Thread[{}]::exit", getId());
+    // nxTrace("Thread[{}]::exit", getId());
     if (running)
     {
         aboutToQuit();
