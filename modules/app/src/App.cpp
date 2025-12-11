@@ -2,7 +2,8 @@
 // Created by nexie on 09.11.2025.
 //
 
-#include "app/App.hpp"
+#include "nx/app.hpp"
+#include "nx/app/App.hpp"
 #include <iostream>
 #include <signal.h>
 
@@ -14,8 +15,14 @@
 
 #define MAIN_LOGGER_NAME "main"
 
-#include "app/Loop.hpp"
-#include "app/Thread.hpp"
+#include <nx/core/Thread.hpp>
+#include <nx/core/Loop.hpp>
+
+#ifndef NX_TRACE_SIGNALS
+#define NX_TRACE_SIGNALS 0
+#define NX_TRACE_SIGNALS_LOGGER_NAME "signal"
+#endif
+
 
 // namespace log = spdlog;
 namespace po = boost::program_options;
@@ -30,7 +37,7 @@ namespace
         void format(const spdlog::details::log_msg &, const std::tm &, spdlog::memory_buf_t &dest) override
         {
             std::string txt = "n/a";
-            auto id = ::nx::Thread::currentId();
+            auto id = ::nx::Thread::CurrentId();
             if (id != ::nx::detail::g_invalidThreadId)
             {
                 txt = std::to_string(id);
@@ -73,24 +80,12 @@ int nx::App::Exec() {
 }
 
 void nx::App::Exit(int code) {
-    nxDebug("App::Exit()");
+    nxDebug("App::Exit called");
     auto self = _Self();
 
-    /*emit*/ self->aboutToQuit();
-
-    self->_generateSignal(Signal::Custom(self, &App::_exit, code), 0);
+    NX_EMIT(self->aboutToQuit);
+    NX_EMIT(self->_signalForExit, code);
 }
-
-// void nx::App::Exit(const Result & res) {
-//     if (!res) { // <- is error
-//         std::cerr << "Exiting with error: " << res.get_err().str() << " (code:" << res.get_err().code() << ")" << std::endl;
-//         std::exit(res.get_err().code());
-//     }
-//     else {
-//         std::cout << "Exiting with success: " << res.get_ok().str() << " (code:" << res.get_ok().code() << ")" << std::endl;
-//         std::exit(res.get_ok().code());
-//     }
-// }
 
 void nx::App::Quit() {
     Exit(0);
@@ -99,6 +94,25 @@ void nx::App::Quit() {
 void nx::App::Abort() {
     std::abort();
 }
+
+// nx::TimerId nx::App::AddTimer(TimerType type, Duration dur, detail::timer_callback_t cb)
+// {
+//     // auto self = _Self();
+//     // if (!self->m_dispatcher)
+//         // return detail::invalid_timer;
+//
+//     // return self->m_dispatcher->addTimer(type, dur, std::move(cb));
+//     return 0;
+// }
+
+// nx::Result nx::App::CancelTimer(TimerId timerId)
+// {
+// //    auto self = _Self();
+// //     if (!self->m_dispatcher)
+// //         return Result::Err("Dispatcher is not initialized");
+// //     return self->m_dispatcher->cancelTimer(timerId);
+//     return Result::Ok();
+// }
 
 nx::Result nx::App::AddProgramOptions(const options_description &desc) {
     _Self()->m_preferences.opt_desc.add(desc);
@@ -142,31 +156,55 @@ nx::Result nx::App::_init(int argc, char *argv[]) {
 }
 
 nx::Result nx::App::_makeMainThread(){
-    auto thread = Thread::fromCurrentThread();
+    auto thread = Thread::FromCurrentThread();
     if (thread)
     {
         _reattachToThread(thread);
+        nx::connect (this, &App::_signalForExit, this, &App::_exit, nx::Connection::Queued | nx::Connection::Unique);
         return Result::Ok();
     }
 
 
-    sigset_t set;
-    sigemptyset(&set);
-    sigaddset(&set, SIGINT);
-    sigaddset(&set, SIGTERM);
-    sigaddset(&set, SIGQUIT);
-    pthread_sigmask(SIG_BLOCK, &set, nullptr);
+    //
+    // sigset_t set;
+    // sigemptyset(&set);
+    // sigaddset(&set, SIGINT);
+    // sigaddset(&set, SIGTERM);
+    // sigaddset(&set, SIGQUIT);
+    // pthread_sigmask(SIG_BLOCK, &set, nullptr);
 
     return Result::Err("Failed to create main thread");
 }
 
 nx::Result nx::App::_makeDispatcher() {
-    m_dispatcher = new MainDispatcher;
-    m_dispatcher->start();
+
+    auto & context = this->thread()->context();
+    auto signal = new boost::asio::signal_set(thread()->context(), SIGINT, SIGTERM);
+
+    signal->async_wait([] (const boost::system::error_code & err, int signal)
+    {
+        if (!err) {
+            // A signal occurred.
+            std::cout << "Received signal: " << signal << std::endl;
+            // Perform cleanup or graceful shutdown here.
+            nx::App::Quit();
+        } else {
+            // An error occurred during signal wait.
+            std::cerr << "Signal wait error: " << err.message() << std::endl;
+        }
+    });
+
+    // m_signal = boost::asio::signal_set (thread()->context(), SIGINT, SIGTERM);
+    // m_poll_thread = new PollThread();
+    // m_poll_thread->addService(std::make_shared<SystemSignalPollService>());
+    // m_poll_thread->start();
+
     return Result::Ok();
 }
 
 nx::Result nx::App::_parseOptions(int argc, char *argv[]) {
+    m_preferences.executable =  argv[0];
+    m_preferences.execution_path = std::filesystem::current_path();
     return Result::Ok();
 }
 
@@ -187,10 +225,10 @@ nx::Result nx::App::_createLogger() {
     else
         return Result::Err("Failed to create console log sink");
 
-    // if (auto const trace_sink = std::make_shared<stdout_color_sink_mt>(); trace_sink)
-    // {
-    //     trace_sink->set_color_mode(spdlog::color_mode::always);
-    // }
+    if (auto const trace_sink = std::make_shared<stdout_color_sink_mt>(); trace_sink)
+    {
+        trace_sink->set_color_mode(spdlog::color_mode::always);
+    }
 
     if (auto const file_sink = std::make_shared<basic_file_sink_mt>(m_preferences.log_file); file_sink)
     {
@@ -204,11 +242,27 @@ nx::Result nx::App::_createLogger() {
     auto logger = std::make_shared<spdlog::logger>(MAIN_LOGGER_NAME, combined);
     logger->set_level(m_preferences.log_level);
     auto formatter = std::make_unique<spdlog::pattern_formatter>();
-    formatter->add_flag<ThreadFormaterFlag>('T').set_pattern("[%Y-%m-%d %H:%M:%S] [%n] ["/*%t|*/"tid:%T] [%^%l%$] %v (%s:%#)");
+    formatter->add_flag<ThreadFormaterFlag>('T').set_pattern("[%Y-%m-%d %H:%M:%S.%f] [%n] ["/*%t|*/"tid:%T] [%^%l%$] %v (%s:%#)");
+
     logger->set_formatter(std::move(formatter));
-    // logger->set_pattern("[%Y-%m-%d %H:%M:%S] [%n] [%t] [%^%l%$] %v (%s:%#)");
     spdlog::set_default_logger(logger);
-    // nxInfo("Application logger installed. Log level=\"{}\"", spdlog::level::to_string_view(m_preferences.log_level));
+
+#if NX_TRACE_SIGNALS
+    {
+        auto const console_sink = std::make_shared<stdout_color_sink_mt>();
+        console_sink->set_color_mode(spdlog::color_mode::always);
+        console_sink->set_level(spdlog::level::trace);
+        auto signal_logger = std::make_shared<spdlog::logger>(NX_TRACE_SIGNALS_LOGGER_NAME, console_sink);
+        signal_logger->set_level(spdlog::level::trace);
+
+        formatter = std::make_unique<spdlog::pattern_formatter>();
+        formatter->add_flag<ThreadFormaterFlag>('T').set_pattern("%^[%Y-%m-%d %H:%M:%S:%f] [%n] ["/*%t|*/"tid:%T] [%l] %v %$(%s:%#)");
+        signal_logger->set_formatter(std::move(formatter));
+
+        spdlog::register_logger(signal_logger);
+    }
+#endif
+
     return Result::Ok();
 }
 
@@ -221,33 +275,24 @@ void nx::App::_printAppInfo() const {
     nxInfo("   --- powered by nx::app version {}",  version());
     nxInfo("   --- build date: {}", build_time_utc());
     nxInfo("   --- log level: {}", spdlog::level::to_string_view(m_preferences.log_level));
+    nxInfo("   --- executable: {}", m_preferences.executable.string());
+    nxInfo("   --- exec path: {}", m_preferences.execution_path.string());
 }
 
 nx::Result nx::App::_startEventLoop() {
+
+    // PollLoop loop;
+    // loop.setWaitDuration(Milliseconds(1));
+    // loop.addService(std::make_shared<SystemSignalPollService>());
+    // return loop.exec();
+
     Loop loop;
     return loop.exec();
 }
 
-// nx::Result nx::App::onTimer(TimerEvent* timer_event)
-// {
-//     return Object::onTimer(timer_event);
-// }
-//
-// nx::Result nx::App::onEvent(Event* event)
-// {
-//     if (!event)
-//         return Result::Err("Bad nullptr event");
-//
-//     switch (event->type())
-//     {
-//         case Event::Type::Exit: _closeThreads(); return Result::Ok();
-//     }
-//     return Object::onEvent(event);
-// }
-
 void nx::App::_closeThreads()
 {
-    nxDebug("Closing all threads");
+    // nxTrace("Closing all threads ({})", detail::ThreadInfo::Instance().threadCount());
     detail::ThreadInfo::Instance().exitAllThreads();
     detail::ThreadInfo::Instance().waitForAllThreadsExit();
 }
@@ -255,8 +300,8 @@ void nx::App::_closeThreads()
 void nx::App::_exit(int code)
 {
     auto self = _Self();
+    nxTrace("App::_exit");
     self->_closeThreads();
-    // self->_generateSignal(Signal::Exit(self->_getLocalThread()->loop(), code), 10);
 }
 
 nx::App * nx::App::_Self() {
