@@ -286,6 +286,11 @@
 
 // NOLINTEND(readability-identifier-naming)
 
+namespace nx
+{
+
+}
+
 ///
 /// Plan for improving usability of NX_PROPERTY:
 ///

@@ -6,6 +6,7 @@ add_library(nx_core
         src/Signal.cpp
         src/Thread.cpp
         src/Timer.cpp
+        include/nx/core/detail/property_impl.hpp
 )
 
 find_package(spdlog REQUIRED)

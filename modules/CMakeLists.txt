@@ -2,6 +2,10 @@ if(NOT DEFINED NX_BUILD_SHARED_LIBS)
     set(NX_BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
 endif()
 
+if (NX_BUILD_MODULE_MEMORY)
+    add_subdirectory(memory)
+endif()
+
 if (NX_BUILD_MODULE_CORE)
     set(NX_BUILD_MODULE_MACRO ON)
     add_subdirectory(macro)

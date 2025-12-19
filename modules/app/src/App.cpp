@@ -17,6 +17,7 @@
 
 #include <nx/core/Thread.hpp>
 #include <nx/core/Loop.hpp>
+#include <cstdlib>
 
 #ifndef NX_TRACE_SIGNALS
 #define NX_TRACE_SIGNALS 0
@@ -92,7 +93,8 @@ void nx::App::Quit() {
 }
 
 void nx::App::Abort() {
-    std::abort();
+    nxCritical("!!! ABORT !!!");
+    ::std::abort();
 }
 
 // nx::TimerId nx::App::AddTimer(TimerType type, Duration dur, detail::timer_callback_t cb)
