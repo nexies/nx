@@ -13,7 +13,7 @@ set (NX_INSTALL_INCLUDEDIR include/nx)
 set (NX_CXX_STANDARD 20)
 set (NX_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
-option (NX_BUILD_MODULE_MEMORY "Build nx::memory module" ON)
+option (NX_BUILD_MODULE_MEMORY "Build nx::memory module" OFF)
 option (NX_BUILD_MODULE_CORE "Build nx::core module" ON)
 option (NX_BUILD_MODULE_APP "Build nx::app module" ON)
 option (NX_ENABLE_CXX_20_FEATURES "Enable std::c++20 features" ON)
@@ -22,14 +22,7 @@ option (NX_BUILD_TESTS "Build tests" OFF)
 
 list (APPEND CMAKE_MODULE_PATH "${NX_MODULE_PATH}")
 
-add_library (nx INTERFACE
-        modules/core2/include/nx/core2/Functor.hpp
-        modules/core2/src/core2.cpp
-        modules/macro/include/nx/macro.hpp
-        modules/memory/include/nx/memory.hpp
-        modules/memory/include/nx/memory/DataPool.hpp
-        modules/memory/src/DataPool.hpp.cpp
-        examples/property/main.cpp)
+add_library (nx INTERFACE)
 add_library (nx::nx ALIAS nx)
 
 include(nxVersionInfo)

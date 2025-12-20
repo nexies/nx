@@ -14,13 +14,6 @@ namespace nx {
     class Thread;
     class ConnectionInfo;
 
-    template<typename Sender, typename Signal, typename Receiver, typename Slot>
-    bool connect (Sender * sender, Signal && signal, Receiver * receiver, Slot && slot, uint8_t flags);
-
-    template<typename Sender, typename Signal, typename ... Args>
-    void emit (Sender * sender, Signal signal, Args&&...);
-
-
     class Object {
         friend class ConnectionInfo;
         template<typename Sender, typename Signal, typename Receiver, typename Slot>

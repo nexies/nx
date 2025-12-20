@@ -34,8 +34,8 @@
 
 
 #include <nx/macro/repeat.hpp>
-#include <nx/macro/choose.hpp>
-#include <nx/macro/arg_count.hpp>
+#include <nx/macro/util/choose.hpp>
+#include <nx/macro/util/arg_count.hpp>
 
 #include <nx/core.hpp>
 #include <nx/core/Overload.h>
@@ -90,7 +90,17 @@ void signalName (__NX_SIGNAL_MAKE_ARGUMENTS(__VA_ARGS__)) \
 #   define __NX_SIGNAL_LOGGER_CALL(...) NX_CONSUME(__VA_ARGS__)
 #endif
 
+#ifndef __NX_BETTER_SIGNALS
 #define NX_EMIT(signalName, ...)  \
     __NX_SIGNAL_LOGGER_CALL(signalName, __VA_ARGS__); \
     signalName( __VA_ARGS__ );
+#else
+#define NX_EMIT(signalName, ...) \
+    __NX_SIGNAL_LOGGER_CALL(signalName, __VA_ARGS__); \
+    signalName.emit( __VA_ARGS__ )
+#endif
+
+#define NX_MAKE_EMIT(signalRef, objectPtr, ...) \
+    NX_EMIT((objectPtr->*signalRef), __VA_ARGS__)
+
 #endif //SIGNAL_DEFS_HPP

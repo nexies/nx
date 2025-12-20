@@ -2,18 +2,22 @@
 // Created by nexie on 19.12.2025.
 //
 
-#ifndef NXTBOT_PROPERTY_IMPL_HPP
-#define NXTBOT_PROPERTY_IMPL_HPP
+#ifndef NX_PROPERTY_IMPL_HPP
+#define NX_PROPERTY_IMPL_HPP
 
-#define NX_ENABLE_PROPERTY_EXTENSION
 #include <functional>
 #include <iostream>
 
-#ifndef NX_ENABLE_PROPERTY_EXTENSION
-#warning "nx property system is only avalable with std::c++20 standard or higher"
+#ifndef __nx_cxx_20_property &&
+#warning "nx meta property system is only avalable with std::c++20 standard or higher"
+#elif !defined __nx_cxx_20_reflect
+#warning "nx meta property system requires reflect extension"
 #else
+
+#define NX_CXX20_PROPERTY_IMPL
+
 #include <nx/experimental/reflect>
-#include <nx/core/detail/property_defs.hpp>
+#include <nx/core/Signal.hpp>
 
 namespace nx::detail
 {
@@ -157,6 +161,20 @@ namespace nx::detail
     constexpr std::string_view propertyResetTypeName() { return typeid(Prop::reset).name(); }
 
     template<typename Prop>
+    concept PropertyWithNotify =
+        Property<Prop> and
+        requires(typename Prop::host_type * obj, typename Prop::type value)
+        {
+            NX_MAKE_EMIT(Prop::notify, obj, value)
+        };
+
+    template<Property Prop>
+    constexpr bool propertyHasNotify()  { return PropertyWithNotify<Prop>; }
+
+    template<PropertyWithNotify Prop>
+    constexpr std::string_view propertyNotifyTypeName () { return  typeid(Prop::notify).name(); }
+
+    template<typename Prop>
     void DumpPropertyInfo (Prop & p)
     {
         constexpr auto type_name = reflect::type_name<Prop>();
@@ -196,6 +214,11 @@ namespace nx::detail
                 std::cerr << "\tHas reset: true\n\t\tReset: " << propertyResetTypeName<Prop>() << std::endl;
             else
                 std::cerr << "\tHas reset: false" << std::endl;
+
+            if constexpr (PropertyWithNotify<Prop>)
+                std::cerr << "\tHas notify: true\n\t\tNotify: " << propertyNotifyTypeName<Prop>() << std::endl;
+            else
+                std::cerr << "\tHas notify: false" << std::endl;
 
         }
     }

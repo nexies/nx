@@ -2,11 +2,11 @@
 // Created by nexie on 09.11.2025.
 //
 
-#include "../include/nx/core/Object.hpp"
+#include "nx/core/Object.hpp"
 
 #include <boost/asio/local/basic_endpoint.hpp>
 
-#include "../include/nx/core/Thread.hpp"
+#include "nx/core/Thread.hpp"
 
 using namespace nx;
 

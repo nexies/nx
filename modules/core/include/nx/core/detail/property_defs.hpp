@@ -6,8 +6,8 @@
 #define PROPERTY_DEFS_HPP
 
 #include <nx/macro/repeat.hpp>
-#include <nx/macro/arg_count.hpp>
-#include <nx/macro/choose.hpp>
+#include <nx/macro/util/arg_count.hpp>
+#include <nx/macro/util/choose.hpp>
 #include <nx/macro/logic.hpp>
 
 // clang-tidy: -cppcoreguidelines-avoid-non-const-global-variables
@@ -143,9 +143,9 @@
 
 #define __NX_PROPERTY_HAS_TYPE_AND_NAME_OR_TYPE_AND_MEMBER(...) \
     NX_EXPAND(\
-        __NX_XOR( \
-            __NX_AND(__NX_PROPERTY_HAS_TRAIT(TYPE, __VA_ARGS__), __NX_PROPERTY_HAS_TRAIT(NAME, __VA_ARGS__)), \
-            __NX_AND(__NX_PROPERTY_HAS_TRAIT(TYPE, __VA_ARGS__), __NX_PROPERTY_HAS_TRAIT(MEMBER, __VA_ARGS__)) \
+        NX_XOR( \
+            NX_AND(__NX_PROPERTY_HAS_TRAIT(TYPE, __VA_ARGS__), __NX_PROPERTY_HAS_TRAIT(NAME, __VA_ARGS__)), \
+            NX_AND(__NX_PROPERTY_HAS_TRAIT(TYPE, __VA_ARGS__), __NX_PROPERTY_HAS_TRAIT(MEMBER, __VA_ARGS__)) \
         ) \
     )
 
@@ -291,34 +291,6 @@ namespace nx
 
 }
 
-///
-/// Plan for improving usability of NX_PROPERTY:
-///
-///     1) NX_PROPERTY should not only declare new member functions for accessing a certain member field, but also should
-///         define a meta-struct, defining the property's meta information
-///     2) NX_PROPERTY should be able to use existing member functions and fields to define object's property.
-///     This is especially useful when setters/getters are non-trivial.
-///     For example:
-///
-///         struct Auth : public Object
-///         {
-///             private:
-///             std::size_t password_hash;
-///
-///             public:
-///
-///             void setPassword(std::string new_password)
-///             {
-///                 password_hash = std::hash<std::string>{}(new_password);
-///             }
-///
-///             NX_PROPERTY(TYPE std::size_t, MEMBER NAME password_hash, MEMBER WRITE setPassword);
-///         }
-///
-///         NX_PROPERTY macro should expand into something like this:
-///         struct : public :: nx::property_descriptor_t
-///         {
-///
-///         }
+
 
 #endif //PROPERTY_DEFS_HPP

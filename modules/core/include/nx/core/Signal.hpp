@@ -100,6 +100,12 @@ namespace nx {
         return Signal(nullptr, nx::make_invoker(c, args...));
     }
 
+    template<typename Sender, typename Signal, typename Receiver, typename Slot>
+    bool connect (Sender * sender, Signal && signal, Receiver * receiver, Slot && slot, uint8_t flags);
+
+    template<typename Sender, typename Signal, typename ... Args>
+    void emit (Sender * sender, Signal signal, Args&&...);
+
     // class SignalQueue {
     // public:
     //     struct Entry

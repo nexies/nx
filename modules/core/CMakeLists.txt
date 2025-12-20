@@ -7,10 +7,18 @@ add_library(nx_core
         src/Thread.cpp
         src/Timer.cpp
         include/nx/core/detail/property_impl.hpp
+        include/nx/core/Property.hpp
+        include/nx/core/detail/property_defs_cxx20.hpp
 )
 
 find_package(spdlog REQUIRED)
 find_package(Boost COMPONENTS REQUIRED program_options system)
+
+if (NX_ENABLE_CXX_20_FEATURES)
+    target_compile_definitions(nx_core PUBLIC -D__nx_cxx_20_features)
+    target_compile_definitions(nx_core PUBLIC -D__nx_cxx_20_reflect)
+    target_compile_definitions(nx_core PUBLIC -D__nx_cxx_20_property)
+endif()
 
 target_link_libraries(nx_core PUBLIC
         nx::macro

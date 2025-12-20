@@ -111,8 +111,9 @@ struct PropertyManager
     __NX_OBJECT(__VA_ARGS__)
 
 #include "nx/core/detail/property_impl.hpp"
+#include <nx/core/Object.hpp>
 
-struct Struct
+struct Struct : public nx::Object
 {
     NX_ENABLE_PROPERTIES(Struct)
 
@@ -131,6 +132,8 @@ struct Struct
         return std::to_string(value);
     }
 
+    NX_SIGNAL(valueChanged, std::string)
+
     struct someProperty : nx::detail::property_tag<This>
     {
         /// name is MANDATORY
@@ -138,21 +141,33 @@ struct Struct
         /// type is MANDATORY
         using type = std::string;
         /// default_value is OPTIONAL
-        static constexpr type default_value = "12";
+        // static constexpr type default_value = "12";
         /// set is OPTIONAL
         static constexpr auto set = [] (host_type & obj, const std::string & val) {
             std::cerr << "Lambda set: " << val << std::endl;
             obj.value = std::stoi(val);
         };
         /// get is OPTIONAL
-        static constexpr auto get = &host_type::getValue;
+        // static constexpr auto get = &host_type::getValue;
         /// reset is OPTIONAL
-        // static constexpr auto reset = &host_type::resetValue;
+        // static constexpr auto reset = [] (host_type & obj) {
+        //     set(obj, default_value);
+        // };
+        /// notify is OPTIONAL
+        static constexpr auto notify = &host_type::valueChanged;
     };
 };
 
+
+#include <nx/macro/logic.hpp>
+#include <nx/macro/numeric.hpp>
+
+
+
 int main(int argc, char* argv[])
 {
+    // NX_INC(0)
+
     using namespace nx::detail;
 
     std::cerr << std::boolalpha;
@@ -167,56 +182,4 @@ int main(int argc, char* argv[])
     return 0;
 }
 
-///
-/// struct Creature
-/// {
-///     NX_ENABLE_PROPERTIES
-///
-///     NX_PROPERTY(TYPE float, NAME weight, READ weight, CONST, DEFAULT 40)
-///         // 1) Creates member property descriptor - name "weight", type "float"
-///         // 2) Creates member data field "const float m_weight" ???
-///         // 3) Creates member getter - name "weight", const, return type "float"
-///
-///
-///    Creature(float weight = propertyDefault<"weight">()) : m_weight(weight) {}
-/// }
-///
-/// struct Person : public Creature
-/// {
-///     NX_PROPERTY(TYPE int, NAME id, READ id, WRITE setId)
-///         // 1) Creates member property descriptor - name "id", type "int"
-///         // 2) Creates member data field "int m_id";    ???
-///         // 3) Creates member getter - name "id", const, return type std::string
-///         // 4) Creates member setter - name "setId", argument const "std::string &", return void
-///
-///     struct Initials
-///     {
-///         std::string name;
-///         std::string surname;
-///     } m_initials;
-///
-///     std::string getName () const { return m_initials.name; }
-///     std::string setName (std::string name) const { m_initials.name = name; }
-///
-///     NX_PROPERTY(TYPE std::string, NAME firstName, STORED false, MEMBER READ getName, MEMBER WRITE setName)
-///         // 1) Creates member property descriptor - name "firstName", type "std::string"
-///         // 2) Does not create getter - uses existing getter
-///         // 3) Does not create setter - uses existing setter
-///
-///    Person() : Creature(80) {}
-/// }
-///
-///     Person p;
-///     p.setName("Phil");
-///
-///     p.property<"firstName">();  // calls Person::getName, returns "Phil";
-///     p.setProperty<"firstName">("John") // calls Person::setName
-///     p.property<"weight">(); // calls Creature::weight, returns 80
-///     p.propertyDefault<"firstName">() // Undefined or returns {} ???
-///
-///
-///     template<>
-///     void setProperty<fixed_string{"firstName"}>(nx::const_reference_wrapper<std::string> new_value) const
-///     {
-///         this->setName()
-///     }
+

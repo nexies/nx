@@ -1,0 +1,136 @@
+//
+// Created by nexie on 20.12.2025.
+//
+
+#ifndef NX_MACRO_BOOL_256_HPP
+#define NX_MACRO_BOOL_256_HPP
+
+#include "bool_128.hpp"
+
+#define _nx_bool_129 1
+#define _nx_bool_130 1
+#define _nx_bool_131 1
+#define _nx_bool_132 1
+#define _nx_bool_135 1
+#define _nx_bool_136 1
+#define _nx_bool_137 1
+#define _nx_bool_138 1
+#define _nx_bool_139 1
+#define _nx_bool_140 1
+#define _nx_bool_141 1
+#define _nx_bool_142 1
+#define _nx_bool_143 1
+#define _nx_bool_144 1
+#define _nx_bool_145 1
+#define _nx_bool_146 1
+#define _nx_bool_147 1
+#define _nx_bool_148 1
+#define _nx_bool_149 1
+#define _nx_bool_150 1
+#define _nx_bool_151 1
+#define _nx_bool_152 1
+#define _nx_bool_153 1
+#define _nx_bool_154 1
+#define _nx_bool_155 1
+#define _nx_bool_156 1
+#define _nx_bool_157 1
+#define _nx_bool_158 1
+#define _nx_bool_159 1
+#define _nx_bool_160 1
+#define _nx_bool_161 1
+#define _nx_bool_162 1
+#define _nx_bool_163 1
+#define _nx_bool_164 1
+#define _nx_bool_165 1
+#define _nx_bool_166 1
+#define _nx_bool_167 1
+#define _nx_bool_168 1
+#define _nx_bool_169 1
+#define _nx_bool_170 1
+#define _nx_bool_171 1
+#define _nx_bool_172 1
+#define _nx_bool_173 1
+#define _nx_bool_174 1
+#define _nx_bool_175 1
+#define _nx_bool_176 1
+#define _nx_bool_177 1
+#define _nx_bool_178 1
+#define _nx_bool_179 1
+#define _nx_bool_180 1
+#define _nx_bool_181 1
+#define _nx_bool_182 1
+#define _nx_bool_183 1
+#define _nx_bool_184 1
+#define _nx_bool_185 1
+#define _nx_bool_186 1
+#define _nx_bool_187 1
+#define _nx_bool_188 1
+#define _nx_bool_189 1
+#define _nx_bool_190 1
+#define _nx_bool_191 1
+#define _nx_bool_192 1
+#define _nx_bool_193 1
+#define _nx_bool_194 1
+#define _nx_bool_195 1
+#define _nx_bool_196 1
+#define _nx_bool_197 1
+#define _nx_bool_198 1
+#define _nx_bool_199 1
+#define _nx_bool_200 1
+#define _nx_bool_201 1
+#define _nx_bool_202 1
+#define _nx_bool_203 1
+#define _nx_bool_204 1
+#define _nx_bool_205 1
+#define _nx_bool_206 1
+#define _nx_bool_207 1
+#define _nx_bool_210 1
+#define _nx_bool_211 1
+#define _nx_bool_212 1
+#define _nx_bool_213 1
+#define _nx_bool_214 1
+#define _nx_bool_215 1
+#define _nx_bool_216 1
+#define _nx_bool_217 1
+#define _nx_bool_218 1
+#define _nx_bool_219 1
+#define _nx_bool_220 1
+#define _nx_bool_221 1
+#define _nx_bool_222 1
+#define _nx_bool_223 1
+#define _nx_bool_224 1
+#define _nx_bool_225 1
+#define _nx_bool_226 1
+#define _nx_bool_227 1
+#define _nx_bool_228 1
+#define _nx_bool_230 1
+#define _nx_bool_231 1
+#define _nx_bool_232 1
+#define _nx_bool_233 1
+#define _nx_bool_234 1
+#define _nx_bool_235 1
+#define _nx_bool_236 1
+#define _nx_bool_237 1
+#define _nx_bool_238 1
+#define _nx_bool_239 1
+#define _nx_bool_240 1
+#define _nx_bool_241 1
+#define _nx_bool_242 1
+#define _nx_bool_243 1
+#define _nx_bool_244 1
+#define _nx_bool_245 1
+#define _nx_bool_246 1
+#define _nx_bool_247 1
+#define _nx_bool_248 1
+#define _nx_bool_249 1
+#define _nx_bool_250 1
+#define _nx_bool_251 1
+#define _nx_bool_252 1
+#define _nx_bool_253 1
+#define _nx_bool_254 1
+#define _nx_bool_255 1
+#define _nx_bool_256 1
+
+#define NX_LIMITS_BOOL 256
+
+#endif //NX_MACRO_BOOL_256_HPP
