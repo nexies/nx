@@ -22,9 +22,11 @@ add_library(nx_macro
         include/nx/macro/numeric.hpp
         include/nx/macro/logic/op.hpp
         include/nx/macro/numeric/number_inc_dec.hpp
-        include/nx/macro/repeat/iterate.hpp
+        include/nx/macro/repeat/sequence.hpp
         include/nx/macro/detail/limits/choose_64.hpp
         include/nx/macro/detail/choose_limit.hpp
+        include/nx/macro/repeat/sequence_impl.hpp
+        include/nx/macro/repeat/repeat.hpp
 )
 
 include(nxMakeModule)

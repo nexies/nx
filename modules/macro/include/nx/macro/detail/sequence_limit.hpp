@@ -10,15 +10,15 @@
 #else
 
 #if NX_MAX_NUMBER >= 256
-#include "limits/repeat_256.hpp"
+#include "limits/sequence_256.hpp"
 #elif NX_MAX_NUMBER >= 128
-#include "limits/repeat_128.hpp"
+#include "limits/sequence_128.hpp"
 #elif NX_MAX_NUMBER >= 64
-#include "limits/repeat_64.hpp"
+#include "limits/sequence_64.hpp"
 #endif
 #endif
 
-#if NX_MAX_NUMBER != NX_LIMITS_ITERATE
+#if NX_MAX_NUMBER != NX_LIMITS_SEQUENCE
 #error "NX_MAX_NUMBER != NX_LIMITS_INC"
 #endif
 

@@ -8,7 +8,7 @@
 #include <functional>
 #include <iostream>
 
-#ifndef __nx_cxx_20_property &&
+#ifndef __nx_cxx_20_property
 #warning "nx meta property system is only avalable with std::c++20 standard or higher"
 #elif !defined __nx_cxx_20_reflect
 #warning "nx meta property system requires reflect extension"

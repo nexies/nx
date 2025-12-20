@@ -166,8 +166,6 @@ struct Struct : public nx::Object
 
 int main(int argc, char* argv[])
 {
-    // NX_INC(0)
-
     using namespace nx::detail;
 
     std::cerr << std::boolalpha;

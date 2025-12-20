@@ -6,7 +6,8 @@
 #define NX_MACRO_REPEAT_HPP
 
 #include <nx/macro.hpp>
-#include <nx/macro/repeat/iterate.hpp>
+#include <nx/macro/repeat/sequence.hpp>
+#include <nx/macro/repeat/repeat.hpp>
 
 
 #endif //NX_MACRO_REPEAT_HPP

@@ -22,6 +22,8 @@
 #error "NX_MAX_NUMBER != NX_LIMITS_INC"
 #endif
 
-#define NX_INC(n) NX_CONCAT(NX_INC_, n)
+#define _nx_inc(n) \
+    _nx_concat_2(_nx_inc_, n)
+
 
 #endif //NX_MACRO_NUMBER_INC_LIMIT_HPP

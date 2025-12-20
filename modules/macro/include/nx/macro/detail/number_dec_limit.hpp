@@ -22,4 +22,8 @@
 #error "NX_MAX_NUMBER != NX_LIMITS_INC"
 #endif
 
+#define _nx_dec(n) \
+    _nx_concat_2(_nx_dec_, n)
+
+
 #endif //NUMBER_DEC_N_HPP
