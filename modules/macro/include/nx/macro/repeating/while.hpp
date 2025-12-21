@@ -11,6 +11,10 @@
 #define _nx_while(c, o, r, ...) \
     _nx_while_0(c, o, r, __VA_ARGS__)
 
+// RECURSION:
+// #define _nx_while_d(d, c, o, r, ...) \
+    _nx_while_##d (c, o, r, __VA_ARGS__)
+
 /**
  *
  *

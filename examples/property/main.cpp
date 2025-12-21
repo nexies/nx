@@ -162,25 +162,19 @@ struct Struct : public nx::Object
 // #include <nx/macro/logic.hpp>
 // #define NX_MAX_NUMBER 100
 #include <nx/macro/numeric.hpp>
-// #include <boost/preprocessor/while.hpp>
+#include <boost/preprocessor/while.hpp>
 // #include <nx/macro/repeat/iterate.hpp>
 #include <nx/macro/repeating/while.hpp>
 #include "nx/macro/numeric/sum.hpp"
 #include "nx/macro/numeric/sub.hpp"
 #include "nx/macro/numeric/compare.hpp"
+#include "nx/macro/util/arguments.hpp"
 
 int main(int argc, char* argv[])
 {
-// #define _cond(a, b) _nx_bool(a)
-// #define _op(a, b) _nx_dec(a), _nx_inc(b)
-// #define _res(a, b) b
+#define MY_MACRO(...) (__VA_ARGS__)
 
-// #define _nx_add(a, b) _nx_while_0(_cond, _op, _res, 2, 2)
-
-// #define _mul_cond(a, c) _nx_bool(a)
-// #define _mul_op(a, b) _nx_dec(a), _nx_add(a, b)
-
-// #define _nx_mul(a, b) _nx_while_0(_mul_cond, _mul_op, _res, a, b)
+    _nx_arguments_tokenize(MY_MACRO, 1 123, 2 321, 3 323)
 
     NX_NUMERIC_SUM(0, 0);
     // _nx_numeric_sub(10, 4);

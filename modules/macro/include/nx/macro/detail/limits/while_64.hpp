@@ -2,8 +2,8 @@
 // Created by nexie on 21.12.2025.
 //
 
-#ifndef WHILE_64_HPP
-#define WHILE_64_HPP
+#ifndef NX_MACRO_WHILE_64_HPP
+#define NX_MACRO_WHILE_64_HPP
 
 #define _nx_while_0(c, o, r, ...) _nx_logic_if(c(__VA_ARGS__))(_nx_while_1(c, o, r, o(__VA_ARGS__)), r(__VA_ARGS__))
 #define _nx_while_1(c, o, r, ...) _nx_logic_if(c(__VA_ARGS__))(_nx_while_2(c, o, r, o(__VA_ARGS__)), r(__VA_ARGS__))

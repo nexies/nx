@@ -29,6 +29,16 @@
         a, b \
     )
 
+#define _nx_numeric_sum_d(d, a, b) \
+    _nx_while_d\
+    (\
+        d, \
+        _nx_numeric_sum_condition, \
+        _nx_numeric_sum_operation, \
+        _nx_numeric_sum_result, \
+        a, b \
+    )
+
 /**
  * @brief Performs a preprocessor-level addition of two integer literals.
  *

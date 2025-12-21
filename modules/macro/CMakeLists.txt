@@ -36,6 +36,9 @@ add_library(nx_macro
         include/nx/macro/detail/limits/is_max_128.hpp
         include/nx/macro/detail/limits/is_max_256.hpp
         include/nx/macro/detail/is_max_limit.hpp
+        include/nx/macro/detail/limits/arg_tk_64.hpp
+        include/nx/macro/detail/arg_tk_limit.hpp
+        include/nx/macro/repeating/recursive_while.hpp
 )
 
 include(nxMakeModule)
