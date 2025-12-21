@@ -5,7 +5,7 @@
 #ifndef NX_MACRO_SEQUENCE_REPEAT_HPP
 #define NX_MACRO_SEQUENCE_REPEAT_HPP
 
-#include "sequence_impl.hpp"
+#include <nx/macro/repeating/sequence.hpp>
 
 /**
  * @brief Generates a comma-separated sequence using a user macro.

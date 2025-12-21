@@ -2,7 +2,6 @@ add_library(nx_macro
         include/nx/macro.hpp
         macro.cpp
         include/nx/macro/util/overload.hpp
-        include/nx/macro/numeric/arithmetic_sum.hpp
         include/nx/macro/detail/limits/number_inc_64.hpp
         include/nx/macro/detail/limits/number_inc_128.hpp
         include/nx/macro/detail/limits/number_inc_256.hpp
@@ -21,12 +20,22 @@ add_library(nx_macro
         include/nx/macro/logic/if.hpp
         include/nx/macro/numeric.hpp
         include/nx/macro/logic/op.hpp
-        include/nx/macro/numeric/number_inc_dec.hpp
-        include/nx/macro/repeat/sequence.hpp
+        include/nx/macro/numeric/inc_dec.hpp
         include/nx/macro/detail/limits/choose_64.hpp
         include/nx/macro/detail/choose_limit.hpp
-        include/nx/macro/repeat/sequence_impl.hpp
-        include/nx/macro/repeat/repeat.hpp
+        include/nx/macro/repeating/sequence.hpp
+        include/nx/macro/repeating/repeat.hpp
+        include/nx/macro/repeating/iterate.hpp
+        include/nx/macro/repeating/while.hpp
+        include/nx/macro/detail/limits/while_64.hpp
+        include/nx/macro/detail/while_limits.hpp
+        include/nx/macro/numeric/sum.hpp
+        include/nx/macro/numeric/sub.hpp
+        include/nx/macro/numeric/compare.hpp
+        include/nx/macro/detail/limits/is_max_64.hpp
+        include/nx/macro/detail/limits/is_max_128.hpp
+        include/nx/macro/detail/limits/is_max_256.hpp
+        include/nx/macro/detail/is_max_limit.hpp
 )
 
 include(nxMakeModule)

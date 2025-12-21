@@ -5,7 +5,11 @@
 #ifndef NXTBOT_MACRO_HPP
 #define NXTBOT_MACRO_HPP
 
+// #define NX_MAX_NUMBER
+
+#ifndef NX_MAX_NUMBER
 #define NX_MAX_NUMBER 64
+#endif
 
 #include <string>
 #include "macro/util/platform.hpp"

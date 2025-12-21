@@ -73,8 +73,15 @@
     __NX_ARGS_64_PLACEHOLDERS(__VA_ARGS__, __NX_ARGS_COUNT_RSEQ())
 #define __NX_ARGS_COUNT_HELPER_1(...) 0
 
-#define NX_ARGS_COUNT(...) \
+
+
+
+
+#define _nx_args_count(...) \
     NX_CONCAT(__NX_ARGS_COUNT_HELPER_, __NX_PP_ISEMPTY(__VA_ARGS__))(__VA_ARGS__)
+
+#define NX_ARGS_COUNT(...) \
+    _nx_args_count(__VA_ARGS__)
 
 #define __NX_HAS_ARGS_1() 0
 #define __NX_HAS_ARGS_0() 1

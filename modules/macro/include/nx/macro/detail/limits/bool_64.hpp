@@ -55,6 +55,7 @@
 #define _nx_bool_47 1
 #define _nx_bool_48 1
 #define _nx_bool_49 1
+#define _nx_bool_50 1
 #define _nx_bool_51 1
 #define _nx_bool_52 1
 #define _nx_bool_53 1

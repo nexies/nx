@@ -8,11 +8,11 @@
 #include <nx/macro.hpp>
 #include <nx/macro/detail/choose_limit.hpp>
 
-#define _nx_choose_(pos, ...) \
+#define _nx_choose(pos, ...) \
     NX_CONCAT(_nx_choose_, pos)(__VA_ARGS__)
 
 #define NX_CHOOSE(pos, ...) \
-    _nx_choose_(pos, __VA_ARGS__)
+    _nx_choose(pos, __VA_ARGS__)
 
 
 #endif //CHOOSE_HPP

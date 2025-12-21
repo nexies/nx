@@ -6,6 +6,6 @@
 #define NX_MACRO_NUMERIC_HPP
 
 #include <nx/macro.hpp>
-#include <nx/macro/numeric/number_inc_dec.hpp>
+#include <nx/macro/numeric/inc_dec.hpp>
 
 #endif //NX_MACRO_NUMERIC_HPP

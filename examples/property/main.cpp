@@ -159,13 +159,51 @@ struct Struct : public nx::Object
 };
 
 
-#include <nx/macro/logic.hpp>
+// #include <nx/macro/logic.hpp>
+// #define NX_MAX_NUMBER 100
 #include <nx/macro/numeric.hpp>
-
-
+// #include <boost/preprocessor/while.hpp>
+// #include <nx/macro/repeat/iterate.hpp>
+#include <nx/macro/repeating/while.hpp>
+#include "nx/macro/numeric/sum.hpp"
+#include "nx/macro/numeric/sub.hpp"
+#include "nx/macro/numeric/compare.hpp"
 
 int main(int argc, char* argv[])
 {
+// #define _cond(a, b) _nx_bool(a)
+// #define _op(a, b) _nx_dec(a), _nx_inc(b)
+// #define _res(a, b) b
+
+// #define _nx_add(a, b) _nx_while_0(_cond, _op, _res, 2, 2)
+
+// #define _mul_cond(a, c) _nx_bool(a)
+// #define _mul_op(a, b) _nx_dec(a), _nx_add(a, b)
+
+// #define _nx_mul(a, b) _nx_while_0(_mul_cond, _mul_op, _res, a, b)
+
+    NX_NUMERIC_SUM(0, 0);
+    // _nx_numeric_sub(10, 4);
+    // _nx_numeric_eq(64, 64);
+   // std::cout << _nx_mul(1, 2) << std::endl;
+
+// #define DECORATOR_0(data) { data,
+// #define DECORATOR_1(data) data,
+// #define DECORATOR_2(data) data }
+// #define DECORATOR(c, data) NX_CONCAT(DECORATOR_, c)(data)
+// #define ITERATOR(n, data) data
+//
+//     enum Enum {
+//         E1,
+//         E2,
+//         E3
+//     };
+//
+//     Enum vec [] = NX_DECORATED_ITERATE(ITERATOR, DECORATOR, E3, E2, E1);
+
+    NX_INC(10);
+
+
     using namespace nx::detail;
 
     std::cerr << std::boolalpha;

@@ -1,0 +1,24 @@
+//
+// Created by nexie on 21.12.2025.
+//
+
+#ifndef NX_MACRO_WHILE_HPP
+#define NX_MACRO_WHILE_HPP
+
+#include <nx/macro/logic/if.hpp>
+#include <nx/macro/detail/while_limits.hpp>
+
+#define _nx_while(c, o, r, ...) \
+    _nx_while_0(c, o, r, __VA_ARGS__)
+
+/**
+ *
+ *
+ * @param condition
+ * @param operation
+ * @param result
+ */
+#define NX_WHILE(condition, operation, result, ...) \
+    _nx_while(condition, operation, result, __VA_ARGS__)
+
+#endif //WHILE_HPP

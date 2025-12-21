@@ -9,6 +9,7 @@
 #include <nx/macro/detail/bool_limit.hpp>
 
 
-#define NX_BOOL(n) NX_CONCAT(_nx_bool_, n)
+#define NX_BOOL(n) \
+    _nx_bool(n)
 
 #endif //NX_MACRO_BOOL_HPP

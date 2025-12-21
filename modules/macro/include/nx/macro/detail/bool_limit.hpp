@@ -22,4 +22,7 @@
 #error "NX_MAX_NUMBER != NX_LIMITS_INC"
 #endif
 
+#define _nx_bool(a) \
+    _nx_concat_2(_nx_bool_, a)
+
 #endif //BOOL_N_HPP
