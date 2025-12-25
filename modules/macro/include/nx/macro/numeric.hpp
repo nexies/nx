@@ -7,5 +7,7 @@
 
 #include <nx/macro.hpp>
 #include <nx/macro/numeric/inc_dec.hpp>
+#include <nx/macro/numeric/sum.hpp>
+#include <nx/macro/numeric/sub.hpp>
 
 #endif //NX_MACRO_NUMERIC_HPP

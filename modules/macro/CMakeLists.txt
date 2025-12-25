@@ -39,6 +39,7 @@ add_library(nx_macro
         include/nx/macro/detail/limits/arg_tk_64.hpp
         include/nx/macro/detail/arg_tk_limit.hpp
         include/nx/macro/repeating/recursive_while.hpp
+        include/nx/macro/tuple/tuple.hpp
 )
 
 include(nxMakeModule)

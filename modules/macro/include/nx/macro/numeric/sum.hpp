@@ -5,6 +5,7 @@
 #ifndef NX_MACRO_SUM_HPP
 #define NX_MACRO_SUM_HPP
 
+#include <nx/macro/util/choose.hpp>
 #include <nx/macro/repeating/while.hpp>
 #include <nx/macro/detail/is_max_limit.hpp>
 
@@ -29,15 +30,27 @@
         a, b \
     )
 
-#define _nx_numeric_sum_d(d, a, b) \
-    _nx_while_d\
+
+#define _nx_numeric_sum_condition_d(d, a, b) \
+    _nx_numeric_sum_condition(a, b)
+
+#define _nx_numeric_sum_operation_d(d, a, b) \
+    _nx_inc(d), _nx_dec(a), _nx_inc(b)
+
+#define _nx_numeric_sum_result_d(d, a, b) \
+    d, b
+
+#define _nx_numeric_sum_enter_d(d, a, b) \
+    _nx_while_##d \
     (\
-        d, \
-        _nx_numeric_sum_condition, \
-        _nx_numeric_sum_operation, \
-        _nx_numeric_sum_result, \
-        a, b \
+        _nx_numeric_sum_condition_d, \
+        _nx_numeric_sum_operation_d, \
+        _nx_numeric_sum_result_d, \
+        d, a, b \
     )
+
+#define _nx_numeric_sum_d(d, a, b) \
+    _nx_choose(1, _nx_numeric_sum_enter_d(d, a, b))
 
 /**
  * @brief Performs a preprocessor-level addition of two integer literals.
@@ -64,5 +77,34 @@
  */
 #define NX_NUMERIC_SUM(a, b) \
     _nx_numeric_sum(a, b)
+
+
+#define NX_NUMERIC_SUM_D(d, a, b) \
+    _nx_numeric_sum_enter_d(d, a, b)
+
+
+#define _nx_numeric_mul_condition_d(d, counter, a, res) \
+    _nx_bool(counter)
+
+#define _nx_numeric_mul_operation_d(d, counter, a, res) \
+    _nx_choose(0, _nx_numeric_sum_enter_d(d, a, res)), \
+    _nx_dec(counter), \
+    a, \
+    _nx_choose(1, _nx_numeric_sum_enter_d(d, a, res))
+
+#define _nx_numeric_mul_result_d(d, counter, a, res) \
+    d, res
+
+#define _nx_numeric_mul_enter_d(d, a, b) \
+    _nx_while_##d \
+    ( \
+        _nx_numeric_mul_condition_d, \
+        _nx_numeric_mul_operation_d, \
+        _nx_numeric_mul_result_d, \
+        d, a, b, 0 \
+    )
+
+
+_nx_numeric_mul_enter_d(0, 1, 1)
 
 #endif //SUM_HPP

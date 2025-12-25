@@ -5,8 +5,8 @@
 #ifndef NX_MACRO_LOGIC_HPP
 #define NX_MACRO_LOGIC_HPP
 
-#include "logic/bool.hpp"
-#include "logic/if.hpp"
-#include "logic/op.hpp"
+#include <nx/macro/logic/bool.hpp>
+#include <nx/macro/logic/if.hpp>
+#include <nx/macro/logic/op.hpp>
 
 #endif //NX_MACRO_LOGIC_HPP
