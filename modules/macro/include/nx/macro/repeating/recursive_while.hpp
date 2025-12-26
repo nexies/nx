@@ -9,8 +9,10 @@
 // #include <nx/macro/logic/op.hpp>
 // #include <nx/macro/logic/bool.hpp>
 
+#include <nx/macro.hpp>
 #include <nx/macro/logic.hpp>
 #include <nx/macro/numeric/inc_dec.hpp>
+#include <nx/macro/util/choose.hpp>
 
 // #include <boost/preprocessor/while.hpp>
 // #include <boost/preprocessor/arithmetic/add.hpp>
@@ -71,79 +73,87 @@
 ///         )
 ///
 
-# define  _nx_2_while_d(c, o, r, d, ...) \
+
+# define _nx_2_while_
+
+# define  _nx_2_while_d(d, c, o, r, ...) \
     _nx_concat_2(_nx_2_while_, d)(c, o, r, __VA_ARGS__)
 
-# define _nx_2_while_0(c, o, ...)   _nx_logic_if(c(1,  __VA_ARGS__))(_nx_2_while_d(c, o, o(1,  __VA_ARGS__)), __VA_ARGS__))
-# define _nx_2_while_1(c, o, ...)   _nx_logic_if(c(2,  __VA_ARGS__))(_nx_2_while_d(c, o, o(2,  __VA_ARGS__)), __VA_ARGS__))
-# define _nx_2_while_2(c, o, ...)   _nx_logic_if(c(3,  __VA_ARGS__))(_nx_2_while_d(c, o, o(3,  __VA_ARGS__)), __VA_ARGS__))
-# define _nx_2_while_3(c, o, ...)   _nx_logic_if(c(4,  __VA_ARGS__))(_nx_2_while_d(c, o, o(4,  __VA_ARGS__)), __VA_ARGS__))
-# define _nx_2_while_4(c, o, ...)   _nx_logic_if(c(5,  __VA_ARGS__))(_nx_2_while_d(c, o, o(5,  __VA_ARGS__)), __VA_ARGS__))
-# define _nx_2_while_5(c, o, ...)   _nx_logic_if(c(6,  __VA_ARGS__))(_nx_2_while_d(c, o, o(6,  __VA_ARGS__)), __VA_ARGS__))
-# define _nx_2_while_6(c, o, ...)   _nx_logic_if(c(7,  __VA_ARGS__))(_nx_2_while_d(c, o, o(7,  __VA_ARGS__)), __VA_ARGS__))
-# define _nx_2_while_7(c, o, ...)   _nx_logic_if(c(8,  __VA_ARGS__))(_nx_2_while_d(c, o, o(8,  __VA_ARGS__)), __VA_ARGS__))
-# define _nx_2_while_8(c, o, ...)   _nx_logic_if(c(9,  __VA_ARGS__))(_nx_2_while_d(c, o, o(9,  __VA_ARGS__)), __VA_ARGS__))
-# define _nx_2_while_9(c, o, ...)   _nx_logic_if(c(10, __VA_ARGS__))(_nx_2_while_d(c, o, o(10, __VA_ARGS__)), __VA_ARGS__))
-# define _nx_2_while_10(c, o, ...)  _nx_logic_if(c(11, __VA_ARGS__))(_nx_2_while_d(c, o, o(11, __VA_ARGS__)), __VA_ARGS__))
-# define _nx_2_while_11(c, o, ...)  _nx_logic_if(c(12, __VA_ARGS__))(_nx_2_while_d(c, o, o(12, __VA_ARGS__)), __VA_ARGS__))
-# define _nx_2_while_12(c, o, ...)  _nx_logic_if(c(13, __VA_ARGS__))(_nx_2_while_d(c, o, o(13, __VA_ARGS__)), __VA_ARGS__))
-# define _nx_2_while_13(c, o, ...)  _nx_logic_if(c(14, __VA_ARGS__))(_nx_2_while_d(c, o, o(14, __VA_ARGS__)), __VA_ARGS__))
-# define _nx_2_while_14(c, o, ...)  _nx_logic_if(c(15, __VA_ARGS__))(_nx_2_while_d(c, o, o(15, __VA_ARGS__)), __VA_ARGS__))
-# define _nx_2_while_15(c, o, ...)  _nx_logic_if(c(16, __VA_ARGS__))(_nx_2_while_d(c, o, o(16, __VA_ARGS__)), __VA_ARGS__))
-# define _nx_2_while_16(c, o, ...)  _nx_logic_if(c(17, __VA_ARGS__))(_nx_2_while_d(c, o, o(17, __VA_ARGS__)), __VA_ARGS__))
+# define _nx_2_while_0(c, o, r, ...)   _nx_logic_if(c(1,  __VA_ARGS__))(_nx_2_while_1(c, o, r, o(1,  __VA_ARGS__)), r(1, __VA_ARGS__))
+# define _nx_2_while_1(c, o, r, ...)   _nx_logic_if(c(2,  __VA_ARGS__))(_nx_2_while_2(c, o, r, o(2,  __VA_ARGS__)), r(2, __VA_ARGS__))
+# define _nx_2_while_2(c, o, r, ...)   _nx_logic_if(c(3,  __VA_ARGS__))(_nx_2_while_3(c, o, r, o(3,  __VA_ARGS__)), r(3, __VA_ARGS__))
+# define _nx_2_while_3(c, o, r, ...)   _nx_logic_if(c(4,  __VA_ARGS__))(_nx_2_while_4(c, o, r, o(4,  __VA_ARGS__)), r(4, __VA_ARGS__))
+# define _nx_2_while_4(c, o, r, ...)   _nx_logic_if(c(5,  __VA_ARGS__))(_nx_2_while_5(c, o, r, o(5,  __VA_ARGS__)), r(5, __VA_ARGS__))
+# define _nx_2_while_5(c, o, r, ...)   _nx_logic_if(c(6,  __VA_ARGS__))(_nx_2_while_6(c, o, r, o(6,  __VA_ARGS__)), r(6, __VA_ARGS__))
+# define _nx_2_while_6(c, o, r, ...)   _nx_logic_if(c(7,  __VA_ARGS__))(_nx_2_while_7(c, o, r, o(7,  __VA_ARGS__)), r(7, __VA_ARGS__))
+# define _nx_2_while_7(c, o, r, ...)   _nx_logic_if(c(8,  __VA_ARGS__))(_nx_2_while_8(c, o, r, o(8,  __VA_ARGS__)), r(8, __VA_ARGS__))
+# define _nx_2_while_8(c, o, r, ...)   _nx_logic_if(c(9,  __VA_ARGS__))(_nx_2_while_9(c, o, r, o(9,  __VA_ARGS__)), r(9, __VA_ARGS__))
+# define _nx_2_while_9(c, o, r, ...)   _nx_logic_if(c(10, __VA_ARGS__))(_nx_2_while_10(c, o, r, o(10, __VA_ARGS__)), r(10, __VA_ARGS__))
+# define _nx_2_while_10(c, o, r, ...)  _nx_logic_if(c(11, __VA_ARGS__))(_nx_2_while_11(c, o, r, o(11, __VA_ARGS__)), r(11, __VA_ARGS__))
+# define _nx_2_while_11(c, o, r, ...)  _nx_logic_if(c(12, __VA_ARGS__))(_nx_2_while_12(c, o, r, o(12, __VA_ARGS__)), r(12, __VA_ARGS__))
+# define _nx_2_while_12(c, o, r, ...)  _nx_logic_if(c(13, __VA_ARGS__))(_nx_2_while_13(c, o, r, o(13, __VA_ARGS__)), r(13, __VA_ARGS__))
+# define _nx_2_while_13(c, o, r, ...)  _nx_logic_if(c(14, __VA_ARGS__))(_nx_2_while_14(c, o, r, o(14, __VA_ARGS__)), r(14, __VA_ARGS__))
+# define _nx_2_while_14(c, o, r, ...)  _nx_logic_if(c(15, __VA_ARGS__))(_nx_2_while_15(c, o, r, o(15, __VA_ARGS__)), r(15, __VA_ARGS__))
+# define _nx_2_while_15(c, o, r, ...)  _nx_logic_if(c(16, __VA_ARGS__))(_nx_2_while_16(c, o, r, o(16, __VA_ARGS__)), r(16, __VA_ARGS__))
+# define _nx_2_while_16(c, o, r, ...)  _nx_logic_if(c(17, __VA_ARGS__))(_nx_2_while_17(c, o, r, o(17, __VA_ARGS__)), r(17, __VA_ARGS__))
 
+# define _nx_2_numeric_sum_condition_d(d, car, res) \
+    _nx_bool(car)
 
+# define _nx_2_numeric_sum_operation_d(d, car, res) \
+    _nx_dec(car), _nx_inc(res)
 
+# define _nx_2_numeric_sum_result_d(d, car, res) \
+    d, res
 
-// # define _nx_2_while_op_wrap_d(op) \
-
-
-
-# define _nx_2_numeric_add_cond_d(d, a, b) \
-    _nx_bool(a)
-
-#define _nx_2_numeric_add_op_d(d, a, b) \
-    _nx_inc(d), _nx_dec(a), _nx_inc(b)
-
-#define _nx_2_numeric_add_res_d(d, a, b) \
-    d, a, b
-
-# define _nx_2_numeric_add_d(d, a, b) \
-    _nx_2_while_d\
-    (\
-        _nx_2_numeric_add_cond_d, \
-        _nx_2_numeric_add_op_d, \
-        _nx_2_numeric_add_res_d, \
-        d, a, b, \
+# define _nx_2_numeric_sum_d(d, a, b) \
+    _nx_2_while_d(d, \
+        _nx_2_numeric_sum_condition_d, \
+        _nx_2_numeric_sum_operation_d, \
+        _nx_2_numeric_sum_result_d, \
+        a, b \
     )
 
-# define _nx_2_numeric_add(a, b) \
-    _nx_2_numeric_add_d(0, a, b)
+// _nx_2_numeric_sum_d(0, 3, 2)
 
 
-_nx_2_numeric_add_d(12, 3, 2)
+# define _nx_2_numeric_sum_condition_d(d, car, res) \
+    _nx_bool(car)
+
+# define _nx_2_numeric_sum_operation_d(d, car, res) \
+    _nx_dec(car), _nx_inc(res)
+
+# define _nx_2_numeric_sum_result_d(d, car, res) \
+    d, res
+
+# define _nx_2_numeric_sum_d(d, a, b) \
+    _nx_2_while_##d( \
+        _nx_2_numeric_sum_condition_d, \
+        _nx_2_numeric_sum_operation_d, \
+        _nx_2_numeric_sum_result_d, \
+        a, b \
+    )
 
 
-// _nx_2_while_d
-// (
-//     _nx_2_numeric_add_cond_d,
-//     _nx_2_numeric_add_op_d,
-//     _nx_2_numeric_add_res_d,
-//     0, 2, 3,
-// )
+// _nx_2_numeric_sum_d(0, 3, 2)
+// _nx_choose(0, _nx_expand(_nx_2_numeric_sum_d(d, car, res))), \
 
-// _nx_2_numeric_add_cond_d(1, 3, 2)
-//
-// _nx_logic_if(_nx_2_numeric_add_cond_d(1, 3, 2))
-//     (
-//         _nx_2_while_d(
-//             _nx_2_numeric_add_cond_d,
-//             _nx_2_numeric_add_op_d,
-//             _nx_2_numeric_add_res_d,
-//             _nx_2_numeric_add_op_d(1, 3, 2)
-//         ),
-//         _nx_2_numeric_add_res_d(1, 3, 2)
-//         )
+# define _nx_2_fibonacci_operation_d(d, car, res) \
+    _nx_dec(car), \
+    _nx_choose(1, _nx_expand(_nx_2_numeric_sum_d(d, car, res)))
 
+# define _nx_2_fibonacci_condition_d(d, car, res) \
+    _nx_bool(car)
+
+# define _nx_2_fibonacci_result_d(d, car, res) \
+    res
+
+# define _nx_2_fibonacci(d, n) \
+    _nx_2_while_##d( \
+        _nx_2_fibonacci_condition_d, \
+        _nx_2_fibonacci_operation_d, \
+        _nx_2_fibonacci_result_d, \
+        n, 0 \
+    )
 
 #endif //RECURSIVE_WHILE_HPP

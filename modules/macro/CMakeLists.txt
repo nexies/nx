@@ -40,6 +40,7 @@ add_library(nx_macro
         include/nx/macro/detail/arg_tk_limit.hpp
         include/nx/macro/repeating/recursive_while.hpp
         include/nx/macro/tuple/tuple.hpp
+        include/nx/macro/util/expand_args.hpp
 )
 
 include(nxMakeModule)
@@ -49,3 +50,37 @@ nx_make_module(
         NAME macro
         HEADERS_BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
+
+
+## Generate NX_MACRO limits
+
+# NX_MACRO_MAX_NUMBER
+if(NOT NX_MODULE_MACRO_LIMITS_MAX_NUMBER)
+    set (NX_MODULE_MACRO_LIMITS_MAX_NUMBER 4096)
+endif()
+
+target_compile_definitions(nx_macro -DNX_LIMITS_MAX_NUMBER=${NX_MODULE_MACRO_LIMITS_MAX_NUMBER})
+
+# Output directory
+set(NX_MODULE_MACRO_LIMITS_OUTDIR ${CMAKE_BINARY_DIR}/generated/nx/macro/detail/limits/)
+
+# Generator script
+if(WIN32)
+    set(NX_MODULE_MACRO_LIMITS_SCRIPT gen_limits.bat)
+else()
+    set(NX_MODULE_MACRO_LIMITS_SCRIPT gen_limits.sh)
+endif()
+set (NX_MODULE_MACRO_LIMITS_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/scripts/${NX_MODULE_MACRO_LIMITS_SCRIPT})
+
+add_custom_command(
+        OUTPUT nx_macro_limit_generator_command
+        COMMAND bash ${NX_MODULE_MACRO_LIMITS_SCRIPT} --limit ${NX_MODULE_MACRO_LIMITS_MAX_NUMBER} --dir ${NX_MODULE_MACRO_LIMITS_OUTDIR}
+        DEPENDS ${NX_MODULE_MACRO_LIMITS_SCRIPT}
+        COMMENT "Generating nx::macro limits (${NX_MODULE_MACRO_LIMITS_MAX_NUMBER})"
+)
+
+add_custom_target(nx_macro_limit_generator
+        DEPENDS nx_macro_limit_generator_command
+)
+
+add_dependencies(nx_macro nx_macro_limit_generator)

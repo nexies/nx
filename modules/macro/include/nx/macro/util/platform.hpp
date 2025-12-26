@@ -39,4 +39,6 @@
 
 #define NX_DEFER(c) c _nx_empty()
 
+
+
 #endif //PLATFORM_HPP

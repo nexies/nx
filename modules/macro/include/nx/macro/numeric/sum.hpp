@@ -83,17 +83,50 @@
     _nx_numeric_sum_enter_d(d, a, b)
 
 
-#define _nx_numeric_mul_condition_d(d, counter, a, res) \
-    _nx_bool(counter)
+// #define _nx_numeric_mul_condition_d(d, counter, a, res) \
+//     _nx_bool(counter)
+//
+// #define _nx_numeric_mul_operation_d(d, counter, a, res) \
+//     _nx_choose(0, _nx_numeric_sum_enter_d(d, a, res)), \
+//     _nx_dec(counter), \
+//     a, \
+//     _nx_choose(1, _nx_numeric_sum_enter_d(d, a, res))
+//
+// #define _nx_numeric_mul_result_d(d, counter, a, res) \
+//     d, res
+//
+// #define _nx_numeric_mul_enter_d(d, a, b) \
+//     _nx_while_##d \
+//     ( \
+//         _nx_numeric_mul_condition_d, \
+//         _nx_numeric_mul_operation_d, \
+//         _nx_numeric_mul_result_d, \
+//         d, a, b, 0 \
+//     )
 
-#define _nx_numeric_mul_operation_d(d, counter, a, res) \
-    _nx_choose(0, _nx_numeric_sum_enter_d(d, a, res)), \
-    _nx_dec(counter), \
-    a, \
-    _nx_choose(1, _nx_numeric_sum_enter_d(d, a, res))
+#define _nx_numeric_mul_condition_d(d, count1, count2, a, res) \
+    _nx_logic_or\
+    (\
+        _nx_bool(count1), \
+        _nx_bool(count2) \
+    )
 
-#define _nx_numeric_mul_result_d(d, counter, a, res) \
+#define _nx_numeric_mul_operation_d_1(d, count1, count2, a, res) \
+    _nx_inc(d), _nx_dec(count1), count2, a, _nx_inc(res)
+
+#define _nx_numeric_mul_operation_d_2(d, count1, count2, a, res) \
+    _nx_inc(d), _nx_dec(a), _nx_dec(count2), a, _nx_inc(res)
+
+#define _nx_numeric_mul_operation_d(d, count1, count2, a, res) \
+    _nx_logic_if(count1)\
+    (\
+        _nx_numeric_mul_operation_d_1(d, count1, count2, a, res), \
+        _nx_numeric_mul_operation_d_2(d, count1, count2, a, res) \
+    )
+
+#define _nx_numeric_mul_result_d(d, count1, count2, a, res) \
     d, res
+
 
 #define _nx_numeric_mul_enter_d(d, a, b) \
     _nx_while_##d \
@@ -101,10 +134,7 @@
         _nx_numeric_mul_condition_d, \
         _nx_numeric_mul_operation_d, \
         _nx_numeric_mul_result_d, \
-        d, a, b, 0 \
+        d, _nx_dec(a), a, b, 0 \
     )
-
-
-_nx_numeric_mul_enter_d(0, 1, 1)
 
 #endif //SUM_HPP

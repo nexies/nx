@@ -165,20 +165,54 @@ struct Struct : public nx::Object
 // #include <boost/preprocessor/while.hpp>
 // #include <nx/macro/repeat/iterate.hpp>
 #include <nx/macro/repeating/while.hpp>
-#include "nx/macro/numeric/sum.hpp"
-#include "nx/macro/numeric/sub.hpp"
-#include "nx/macro/numeric/compare.hpp"
+//#include "nx/macro/numeric/sum.hpp"
+//#include "nx/macro/numeric/sub.hpp"
+//#include "nx/macro/numeric/compare.hpp"
 #include "nx/macro/util/arguments.hpp"
+//
+//#include <nx/macro/tuple/tuple.hpp>
 
-#include <nx/macro/tuple/tuple.hpp>
+namespace example
+{
+    struct Struct : public nx::Object
+    {
+        NX_PROPERTY(TYPE int, NAME id, READ getId, WRITE setId, DEFAULT 0, NOTIFY idChanged)
+    };
+
+    template<std::size_t Size>
+    struct Bits
+    {
+        unsigned b : Size;
+    };
+
+}
+
+
+
+#include "nx/macro/util/append_args.hpp"
+#include "nx/macro/repeating/recursive_while.hpp"
 
 int main(int argc, char* argv[])
 {
+    // _nx_append_args(1, 2, 3)
+    // _nx_arguments_arg_to_tuple(1)
 
-//    _nx_numeric_sum_enter_d(0, 1, 2);
-//    _nx_numeric_sum_enter_d(5, 6, 7);
+    example::Bits<128> s;
+    uint8_t  arr [4] = { 0xcd,0xcd,0xcd,0xcd };
+    memcpy(&s, arr, sizeof(s));
 
-    std::cerr << _nx_numeric_mul_enter_d(0, 1, 1) << std::endl;
+    s.b = 0x01000001;
+
+    std::cerr << s.b << std::endl;
+
+    // std::cout << _nx_2_fibonacci(0, 5) << std::endl;
+
+//    _nx_arguments_contains(63, 63 123, 63 123, 63 123, 40, 40, 40)
+
+//    _nx_arguments_contains_iterator(1, 1, 2 123, 1 321)
+// #define PARSER(d) (d),
+    // _nx_arguments_tokenize(PARSER, 1 123)
+
 //    using namespace nx::detail;
 //
 //    std::cerr << std::boolalpha;
