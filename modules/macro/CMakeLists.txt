@@ -40,7 +40,7 @@ add_library(nx_macro
         include/nx/macro/detail/arg_tk_limit.hpp
         include/nx/macro/repeating/recursive_while.hpp
         include/nx/macro/tuple/tuple.hpp
-        include/nx/macro/util/expand_args.hpp
+        include/nx/macro/util/append_args.hpp
 )
 
 include(nxMakeModule)
@@ -51,7 +51,6 @@ nx_make_module(
         HEADERS_BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-
 ## Generate NX_MACRO limits
 
 # NX_MACRO_MAX_NUMBER
@@ -59,28 +58,38 @@ if(NOT NX_MODULE_MACRO_LIMITS_MAX_NUMBER)
     set (NX_MODULE_MACRO_LIMITS_MAX_NUMBER 4096)
 endif()
 
-target_compile_definitions(nx_macro -DNX_LIMITS_MAX_NUMBER=${NX_MODULE_MACRO_LIMITS_MAX_NUMBER})
+target_compile_definitions(nx_macro PUBLIC NX_LIMITS_MAX_NUMBER=${NX_MODULE_MACRO_LIMITS_MAX_NUMBER})
 
 # Output directory
-set(NX_MODULE_MACRO_LIMITS_OUTDIR ${CMAKE_BINARY_DIR}/generated/nx/macro/detail/limits/)
+set(NX_MODULE_MACRO_LIMITS_OUTDIR ${NX_GENERATED_INCLUDEDIR}/macro/detail/limits)
 
 # Generator script
 if(WIN32)
-    set(NX_MODULE_MACRO_LIMITS_SCRIPT gen_limits.bat)
+    set(_gen_script ${CMAKE_CURRENT_SOURCE_DIR}/scripts/gen_limits.bat)
+    set(_gen_cmd ${_gen_script})           # без bash
 else()
-    set(NX_MODULE_MACRO_LIMITS_SCRIPT gen_limits.sh)
+    set(_gen_script ${CMAKE_CURRENT_SOURCE_DIR}/scripts/gen_limits.sh)
+    set(_gen_cmd bash ${_gen_script})
 endif()
 set (NX_MODULE_MACRO_LIMITS_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/scripts/${NX_MODULE_MACRO_LIMITS_SCRIPT})
 
+set(NX_MODULE_MACRO_LIMITS_STAMP
+        ${NX_MODULE_MACRO_LIMITS_OUTDIR}/.generated
+)
+
 add_custom_command(
-        OUTPUT nx_macro_limit_generator_command
-        COMMAND bash ${NX_MODULE_MACRO_LIMITS_SCRIPT} --limit ${NX_MODULE_MACRO_LIMITS_MAX_NUMBER} --dir ${NX_MODULE_MACRO_LIMITS_OUTDIR}
-        DEPENDS ${NX_MODULE_MACRO_LIMITS_SCRIPT}
-        COMMENT "Generating nx::macro limits (${NX_MODULE_MACRO_LIMITS_MAX_NUMBER})"
+        OUTPUT  ${NX_MODULE_MACRO_LIMITS_STAMP}
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${NX_MODULE_MACRO_LIMITS_OUTDIR}
+        COMMAND ${_gen_cmd}
+        --limit ${NX_MODULE_MACRO_LIMITS_MAX_NUMBER}
+        --dir   ${NX_MODULE_MACRO_LIMITS_OUTDIR}
+        COMMAND ${CMAKE_COMMAND} -E touch ${NX_MODULE_MACRO_LIMITS_STAMP}
+        DEPENDS ${_gen_script}
+        COMMENT "Generating nx::macro_limits (limit=${NX_MODULE_MACRO_LIMITS_MAX_NUMBER})"
 )
 
-add_custom_target(nx_macro_limit_generator
-        DEPENDS nx_macro_limit_generator_command
+add_custom_target(nx_macro_limits
+        DEPENDS ${NX_MODULE_MACRO_LIMITS_STAMP}
 )
 
-add_dependencies(nx_macro nx_macro_limit_generator)
+add_dependencies(nx_macro nx_macro_limits)

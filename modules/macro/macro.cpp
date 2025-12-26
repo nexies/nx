@@ -6,6 +6,8 @@
 
 using namespace nx::macro;
 
+
+
 std::string nx::macro::version()
 {
     return "aaa! unknown version of nx::macro module!!!";

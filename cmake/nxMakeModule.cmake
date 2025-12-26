@@ -73,9 +73,9 @@ function(nx_make_module)
 
     nx_make_module_version(NAME ${_name})
 
-    target_include_directories(${_t} PRIVATE
-            $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include/nx>
-            $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/generated/nx>
+    target_include_directories(${_t} PUBLIC
+            $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
+            $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/generated>
             $<INSTALL_INTERFACE:include>
     )
 

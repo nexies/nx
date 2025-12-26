@@ -7,6 +7,8 @@
 
 #include <nx/macro/logic/if.hpp>
 #include <nx/macro/detail/while_limits.hpp>
+// #include <nx/macro/detail/limits/while_4096.hpp>
+#include <nx/macro/detail/limits/while_4096.hpp>
 
 #define _nx_while(c, o, r, ...) \
     _nx_while_0(c, o, r, __VA_ARGS__)
