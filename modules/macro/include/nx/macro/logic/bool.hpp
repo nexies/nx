@@ -8,6 +8,8 @@
 #include <nx/macro.hpp>
 #include <nx/macro/detail/bool_limit.hpp>
 
+#define _nx_bool(a) \
+    _nx_concat_2(_nx_logic_bool_, a)
 
 #define NX_BOOL(n) \
     _nx_bool(n)

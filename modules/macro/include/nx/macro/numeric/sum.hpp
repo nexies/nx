@@ -5,52 +5,35 @@
 #ifndef NX_MACRO_SUM_HPP
 #define NX_MACRO_SUM_HPP
 
-#include <nx/macro/util/choose.hpp>
-#include <nx/macro/repeating/while.hpp>
-#include <nx/macro/detail/is_max_limit.hpp>
+#include <nx/macro.hpp>
 
-#define _nx_numeric_sum_condition(a, b) \
-    _nx_logic_and\
-    (\
-        _nx_bool(a), \
-        _nx_logic_not(_nx_is_max(b)) \
+#include <nx/macro/repeating/while.hpp>
+#include <nx/macro/numeric/is_max.hpp>
+#include <nx/macro/logic/bool.hpp>
+#include <nx/macro/logic/op.hpp>
+
+# define _nx_numeric_sum_condition(d, car, res) \
+    _nx_logic_and( \
+        _nx_bool(car), \
+        _nx_logic_not( _nx_is_max(res) ) \
     )
 
-#define _nx_numeric_sum_operation(a, b) \
-    _nx_dec(a), _nx_inc(b)
+# define _nx_numeric_sum_operation(d, car, res) \
+    _nx_dec(car), _nx_inc(res)
 
-#define _nx_numeric_sum_result(a, b) b
+# define _nx_numeric_sum_result(d, car, res) \
+    res
 
-#define _nx_numeric_sum(a, b) \
-    _nx_while\
-    (\
+# define _nx_numeric_sum_d(d, a, b) \
+    _nx_while_d(d, \
         _nx_numeric_sum_condition, \
         _nx_numeric_sum_operation, \
         _nx_numeric_sum_result, \
         a, b \
     )
 
-
-#define _nx_numeric_sum_condition_d(d, a, b) \
-    _nx_numeric_sum_condition(a, b)
-
-#define _nx_numeric_sum_operation_d(d, a, b) \
-    _nx_inc(d), _nx_dec(a), _nx_inc(b)
-
-#define _nx_numeric_sum_result_d(d, a, b) \
-    d, b
-
-#define _nx_numeric_sum_enter_d(d, a, b) \
-    _nx_while_##d \
-    (\
-        _nx_numeric_sum_condition_d, \
-        _nx_numeric_sum_operation_d, \
-        _nx_numeric_sum_result_d, \
-        d, a, b \
-    )
-
-#define _nx_numeric_sum_d(d, a, b) \
-    _nx_choose(1, _nx_numeric_sum_enter_d(d, a, b))
+# define _nx_numeric_sum(a, b) \
+    _nx_numeric_sum_d(0, a, b)
 
 /**
  * @brief Performs a preprocessor-level addition of two integer literals.
@@ -79,62 +62,41 @@
     _nx_numeric_sum(a, b)
 
 
+/**
+ * @brief Performs a preprocessor-level addition of two integer literals with an explicit recursion depth parameter.
+ *
+ * `NX_NUMERIC_SUM_D` expands to the result of @p a + @p b, similar to NX_NUMERIC_SUM,
+ *  additionally takes an explicit depth parameter @p d used to control evaluation
+ * inside iterative or recursive preprocessor constructs (e.g., loops and repeated macros).
+ *
+ * This form is intended for use within NX_WHILE macros that already manage a recursion/depth
+ * parameter and therefore cannot rely on the default depth used by NX_NUMERIC_SUM.
+ *
+ * If the sum exceeds the maximum supported numeric value (`NX_MAX_NUMBER`),
+ * the result is clamped to `NX_MAX_NUMBER`.
+ *
+ * Both operands must be valid numeric literals supported by the numeric
+ * subsystem (i.e., within the allowed `NX_MAX_NUMBER` range).
+ *
+ * @par Example
+ * @code
+ *
+ * #define MY_WHILE_OPERATION(d, a, b) \
+        NX_DEC(a), NX_NUMERIC_SUM_D(d, a, b)
+ *
+ * @endcode
+ *
+ * @param d Explicit recursion/depth parameter for use inside preprocessor loops.
+ * @param a First addend.
+ * @param b Second addend.
+ *
+ * @see NX_WHILE
+ * @see NX_NUMERIC_SUM
+ * @see NX_NUMERIC_SUB_D
+ * @see NX_INC_D
+ * @see NX_DEC_D
+ */
 #define NX_NUMERIC_SUM_D(d, a, b) \
-    _nx_numeric_sum_enter_d(d, a, b)
-
-
-// #define _nx_numeric_mul_condition_d(d, counter, a, res) \
-//     _nx_bool(counter)
-//
-// #define _nx_numeric_mul_operation_d(d, counter, a, res) \
-//     _nx_choose(0, _nx_numeric_sum_enter_d(d, a, res)), \
-//     _nx_dec(counter), \
-//     a, \
-//     _nx_choose(1, _nx_numeric_sum_enter_d(d, a, res))
-//
-// #define _nx_numeric_mul_result_d(d, counter, a, res) \
-//     d, res
-//
-// #define _nx_numeric_mul_enter_d(d, a, b) \
-//     _nx_while_##d \
-//     ( \
-//         _nx_numeric_mul_condition_d, \
-//         _nx_numeric_mul_operation_d, \
-//         _nx_numeric_mul_result_d, \
-//         d, a, b, 0 \
-//     )
-
-#define _nx_numeric_mul_condition_d(d, count1, count2, a, res) \
-    _nx_logic_or\
-    (\
-        _nx_bool(count1), \
-        _nx_bool(count2) \
-    )
-
-#define _nx_numeric_mul_operation_d_1(d, count1, count2, a, res) \
-    _nx_inc(d), _nx_dec(count1), count2, a, _nx_inc(res)
-
-#define _nx_numeric_mul_operation_d_2(d, count1, count2, a, res) \
-    _nx_inc(d), _nx_dec(a), _nx_dec(count2), a, _nx_inc(res)
-
-#define _nx_numeric_mul_operation_d(d, count1, count2, a, res) \
-    _nx_logic_if(count1)\
-    (\
-        _nx_numeric_mul_operation_d_1(d, count1, count2, a, res), \
-        _nx_numeric_mul_operation_d_2(d, count1, count2, a, res) \
-    )
-
-#define _nx_numeric_mul_result_d(d, count1, count2, a, res) \
-    d, res
-
-
-#define _nx_numeric_mul_enter_d(d, a, b) \
-    _nx_while_##d \
-    ( \
-        _nx_numeric_mul_condition_d, \
-        _nx_numeric_mul_operation_d, \
-        _nx_numeric_mul_result_d, \
-        d, _nx_dec(a), a, b, 0 \
-    )
+    _nx_numeric_sum_d(d, a, b)
 
 #endif //SUM_HPP

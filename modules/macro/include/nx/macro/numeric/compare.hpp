@@ -7,24 +7,24 @@
 
 #include <nx/macro/numeric/sub.hpp>
 
-#define _nx_numeric_eq(a, b) \
+#define _nx_numeric_eq_d(d, a, b) \
     _nx_logic_and\
     (\
-        _nx_logic_not(_nx_bool(_nx_numeric_sub(a, b))), \
-        _nx_logic_not(_nx_bool(_nx_numeric_sub(b, a))), \
+        _nx_logic_not(_nx_bool(_nx_numeric_sub_d(d, a, b))), \
+        _nx_logic_not(_nx_bool(_nx_numeric_sub_d(d, b, a))), \
     )
 
-#define _nx_numeric_g(a, b) \
-    _nx_bool(_nx_numeric_sub(a, b))
+#define _nx_numeric_g_d(d, a, b) \
+    _nx_bool(_nx_numeric_sub_d(d, a, b))
 
-#define _nx_numeric_l(a, b) \
-    _nx_numeric_g(b, a)
+#define _nx_numeric_l_d(d, a, b) \
+    _nx_numeric_g_d(d, b, a)
 
-#define _nx_numeric_geq(a, b) \
-    _nx_logic_not(_nx_numeric_l(a, b))
+#define _nx_numeric_geq_d(d, a, b) \
+    _nx_logic_not(_nx_numeric_l_d(d, a, b))
 
-#define _nx_numeric_leq(a, b) \
-    _nx_logic_not(_nx_numeric_g(a, b))
+#define _nx_numeric_leq_d(d, a, b) \
+    _nx_logic_not(_nx_numeric_g_d(d, a, b))
 
 
 /**
@@ -48,7 +48,10 @@
  * @param b Right operand.
  */
 #define NX_EQUAL(a, b) \
-    _nx_numeric_eq(a, b)
+    _nx_numeric_eq_d(0, a, b)
+
+#define NX_EQUAL_D(d, a, b) \
+    _nx_numeric_eq_d(d, a, b)
 
 
 /**
@@ -71,7 +74,10 @@
  * @param b Right operand.
  */
 #define NX_GREATER(a, b) \
-    _nx_numeric_g(a, b)
+    _nx_numeric_g_d(0, a, b)
+
+#define NX_GREATER_D(d, a, b) \
+    _nx_numeric_g_d(d, a, b)
 
 
 /**
@@ -94,7 +100,10 @@
  * @param b Right operand.
  */
 #define NX_LESS(a, b) \
-    _nx_numeric_l(a, b)
+    _nx_numeric_l_d(0, a, b)
+
+#define NX_LESS_D(d, a, b) \
+    _nx_numeric_l_d(d, a, b)
 
 /**
  * @brief Expands to `1` if @p a is greater than or equal to @p b, otherwise to `0`.
@@ -116,7 +125,10 @@
  * @param b Right operand.
  */
 #define NX_GREATER_OR_EQUAL(a, b) \
-    _nx_numeric_geq(a, b)
+    _nx_numeric_geq_d(0, a, b)
+
+#define NX_GREATER_OR_EQUAL_D(d, a, b) \
+    _nx_numeric_geq_d(d, a, b)
 
 
 /**
@@ -141,7 +153,10 @@
  * @param b Right operand.
  */
 #define NX_LESS_OR_EQUAL(a, b) \
-    _nx_numeric_leq(a, b)
+    _nx_numeric_leq_d(0, a, b)
+
+#define NX_LESS_OR_EQUAL_D(d, a, b) \
+    _nx_numeric_leq_d(d, a, b)
 
 
 

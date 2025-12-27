@@ -7,12 +7,12 @@
 
 // #include <nx/macro/logic/if.hpp>
 // #include <nx/macro/logic/op.hpp>
-// #include <nx/macro/logic/bool.hpp>
 
 #include <nx/macro.hpp>
 #include <nx/macro/logic.hpp>
 #include <nx/macro/numeric/inc_dec.hpp>
 #include <nx/macro/util/choose.hpp>
+#include <nx/macro/logic/bool.hpp>
 
 // #include <boost/preprocessor/while.hpp>
 // #include <boost/preprocessor/arithmetic/add.hpp>
@@ -97,22 +97,22 @@
 # define _nx_2_while_15(c, o, r, ...)  _nx_logic_if(c(16, __VA_ARGS__))(_nx_2_while_16(c, o, r, o(16, __VA_ARGS__)), r(16, __VA_ARGS__))
 # define _nx_2_while_16(c, o, r, ...)  _nx_logic_if(c(17, __VA_ARGS__))(_nx_2_while_17(c, o, r, o(17, __VA_ARGS__)), r(17, __VA_ARGS__))
 
-# define _nx_2_numeric_sum_condition_d(d, car, res) \
-    _nx_bool(car)
-
-# define _nx_2_numeric_sum_operation_d(d, car, res) \
-    _nx_dec(car), _nx_inc(res)
-
-# define _nx_2_numeric_sum_result_d(d, car, res) \
-    d, res
-
-# define _nx_2_numeric_sum_d(d, a, b) \
-    _nx_2_while_d(d, \
-        _nx_2_numeric_sum_condition_d, \
-        _nx_2_numeric_sum_operation_d, \
-        _nx_2_numeric_sum_result_d, \
-        a, b \
-    )
+// # define _nx_2_numeric_sum_condition_d(d, car, res) \
+//     _nx_bool(car)
+//
+// # define _nx_2_numeric_sum_operation_d(d, car, res) \
+//     _nx_dec(car), _nx_inc(res)
+//
+// # define _nx_2_numeric_sum_result_d(d, car, res) \
+//     d, res
+//
+// # define _nx_2_numeric_sum_d(d, a, b) \
+//     _nx_2_while_d(d, \
+//         _nx_2_numeric_sum_condition_d, \
+//         _nx_2_numeric_sum_operation_d, \
+//         _nx_2_numeric_sum_result_d, \
+//         a, b \
+//     )
 
 // _nx_2_numeric_sum_d(0, 3, 2)
 
@@ -124,7 +124,7 @@
     _nx_dec(car), _nx_inc(res)
 
 # define _nx_2_numeric_sum_result_d(d, car, res) \
-    d, res
+    res
 
 # define _nx_2_numeric_sum_d(d, a, b) \
     _nx_2_while_##d( \
@@ -155,5 +155,7 @@
         _nx_2_fibonacci_result_d, \
         n, 0 \
     )
+
+_nx_2_numeric_sum_d(0, 1, 2)
 
 #endif //RECURSIVE_WHILE_HPP

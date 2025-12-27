@@ -15,4 +15,12 @@
     _nx_choose(pos, __VA_ARGS__)
 
 
+#define _nx_req_choose_0(c, ...) c
+#define _nx_req_choose_1(c, ...) _nx_req_choose_0(__VA_ARGS__)
+#define _nx_req_choose_2(c, ...) _nx_req_choose_1(__VA_ARGS__)
+#define _nx_req_choose_3(c, ...) _nx_req_choose_2(__VA_ARGS__)
+#define _nx_req_choose_4(c, ...) _nx_req_choose_3(__VA_ARGS__)
+
+// _nx_req_choose_2(1, 2, 3, 4, 5)
+
 #endif //CHOOSE_HPP

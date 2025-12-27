@@ -10,8 +10,11 @@
 #define _nx_logic_if_1(t, f) t
 #define _nx_logic_if_0(t, f) f
 
-#define _nx_logic_if(c) \
-    NX_CONCAT(_nx_logic_if_, NX_EXPAND(c))
+#define _nx_logic_if_(c) \
+    _nx_concat_2(_nx_logic_if_, c)
+
+#define _nx_logic_if(...) \
+    _nx_logic_if_(_nx_expand(__VA_ARGS__))
 
 #define NX_IF(c) _nx_logic_if(c)
 

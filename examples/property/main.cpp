@@ -113,117 +113,68 @@ struct PropertyManager
 #include "nx/core/detail/property_impl.hpp"
 #include <nx/core/Object.hpp>
 
-struct Struct : public nx::Object
-{
-    NX_ENABLE_PROPERTIES(Struct)
-
-    int value;
-
-    void setValue(const std::string& value)
-    {
-        std::cerr << "setValue(" << value << ");" << std::endl;
-        float res;
-        std::from_chars(value.data(), value.data() + value.size(), res);
-        this->value = res;
-    }
-
-    std::string getValue() const
-    {
-        return std::to_string(value);
-    }
-
-    NX_SIGNAL(valueChanged, std::string)
-
-    struct someProperty : nx::detail::property_tag<This>
-    {
-        /// name is MANDATORY
-        static constexpr std::string name = "SomeProperty";
-        /// type is MANDATORY
-        using type = std::string;
-        /// default_value is OPTIONAL
-        // static constexpr type default_value = "12";
-        /// set is OPTIONAL
-        static constexpr auto set = [] (host_type & obj, const std::string & val) {
-            std::cerr << "Lambda set: " << val << std::endl;
-            obj.value = std::stoi(val);
-        };
-        /// get is OPTIONAL
-        // static constexpr auto get = &host_type::getValue;
-        /// reset is OPTIONAL
-        // static constexpr auto reset = [] (host_type & obj) {
-        //     set(obj, default_value);
-        // };
-        /// notify is OPTIONAL
-        static constexpr auto notify = &host_type::valueChanged;
-    };
-};
-
-
-// #include <nx/macro/logic.hpp>
-// #define NX_MAX_NUMBER 100
-#include <nx/macro/numeric.hpp>
-// #include <boost/preprocessor/while.hpp>
-// #include <nx/macro/repeat/iterate.hpp>
-#include <nx/macro/repeating/while.hpp>
-//#include "nx/macro/numeric/sum.hpp"
-//#include "nx/macro/numeric/sub.hpp"
-//#include "nx/macro/numeric/compare.hpp"
-#include "nx/macro/util/arguments.hpp"
+// struct Struct : public nx::Object
+// {
+//     NX_ENABLE_PROPERTIES(Struct)
 //
-//#include <nx/macro/tuple/tuple.hpp>
-
-namespace example
-{
-    struct Struct : public nx::Object
-    {
-        NX_PROPERTY(TYPE int, NAME id, READ getId, WRITE setId, DEFAULT 0, NOTIFY idChanged)
-    };
-
-    template<std::size_t Size>
-    struct Bits
-    {
-        unsigned b : Size;
-    };
-
-}
-
+//     int value;
+//
+//     void setValue(const std::string& value)
+//     {
+//         std::cerr << "setValue(" << value << ");" << std::endl;
+//         float res;
+//         std::from_chars(value.data(), value.data() + value.size(), res);
+//         this->value = res;
+//     }
+//
+//     std::string getValue() const
+//     {
+//         return std::to_string(value);
+//     }
+//
+//     NX_SIGNAL(valueChanged, std::string)
+//
+//     struct someProperty : nx::detail::property_tag<This>
+//     {
+//         /// name is MANDATORY
+//         static constexpr std::string name = "SomeProperty";
+//         /// type is MANDATORY
+//         using type = std::string;
+//         /// default_value is OPTIONAL
+//         // static constexpr type default_value = "12";
+//         /// set is OPTIONAL
+//         static constexpr auto set = [] (host_type & obj, const std::string & val) {
+//             std::cerr << "Lambda set: " << val << std::endl;
+//             obj.value = std::stoi(val);
+//         };
+//         /// get is OPTIONAL
+//         // static constexpr auto get = &host_type::getValue;
+//         /// reset is OPTIONAL
+//         // static constexpr auto reset = [] (host_type & obj) {
+//         //     set(obj, default_value);
+//         // };
+//         /// notify is OPTIONAL
+//         static constexpr auto notify = &host_type::valueChanged;
+//     };
+// };
 
 
 #include "nx/macro/util/append_args.hpp"
-#include "nx/macro/repeating/recursive_while.hpp"
+// #include "nx/macro/repeating/recursive_while.hpp"
+
+#include "nx/macro/repeating/iterate.hpp"
+#include "nx/macro/numeric/sum.hpp"
+#include "nx/macro/numeric/sub.hpp"
 
 int main(int argc, char* argv[])
 {
-    // _nx_append_args(1, 2, 3)
-    // _nx_arguments_arg_to_tuple(1)
 
-    example::Bits<128> s;
-    uint8_t  arr [4] = { 0xcd,0xcd,0xcd,0xcd };
-    memcpy(&s, arr, sizeof(s));
+    int a = NX_NUMERIC_SUM(120, 120);
+    int b = NX_NUMERIC_SUB_D(0, 121, 23);
 
-    s.b = 0x01000001;
+    // int a = 0;
 
-    std::cerr << s.b << std::endl;
-
-    // std::cout << _nx_2_fibonacci(0, 5) << std::endl;
-
-//    _nx_arguments_contains(63, 63 123, 63 123, 63 123, 40, 40, 40)
-
-//    _nx_arguments_contains_iterator(1, 1, 2 123, 1 321)
-// #define PARSER(d) (d),
-    // _nx_arguments_tokenize(PARSER, 1 123)
-
-//    using namespace nx::detail;
-//
-//    std::cerr << std::boolalpha;
-//
-//    Struct s{};
-//
-//    Struct::someProperty p;
-//    Struct::someProperty::set(s, "123");
-//    // std::invoke(Struct::someProperty::set, s, "123");
-//    DumpPropertyInfo<Struct::someProperty>(p);
-
+    std::cerr << a << std::endl;
 
     return 0;
 }

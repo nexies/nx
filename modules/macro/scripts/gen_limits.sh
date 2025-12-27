@@ -8,8 +8,13 @@ format_nx_while()
   local i="$1"
   local n=$((i+1))
 
-  printf ' # define _nx_while_%d(c, o, r, ...)  _nx_logic_if(c(%d, __VA_ARGS__))(_nx_while_%d(c, o, r, o(%d, __VA_ARGS__)), r(%d, __VA_ARGS__))\n' \
-          "$i" "$n" "$n" "$n" "$n"
+#  printf ' # define _nx_while_%d(c, o, r, ...)  _nx_logic_if(c(%d, __VA_ARGS__))(_nx_while_%d(c, o, r, o(%d, __VA_ARGS__)), r(%d, __VA_ARGS__))\n' \
+#          "$i" "$n" "$n" "$n" "$n"
+#
+  printf ' # define _nx_while_%d(c, o, r, ...) _nx_while_%d_c(c(%d, __VA_ARGS__), c, o, r, __VA_ARGS__)\n' \
+         "$i" "$i" "$n"
+  printf ' # define _nx_while_%d_c(p, c, o, r, ...) _nx_logic_if(p)(_nx_while_%d(c, o, r, o(%d, __VA_ARGS__)), r(%d, __VA_ARGS__))\n' \
+         "$i" "$n" "$n" "$n"
 }
 
 format_nx_inc()
@@ -66,7 +71,7 @@ format_nx_is_max()
     n=1
   fi
 
-  printf " # define _nx_limits_is_max_%d %d\n" \
+  printf " # define _nx_numeric_is_max_%d %d\n" \
     "$i" "$n"
 }
 
@@ -82,13 +87,32 @@ format_nx_sequence()
 {
   local i="$1"
   local n=$((i-1))
+  local c=1
+
+  if(( n <= 1 )); then
+    c=0
+  fi
 
   if [[ $i -eq 0 ]]; then
     printf ' # define _nx_sequence_0(...)\n'
   else
-    printf ' # define _nx_sequence_%d(c, h, m, ...) _nx_sequence_%d(0, h, m, __VA_ARGS__)  h(c, _nx_apply(m, %d, __VA_ARGS__))\n' \
-      "$i" "$n" "$i"
+    printf ' # define _nx_sequence_%d(c, h, m, ...) _nx_sequence_%d(%d, h, m, __VA_ARGS__)  h(c, _nx_apply(m, %d, __VA_ARGS__))\n' \
+      "$i" "$n" "$c" "$i"
   fi
+}
+
+format_nx_choose()
+{
+  local i="$1"
+  local n=$((i-1))
+
+  if (( i == 0 )); then
+    printf ' # define _nx_choose_0(c, ...) c\n'
+    return
+  fi
+
+  printf ' # define _nx_choose_%d(c, ...) _nx_choose_%d(__VA_ARGS__) \n' \
+    "$i" "$n"
 }
 
 generate_with_format()
@@ -162,6 +186,35 @@ generate()
   } >> "$filename"
 }
 
+generate_powers ()
+{
+  local name="$1"
+  local limit="$2"
+  local base=128
+
+  if (( limit <= base )); then
+    generate "$name" "$limit"
+    return
+  fi
+
+  local cur=$base
+  while (( cur <= limit )); do
+    generate "$name" "$cur"
+    cur=$((cur * 2))
+  done
+
+  if (( cur / 2 != limit )); then
+    generate "$name" "$limit"
+  fi
+}
+
+is_power_of_two() {
+    local n="$1"
+
+    # n > 0 И (n & (n-1)) == 0
+    (( n > 0 )) && (( (n & (n-1)) == 0 ))
+}
+
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --limit)
@@ -180,12 +233,27 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-generate "while" "$LIMIT"
-generate "bool" "$LIMIT"
-generate "inc" "$LIMIT"
-generate "dec" "$LIMIT"
-generate "is_max" "$LIMIT"
-generate "arg_tk" "$LIMIT"
-generate "sequence" "$LIMIT"
+# Проверка, что LIMIT — целое число
+if ! [[ "$LIMIT" =~ ^[0-9]+$ ]]; then
+    echo "Error: NX_MODULE_MACRO_LIMITS_MAX_NUMBER has to be an integer number, not '$LIMIT'" >&2
+    exit 1
+fi
 
+# Проверка, что LIMIT — степень двойки
+if ! is_power_of_two "$LIMIT"; then
+    echo "Error: NX_MODULE_MACRO_LIMITS_MAX_NUMBER should be a power of two (2^n), not $LIMIT" >&2
+    exit 1
+fi
 
+if (( LIMIT <= 64 )); then
+  exit 0
+fi
+
+generate_powers "while" "$LIMIT"
+generate_powers "bool" "$LIMIT"
+generate_powers "inc" "$LIMIT"
+generate_powers "dec" "$LIMIT"
+generate_powers "is_max" "$LIMIT"
+generate_powers "arg_tk" "$LIMIT"
+generate_powers "sequence" "$LIMIT"
+generate_powers "choose" "$LIMIT"

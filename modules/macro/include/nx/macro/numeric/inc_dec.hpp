@@ -10,6 +10,12 @@
 #include <nx/macro/detail/number_dec_limit.hpp>
 #include <nx/macro/detail/number_inc_limit.hpp>
 
+#define _nx_inc(n) \
+    _nx_concat_2(_nx_numeric_inc_, n)
+
+#define _nx_dec(n) \
+    _nx_concat_2(_nx_numeric_dec_, n)
+
 /**
  * @brief Expands to an integer value equal to @p n - 1.
  *
