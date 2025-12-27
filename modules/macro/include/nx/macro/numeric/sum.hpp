@@ -25,7 +25,7 @@
     res
 
 # define _nx_numeric_sum_d(d, a, b) \
-    _nx_while_d(d, \
+    _nx_while_##d( \
         _nx_numeric_sum_condition, \
         _nx_numeric_sum_operation, \
         _nx_numeric_sum_result, \
@@ -98,5 +98,7 @@
  */
 #define NX_NUMERIC_SUM_D(d, a, b) \
     _nx_numeric_sum_d(d, a, b)
+
+
 
 #endif //SUM_HPP
