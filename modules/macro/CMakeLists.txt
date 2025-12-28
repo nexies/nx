@@ -34,6 +34,7 @@ add_library(nx_macro
         include/nx/macro/tuple/tuple.hpp
         include/nx/macro/args/args.hpp
         include/nx/macro/numeric/is_max.hpp
+        include/nx/macro/detail/limits/eat_64.hpp
 )
 
 include(nxMakeModule)

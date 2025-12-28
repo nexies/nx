@@ -2,8 +2,8 @@
 // Created by nexie on 08.12.2025.
 //
 
-#ifndef ARGNAME_HPP
-#define ARGNAME_HPP
+#ifndef NX_MACRO_ARGS_PARSE_HPP
+#define NX_MACRO_ARGS_PARSE_HPP
 
 #include <nx/macro.hpp>
 
@@ -145,4 +145,52 @@
     _nx_args_get_value_d(0, name, __VA_ARGS__)
 
 
-#endif //ARGNAME_HPP
+#define _nx_args_check_rules_cond_d(d, res, err, rules, ...) \
+    _nx_logic_and(\
+        _nx_bool(res), \
+        _nx_tuple_not_empty(rules) \
+    )
+
+#define _nx_args_check_rules_op_d(d, res, err, rules, ...) \
+    _nx_tuple_get(0, _nx_tuple_get(0, rules))(d, __VA_ARGS__), \
+    _nx_tuple_get(1, _nx_tuple_get(0, rules)), \
+    _nx_tuple_pop_front(rules), \
+    __VA_ARGS__
+
+#define _nx_args_check_rules_res_d(d, res, err, rules, ...) \
+    _nx_logic_if(_nx_bool(res)) \
+    ( \
+        _nx_tuple(1), \
+        _nx_tuple(0, err) \
+    )
+
+#define _nx_args_check_rules_impl_d(d, rules, ...) \
+    _nx_while_d(d)( \
+        _nx_args_check_rules_cond_d, \
+        _nx_args_check_rules_op_d, \
+        _nx_args_check_rules_res_d, \
+        1, "", rules, __VA_ARGS__ \
+    )
+
+#define _nx_args_rule(check, error_string) \
+    _nx_tuple(check, error_string)
+
+#define _nx_args_rule_set(...) \
+    _nx_tuple(__VA_ARGS__)
+
+#define _nx_args_parse_impl(parser, check_result, ...) \
+    _nx_logic_if(_nx_tuple_get(0, check_result)) \
+    ( \
+        parser(__VA_ARGS__), \
+        static_assert(false, _nx_tuple_get(1, check_result)); \
+    )
+
+#define _nx_args_no_rules() \
+    _nx_tuple()
+
+#define _nx_args_parse(parser, rule_set, ...) \
+    _nx_args_parse_impl(parser, _nx_args_check_rules_impl_d(0, rule_set, __VA_ARGS__), __VA_ARGS__)
+
+
+
+#endif //NX_MACRO_ARGS_PARSE_HPP

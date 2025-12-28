@@ -33,7 +33,16 @@
         _nx_tuple(_nx_tuple_unpack(t) _nx_append_args(__VA_ARGS__)) \
     )
 
+# define _nx_eat_1(c, ...) __VA_ARGS__
+
 # define _nx_tuple_concat(t1, t2) \
     _nx_tuple_append(t1, _nx_tuple_unpack(t2))
+
+# define _nx_tuple_pop_front(t) \
+    _nx_logic_if(_nx_tuple_not_empty(t)) \
+    ( \
+        _nx_tuple(_nx_eat_1(_nx_tuple_unpack(t))), \
+        _nx_tuple() \
+    )
 
 #endif //NXTBOT_TUPLE_HPP
