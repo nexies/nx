@@ -159,24 +159,29 @@ struct PropertyManager
 // };
 
 
-#include "nx/macro/util/append_args.hpp"
 // #include "nx/macro/repeating/recursive_while.hpp"
 
 #include "nx/macro/repeating/iterate.hpp"
 #include "nx/macro/numeric/sum.hpp"
 #include "nx/macro/numeric/sub.hpp"
 
+#include "nx/macro/args/names.hpp"
+
 int main(int argc, char* argv[])
 {
+    // int a = NX_NUMERIC_SUM(300, 4);
+    // int b = NX_NUMERIC_SUB_D(0, 121, 23);
 
-    int a = NX_NUMERIC_SUM(120, 120);
-    int b = NX_NUMERIC_SUB_D(0, 121, 23);
 
-    // int a = 0;
+#define NAME1 1
+#define NAME2 2
+#define NAME3 3
 
-    std::cerr << a << std::endl;
+    std::cerr << _nx_args_token_has_name_d(0, NAME1, (NAME2, 123)) << std::endl;
+
+    _nx_args_arg_value(NAME2 123)
+
+    // _nx_args_contains(NAME3, NAME2 arg1, NAME2 arg2, NAME3 arg3)
 
     return 0;
 }
-
-

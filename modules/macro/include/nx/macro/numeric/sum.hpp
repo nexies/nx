@@ -15,17 +15,21 @@
 # define _nx_numeric_sum_condition(d, car, res) \
     _nx_logic_and( \
         _nx_bool(car), \
-        _nx_logic_not( _nx_is_max(res) ) \
+        _nx_logic_not(_nx_is_max(res)) \
     )
 
 # define _nx_numeric_sum_operation(d, car, res) \
     _nx_dec(car), _nx_inc(res)
 
 # define _nx_numeric_sum_result(d, car, res) \
-    res
+    _nx_logic_if(_nx_bool(car)) \
+    ( \
+        static_assert(false, "NX_NUMERIC_SUM: Result exceeds NX_MAX_NUMBER");, \
+        res \
+    )
 
 # define _nx_numeric_sum_d(d, a, b) \
-    _nx_while_##d( \
+    _nx_while_d(d)( \
         _nx_numeric_sum_condition, \
         _nx_numeric_sum_operation, \
         _nx_numeric_sum_result, \
@@ -98,7 +102,6 @@
  */
 #define NX_NUMERIC_SUM_D(d, a, b) \
     _nx_numeric_sum_d(d, a, b)
-
 
 
 #endif //SUM_HPP

@@ -37,7 +37,8 @@
 #define _nx_empty()
 #define NX_EMPTY() _nx_empty()
 
-#define NX_DEFER(c) c _nx_empty()
+//#define NX_DEFER(c) c _nx_empty()
+#define NX_DEFER(...) __VA_ARGS__ _nx_empty()
 
 
 

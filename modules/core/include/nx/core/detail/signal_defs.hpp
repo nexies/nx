@@ -35,7 +35,7 @@
 
 #include <nx/macro/repeat.hpp>
 #include <nx/macro/util/choose.hpp>
-#include <nx/macro/util/arg_count.hpp>
+#include <nx/macro/args/count.hpp>
 
 #include <nx/core.hpp>
 #include <nx/core/Overload.h>

@@ -14,8 +14,8 @@
 #define _nx_while(c, o, r, ...) \
     _nx_while_0(c, o, r, __VA_ARGS__)
 
-#define _nx_while_d(d, c, o, r, ...) \
-    _nx_while_##d(c, o, r, __VA_ARGS__)
+#define _nx_while_d(d) \
+    _nx_while_##d
 
 /**
  * @brief Represents a preprocessor-level looping construct.
@@ -154,7 +154,7 @@
         res
 
     #define SUM_MANY_D(d, ...) \
-        NX_WHILE_D(d, \
+        NX_WHILE_D(d)( \
             SUM_MANY_COND, \
             SUM_MANY_OP, \
             SUM_MANY_RES, \
@@ -176,7 +176,7 @@
  * @see NX_NUMERIC_SUM_D
  * @see NX_WHILE_D
  */
-#define NX_WHILE_D(d, condition, operation, result, ...) \
-    _nx_while_d(d, condition, operation, result, __VA_ARGS__)
+#define NX_WHILE_D(d) \
+    _nx_while_d(d)
 
 #endif //WHILE_HPP

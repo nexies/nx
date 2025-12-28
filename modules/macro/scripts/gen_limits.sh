@@ -80,7 +80,7 @@ format_nx_arg_tk()
   local i="$1"
 
   printf ' # define _nx_arg_tk_%d _nx_arg_tk_%d_(\n' "$i" "$i"
-  printf ' # define _nx_arg_tk_%d_(...) (%d, _nx_append_args(__VA_ARGS__))\n' "$i" "$i"
+  printf ' # define _nx_arg_tk_%d_(arg) (%d, arg)\n' "$i" "$i"
 }
 
 format_nx_sequence()

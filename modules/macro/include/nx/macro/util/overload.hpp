@@ -5,7 +5,7 @@
 #ifndef NXTBOT_OVERLOAD_HPP
 #define NXTBOT_OVERLOAD_HPP
 
-#include "arg_count.hpp"
+#include "../args/count.hpp"
 
 #define __NX_OVERLOAD(macro, ...) \
     NX_CONCAT(macro##_, NX_ARGS_COUNT(__VA_ARGS__))(__VA_ARGS__)

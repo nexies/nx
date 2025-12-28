@@ -5,7 +5,7 @@
 #ifndef ARG_COUNT_HPP
 #define ARG_COUNT_HPP
 
-#include "platform.hpp"
+#include <nx/macro.hpp>
 
 #define __NX_PP_ARG16( \
     _0,  _1,  _2,  _3,  _4,  _5,  _6,  _7, \
@@ -85,8 +85,12 @@
 #define __NX_HAS_ARGS_(...) \
     NX_CONCAT(__NX_HAS_ARGS_, __NX_PP_ISEMPTY(__VA_ARGS__))()
 
+#define _nx_args_not_empty(...) \
+    __NX_HAS_ARGS_(__VA_ARGS__)
+
 #define NX_HAS_ARGS(...) \
     __NX_HAS_ARGS_(__VA_ARGS__)
+
 
 
 #endif //ARG_COUNT_HPP

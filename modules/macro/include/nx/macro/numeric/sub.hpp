@@ -20,7 +20,7 @@
     a
 
 #define _nx_numeric_sub_d(d, a, b) \
-    _nx_while_d(d, \
+    _nx_while_d(d)( \
         _nx_numeric_sub_condition, \
         _nx_numeric_sub_operation, \
         _nx_numeric_sub_result, \
@@ -65,11 +65,9 @@
  *
  * This form is intended for use within NX_WHILE-based macros that already manage a
  * recursion/depth parameter and therefore cannot rely on the default depth used by
- * ::NX_NUMERIC_SUB.
+ * NX_NUMERIC_SUB.
  *
  * If the subtraction result becomes less than zero, it is clamped to zero.
- * If the result exceeds the maximum supported numeric value (`NX_MAX_NUMBER`),
- * it is clamped to `NX_MAX_NUMBER`.
  *
  * Both operands must be valid numeric literals supported by the numeric subsystem
  * (i.e., within the allowed `NX_MAX_NUMBER` range).

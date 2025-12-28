@@ -5,13 +5,14 @@
 #ifndef COMPARE_HPP
 #define COMPARE_HPP
 
+#include <nx/macro.hpp>
 #include <nx/macro/numeric/sub.hpp>
 
 #define _nx_numeric_eq_d(d, a, b) \
     _nx_logic_and\
     (\
         _nx_logic_not(_nx_bool(_nx_numeric_sub_d(d, a, b))), \
-        _nx_logic_not(_nx_bool(_nx_numeric_sub_d(d, b, a))), \
+        _nx_logic_not(_nx_bool(_nx_numeric_sub_d(d, b, a))) \
     )
 
 #define _nx_numeric_g_d(d, a, b) \

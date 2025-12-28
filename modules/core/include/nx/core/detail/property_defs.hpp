@@ -6,7 +6,7 @@
 #define PROPERTY_DEFS_HPP
 
 #include <nx/macro/repeat.hpp>
-#include <nx/macro/util/arg_count.hpp>
+#include <nx/macro/args/count.hpp>
 #include <nx/macro/util/choose.hpp>
 #include <nx/macro/logic.hpp>
 

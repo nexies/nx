@@ -7,7 +7,7 @@
 
 #include <nx/macro.hpp>
 #include <nx/macro/util/choose.hpp>
-#include <nx/macro/util/arg_count.hpp>
+#include <nx/macro/args/count.hpp>
 #include <nx/macro/repeating/sequence.hpp>
 
 #define _nx_sequence_iterator(n, macro, ...) \
