@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
-
 LIMIT=1024
 OUT_DIR=include/nx/macro/detail/generated
-
 format_nx_while()
 {
   local i="$1"

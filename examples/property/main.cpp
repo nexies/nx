@@ -160,52 +160,31 @@ struct PropertyManager
 
 
 // #include "nx/macro/repeating/recursive_while.hpp"
-
-#include "nx/macro/repeating/iterate.hpp"
-#include "nx/macro/numeric/sum.hpp"
-#include "nx/macro/numeric/sub.hpp"
-
-#include "nx/macro/args/parse.hpp"
-#include "nx/macro/args/count.hpp"
-
-#define NAME1 1
-#define NAME2 2
-#define NAME3 3
-
-#define CHECK_NOT_EMPTY(d, ...) \
-    _nx_args_not_empty(__VA_ARGS__)
-
-#define NOT_EMPTY_RULE \
-    _nx_args_rule(CHECK_NOT_EMPTY, "Args cannot be empty")
-
-#define CHECK_HAS_NAME_1(d, ...) \
-    _nx_args_contains_d(d, NAME1, __VA_ARGS__)
-
-#define HAS_NAME_1_RULE \
-    _nx_args_rule(CHECK_HAS_NAME_1, "Args must contain NAME1 argument")
-
-#define MY_RULE_SET \
-    _nx_args_rule_set( \
-        NOT_EMPTY_RULE, \
-        HAS_NAME_1_RULE \
-    )
+//
+// #include "nx/macro/repeating/iterate.hpp"
+// #include "nx/macro/numeric/sum.hpp"
+// #include "nx/macro/numeric/sub.hpp"
+//
+// #include "nx/macro/args/parse.hpp"
+// #include "nx/macro/args/count.hpp"
 
 
-#define MY_PARSER(...) (__VA_ARGS__)
+#include "nx/core/detail/property_defs_cxx20.hpp"
+
+struct _nx_object_this_type {};
+
+_nx_cxx_20_property(TYPE int, NAME Index, DEFAULT 123321)
+struct a
+{
+    using _nx_property_type = int;
+    // _nx_property_make_value(DEFAULT 123, CONST)
+};
 
 int main(int argc, char* argv[])
 {
-    _nx_args_parse(MY_PARSER, MY_RULE_SET, NAME2)
 
-    // _nx_args_check_rules_impl_d(0, MY_RULE_SET)
 
-    // std::cerr << _nx_args_token_has_name_d(0, NAME1, (NAME2, 123)) << std::endl;
-
-    // NAME1 value1, NAME2 value2, NAME3 value3
-
-    // _nx_args_get_values(NAME3, NAME1 111, NAME2 222)
-
-    // _nx_args_contains(NAME3, NAME2 arg1, NAME2 arg2, NAME3 arg3)
+    _nx_args_apply_rules_d(0, _nx_cxx_20_property_rule_set, TYPE int, NAME value);
 
     return 0;
 }

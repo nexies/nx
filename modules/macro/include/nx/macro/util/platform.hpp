@@ -5,6 +5,8 @@
 #ifndef PLATFORM_HPP
 #define PLATFORM_HPP
 
+// #include <nx/macro/args/count.hpp>
+
 #define _nx_expand(...) __VA_ARGS__
 #define NX_EXPAND(...) __VA_ARGS__
 

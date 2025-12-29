@@ -138,7 +138,7 @@
 ///
 ///             - USING_RESET <reset>       : exiting reset member function
 ///                 * conflicts with RESET parameter
-///                 * conflicts with DEFAULT parameter
+///                 * conflicts with DEFAULT parameter (?)
 ///
 ///         [ additional ]:
 ///             - DEFAULT <value>           : default value for the property
@@ -153,31 +153,100 @@
 ///                 * indicates that the property shall not be overwritten by a derived class
 ///
 
-// # TOKENS
-#include <../../../../../macro/include/nx/macro/util/arguments.hpp>
+#include <nx/core/detail/property_defs_cxx20_parser.hpp>
 
-// # PARAMETERS
-#define TYPE                    1
-#define NAME                    2
-#define DESCRIPTOR_TYPE         3
-#define DESCRIPTOR_NAME         4
-#define READ                    5
-#define WRITE                   6
-#define NOTIFY                  7
-#define RESET                   8
-#define USING_READ              9
-#define USING_WRITE             10
-#define USING_NOTIFY            11
-#define MEMBER                  12
+#define _nx_cxx_20_property_rule_set \
+    NX_ARGS_RULE_SET( \
+        \
+        NX_ARGS_RULE_UNIQUE_VALUE_S(TYPE, \
+            "Invalid parameter: TYPE must appear exactly once and name a valid C++ type") \
+        , \
+        NX_ARGS_RULE_UNIQUE_VALUE_S(NAME, \
+            "Invalid parameter: NAME must appear exactly once and be a valid C++ identifier") \
+        , \
+        NX_ARGS_RULE_UNIQUE_VALUE_S(DESCRIPTOR_TYPE, \
+            "Invalid parameter: DESCRIPTOR_TYPE must appear exactly once and name a valid C++ type") \
+        , \
+        NX_ARGS_RULE_UNIQUE_VALUE_S(DESCRIPTOR_NAME, \
+            "Invalid parameter: DESCRIPTOR_NAME must appear exactly once and be a valid C++ identifier") \
+        , \
+        NX_ARGS_RULE_UNIQUE_VALUE_S(READ, \
+            "Invalid parameter: READ must appear exactly once and name a valid C++ function") \
+        , \
+        NX_ARGS_RULE_UNIQUE_VALUE_S(WRITE, \
+            "Invalid parameter: WRITE must appear exactly once and name a valid C++ function") \
+        , \
+        NX_ARGS_RULE_UNIQUE_VALUE_S(NOTIFY, \
+            "Invalid parameter: NOTIFY must appear exactly once and name a valid NX_SIGNAL") \
+        , \
+        NX_ARGS_RULE_UNIQUE_VALUE_S(RESET, \
+            "Invalid parameter: RESET must appear exactly once and name a valid C++ function") \
+        , \
+        NX_ARGS_RULE_UNIQUE_VALUE_S(USING_READ, \
+            "Invalid parameter: USING_READ must appear exactly once and reference an existing member function") \
+        , \
+        NX_ARGS_RULE_UNIQUE_VALUE_S(USING_WRITE, \
+            "Invalid parameter: USING_WRITE must appear exactly once and reference an existing member function") \
+        , \
+        NX_ARGS_RULE_UNIQUE_VALUE_S(USING_NOTIFY, \
+            "Invalid parameter: USING_NOTIFY must appear exactly once and reference an existing member function") \
+        , \
+        NX_ARGS_RULE_UNIQUE_VALUE_S(USING_RESET, \
+            "Invalid parameter: USING_RESET must appear exactly once and reference an existing member function") \
+        , \
+        NX_ARGS_RULE_UNIQUE_VALUE_S(MEMBER, \
+            "Invalid parameter: MEMBER must appear exactly once and reference an existing data member") \
+        , \
+        NX_ARGS_RULE_UNIQUE_VALUE_S(COMMENT, \
+            "Invalid parameter: COMMENT must appear exactly once and contain a const C-string expression") \
+        , \
+        NX_ARGS_RULE_UNIQUE_VALUE_S(DEFAULT, \
+            "Invalid parameter: DEFAULT must appear exactly once and provide a valid value for TYPE") \
+        , \
+        NX_ARGS_RULE_MANDATORY_S(TYPE, \
+            "Missing TYPE parameter: NX_PROPERTY must have a type") \
+        , \
+        NX_ARGS_RULE_MANDATORY_S(NAME, \
+            "Missing NAME parameter: NX_PROPERTY must have a name") \
+        , \
+        NX_ARGS_RULE_CONFLICT_S(READ, USING_READ, \
+            "Conflicting parameters [READ, USING_READ]: exactly one getter must be specified") \
+        , \
+        NX_ARGS_RULE_CONFLICT_S(WRITE, USING_WRITE, \
+            "Conflicting parameters [WRITE, USING_WRITE]: exactly one setter must be specified") \
+        , \
+        NX_ARGS_RULE_CONFLICT_S(NOTIFY, USING_NOTIFY, \
+            "Conflicting parameters [NOTIFY, USING_NOTIFY]: exactly one notifier must be specified") \
+        , \
+        NX_ARGS_RULE_CONFLICT_S(RESET, USING_RESET, \
+            "Conflicting parameters [RESET, USING_RESET]: exactly one reset function must be specified") \
+        , \
+        NX_ARGS_RULE_CONFLICT_S(CONST, WRITE, \
+            "Conflicting parameters [CONST, WRITE]: const property cannot have a setter") \
+        , \
+        NX_ARGS_RULE_CONFLICT_S(CONST, USING_WRITE, \
+            "Conflicting parameters [CONST, USING_WRITE]: const property cannot have a setter") \
+        , \
+        NX_ARGS_RULE_CONFLICT_S(CONST, RESET, \
+            "Conflicting parameters [CONST, RESET]: const property cannot have a reset function") \
+        , \
+        NX_ARGS_RULE_CONFLICT_S(CONST, USING_RESET, \
+            "Conflicting parameters [CONST, USING_RESET]: const property cannot have a reset function") \
+        , \
+        NX_ARGS_RULE_UNIQUE_FLAG_S(CONST, \
+            "Invalid parameter: CONST must appear at most once and must not have a value") \
+        , \
+        NX_ARGS_RULE_UNIQUE_FLAG_S(MUTABLE, \
+            "Invalid parameter: MUTABLE must appear at most once and must not have a value") \
+        )
 
-#define DEFAULT                 13
-#define DEFAULTS                13  // alias
 
-#define CONSTANT                14
-#define CONST                   14  // alias
-
-#define MUTABLE                 15
-#define FINAL                   16
+#define _nx_cxx_20_property(...) \
+    _nx_args_parse( \
+        _nx_cxx_20_property_parser, \
+        _nx_cxx_20_property_rule_set, \
+        __VA_ARGS__ \
+    )
 
 
 

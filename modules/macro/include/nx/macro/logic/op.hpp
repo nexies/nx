@@ -42,7 +42,7 @@
 #define NX_NOT(a) _nx_logic_not(a)
 
 #define _nx_logic_nand(a, b) _nx_logic_nand_(a, b)
-#define _nx_logic_nand_(a, b) NX_EXPAND(_nx_logic_and(_nx_logic_not(a, b)))
+#define _nx_logic_nand_(a, b) _nx_logic_not(_nx_logic_and(a, b))
 
 #define NX_NAND(a, b) _nx_logic_nand(a, b)
 

@@ -41,7 +41,7 @@
 # define _nx_tuple_pop_front(t) \
     _nx_logic_if(_nx_tuple_not_empty(t)) \
     ( \
-        _nx_tuple(_nx_eat_1(_nx_tuple_unpack(t))), \
+        _nx_tuple(_nx_eat_1 t), \
         _nx_tuple() \
     )
 

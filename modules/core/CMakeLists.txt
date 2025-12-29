@@ -9,6 +9,8 @@ add_library(nx_core
         include/nx/core/detail/property_impl.hpp
         include/nx/core/Property.hpp
         include/nx/core/detail/property_defs_cxx20.hpp
+        include/nx/core/detail/property_defs_cxx20_parser.hpp
+        include/nx/core/detail/object_defs.hpp
 )
 
 find_package(spdlog REQUIRED)

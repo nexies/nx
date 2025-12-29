@@ -32,7 +32,7 @@ add_library(nx_macro
         include/nx/macro/detail/arg_tk_limit.hpp
         include/nx/macro/repeating/recursive_while.hpp
         include/nx/macro/tuple/tuple.hpp
-        include/nx/macro/args/args.hpp
+        include/nx/macro/args/count.hpp
         include/nx/macro/numeric/is_max.hpp
         include/nx/macro/detail/limits/eat_64.hpp
 )
@@ -49,7 +49,7 @@ nx_make_module(
 
 # NX_MACRO_MAX_NUMBER
 if(NOT NX_MODULE_MACRO_LIMITS_MAX_NUMBER)
-    set (NX_MODULE_MACRO_LIMITS_MAX_NUMBER 4096)
+    set (NX_MODULE_MACRO_LIMITS_MAX_NUMBER 512)
     add_compile_options(nx_macro PUBLIC "-fbracket-depth=4096")
 endif()
 
