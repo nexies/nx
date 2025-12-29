@@ -122,10 +122,17 @@
 // #define _nx_property_make_own_getter_descriptor(...) \
     _nx_property_static_field auto get =
 
+//TODO:
 #define _nx_property_make_getter_descriptor(...) \
     _nx_logic_if(_nx_args_contains(USING_READ, __VA_ARGS__)) ( \
         _nx_property_make_member_getter_descriptor(__VA_ARGS__), \
 
+
+#define _nx_property_make_comment_descriptor(...) \
+    _nx_logic_if(_nx_args_contains(COMMENT, __VA_ARGS__)) ( \
+        _nx_property_static_field std::string comment = _nx_args_get_value(COMMENT, __VA_ARGS__); ,\
+        _nx_empty() \
+    )
 
 #define _nx_property_create_descriptor_struct(...) \
     _nx_property_struct _nx_property_descriptor_type(__VA_ARGS__) : ::nx::detail::property_tag<_nx_object_this_type> \
@@ -135,6 +142,7 @@
         _nx_property_make_default_value_descriptor(__VA_ARGS__) \
         _nx_property_make_value_descriptor(__VA_ARGS__) \
         _nx_property_make_member_descriptor(__VA_ARGS__) \
+        _nx_property_make_comment_descriptor(__VA_ARGS__) \
     } _nx_property_descriptor_name(__VA_ARGS__) ;
 
 

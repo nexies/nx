@@ -173,7 +173,8 @@ struct PropertyManager
 
 struct _nx_object_this_type {};
 
-_nx_cxx_20_property(TYPE int, NAME Index, DEFAULT 123321)
+_nx_cxx_20_property(TYPE int, NAME Index, DEFAULT 123321, COMMENT "Testing property macro")
+
 struct a
 {
     using _nx_property_type = int;
