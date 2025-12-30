@@ -11,6 +11,8 @@ add_library(nx_core
         include/nx/core/detail/property_defs_cxx20.hpp
         include/nx/core/detail/property_defs_cxx20_parser.hpp
         include/nx/core/detail/object_defs.hpp
+
+        include/nx/experimental/reflect
 )
 
 find_package(spdlog REQUIRED)
