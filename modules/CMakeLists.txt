@@ -6,16 +6,25 @@ if (NX_BUILD_MODULE_MEMORY)
     add_subdirectory(memory)
 endif()
 
-if (NX_BUILD_MODULE_CORE)
-    set(NX_BUILD_MODULE_MACRO ON)
+if (NX_BUILD_MODULE_MACRO)
     add_subdirectory(macro)
+endif()
 
+if (NX_BUILD_MODULE_LOGGER)
+    add_subdirectory(logger)
+endif()
+
+if (NX_BUILD_MODULE_CORE)
     add_subdirectory(core)
 endif ()
+
+if (NX_BUILD_MODULE_IO)
+    add_subdirectory(io)
+endif()
 
 if (NX_BUILD_MODULE_APP)
     add_subdirectory(app)
 endif()
 
 
-message("=========================================================================================================")
+#message("=========================================================================================================")

@@ -158,6 +158,9 @@
 #define _nx_cxx_20_property_rule_set \
     NX_ARGS_RULE_SET( \
         \
+        NX_ARGS_RULE_NOT_EMPTY_S( \
+            "Invalid parameters: needs at least TYPE and NAME parameter") \
+        , \
         NX_ARGS_RULE_UNIQUE_VALUE_S(TYPE, \
             "Invalid parameter: TYPE must appear exactly once and name a valid C++ type") \
         , \
@@ -249,6 +252,12 @@
     )
 
 
+#define _nx_enable_properties(Class) \
+    using _nx_property_this_type = Class;
+
+
+#define NX_ENABLE_PROPERTIES(Class) \
+    _nx_enable_properties(Class)
 
 #endif
 #endif //PROPERTY_DEFS_CXX20_HPP

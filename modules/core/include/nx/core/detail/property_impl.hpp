@@ -175,6 +175,17 @@ namespace nx::detail
     constexpr std::string_view propertyNotifyTypeName () { return  typeid(Prop::notify).name(); }
 
     template<typename Prop>
+    concept PropertyWithComment =
+        Property<Prop> and
+        requires { { Prop::comment } -> std::convertible_to<std::string_view>; };
+
+    template<PropertyWithComment Prop>
+    constexpr bool propertyHasComment() { return PropertyWithComment<Prop>; }
+
+    template<PropertyWithComment Prop>
+    constexpr std::string_view propertyComment () { return Prop::comment; }
+
+    template<typename Prop>
     void DumpPropertyInfo (Prop & p)
     {
         constexpr auto type_name = reflect::type_name<Prop>();
@@ -191,9 +202,11 @@ namespace nx::detail
         else if constexpr (not Property<Prop>) {
             std::cerr << type_name << " is not a property" <<std::endl;
         } else {
-            std::cerr << "Property \"" << type_name << "\" of class " << propertyHostTypeName<Prop>() << ": " << std::endl;
+            std::cerr << "Property \"" << type_name << "\" of class " << propertyHostTypeName<Prop>() << ":" << std::endl;
             std::cerr << "\tType: " << propertyTypeName<Prop>() << std::endl;
             std::cerr << "\tName: " << propertyName<Prop>() << std::endl;
+            if constexpr (PropertyWithComment<Prop>)
+                std::cerr << "\tComment: " << propertyComment<Prop>() << std::endl;
 
             if constexpr (PropertyWithDefault<Prop>)
                 std::cerr << "\tHas default value: true\n\t\tDefault value: " << propertyDefaultValue<Prop>() << std::endl;

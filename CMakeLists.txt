@@ -15,15 +15,24 @@ set (NX_CXX_STANDARD 20)
 set (NX_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 option (NX_BUILD_MODULE_MEMORY "Build nx::memory module" OFF)
+option (NX_BUILD_MODULE_MACRO "Build nx::macro module" ON)
+option (NX_BUILD_MODULE_LOGGER "Build nx::logger module" ON)
 option (NX_BUILD_MODULE_CORE "Build nx::core module" ON)
 option (NX_BUILD_MODULE_APP "Build nx::app module" ON)
+option (NX_BUILD_MODULE_IO "Build nx::io module" ON)
 option (NX_ENABLE_CXX_20_FEATURES "Enable std::c++20 features" ON)
 option (NX_BUILD_EXAMPLES "Build examples" ON)
 option (NX_BUILD_TESTS "Build tests" OFF)
 
 list (APPEND CMAKE_MODULE_PATH "${NX_MODULE_PATH}")
 
-add_library (nx INTERFACE)
+add_library (nx INTERFACE
+        modules/io/include/nx/io.hpp
+        modules/io/src/io.cpp
+        examples/enum/main.cpp
+        modules/logger/include/nx/logger.hpp
+        modules/logger/src/logger.cpp
+)
 add_library (nx::nx ALIAS nx)
 
 include(nxVersionInfo)

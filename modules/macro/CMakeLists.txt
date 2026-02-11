@@ -35,6 +35,8 @@ add_library(nx_macro
         include/nx/macro/args/count.hpp
         include/nx/macro/numeric/is_max.hpp
         include/nx/macro/detail/limits/eat_64.hpp
+        include/nx/macro/enum/flags.hpp
+        include/nx/macro/enum/enum.hpp
 )
 
 include(nxMakeModule)

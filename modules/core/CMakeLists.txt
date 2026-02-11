@@ -13,15 +13,17 @@ add_library(nx_core
         include/nx/core/detail/object_defs.hpp
 
         include/nx/experimental/reflect
+        include/nx/core/detail/enum_defs.hpp
 )
 
-find_package(spdlog REQUIRED)
+
 find_package(Boost COMPONENTS REQUIRED program_options system)
 
 if (NX_ENABLE_CXX_20_FEATURES)
     target_compile_definitions(nx_core PUBLIC -D__nx_cxx_20_features)
     target_compile_definitions(nx_core PUBLIC -D__nx_cxx_20_reflect)
     target_compile_definitions(nx_core PUBLIC -D__nx_cxx_20_property)
+    target_compile_definitions(nx_core PUBLIC -D__nx_cxx_20_enum)
 endif()
 
 target_link_libraries(nx_core PUBLIC

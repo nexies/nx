@@ -84,31 +84,29 @@ struct PropertyManager
     }
 };
 
-#define __NX_GET_THIS_TYPE(TypeName) \
-    using TypeName = std::remove_cv_t<std::remove_reference_t<decltype(*this)>>
 
-#define __NX_ENABLE_PROPERTY(Class) \
-    auto & _PropertyManager () {\
-        __NX_GET_THIS_TYPE(This); \
-        static PropertyManager<This> man;\
-        return man;\
-    } \
-    template<typename T, std::size_t Size> \
-    constexpr bool HasProperty(constexpr reflect::fixed_string<T, Size> name) {\
-        return this->_PropertyManager().template _hasProperty<name>(); \
-    }
-
-#define __nx_enable_properties(Class) \
-    using This = Class;
-
-#define NX_ENABLE_PROPERTIES(...) \
-    __nx_enable_properties(__VA_ARGS__)
-
-#define __NX_OBJECT(Class) \
-    NX_ENABLE_PROPERTIES(Class)
-
-#define NX_OBJECT(...) \
-    __NX_OBJECT(__VA_ARGS__)
+// #define __NX_ENABLE_PROPERTY(Class) \
+//     auto & _PropertyManager () {\
+//         __NX_GET_THIS_TYPE(This); \
+//         static PropertyManager<This> man;\
+//         return man;\
+//     } \
+//     template<typename T, std::size_t Size> \
+//     constexpr bool HasProperty(constexpr reflect::fixed_string<T, Size> name) {\
+//         return this->_PropertyManager().template _hasProperty<name>(); \
+//     }
+//
+// #define __nx_enable_properties(Class) \
+//     using This = Class;
+//
+// #define NX_ENABLE_PROPERTIES(...) \
+//     __nx_enable_properties(__VA_ARGS__)
+//
+// #define __NX_OBJECT(Class) \
+//     NX_ENABLE_PROPERTIES(Class)
+//
+// #define NX_OBJECT(...) \
+//     __NX_OBJECT(__VA_ARGS__)
 
 #include "nx/core/detail/property_impl.hpp"
 #include <nx/core/Object.hpp>
@@ -159,21 +157,27 @@ struct PropertyManager
 // };
 
 
-// #include "nx/macro/repeating/recursive_while.hpp"
-//
-// #include "nx/macro/repeating/iterate.hpp"
-// #include "nx/macro/numeric/sum.hpp"
-// #include "nx/macro/numeric/sub.hpp"
-//
-// #include "nx/macro/args/parse.hpp"
-// #include "nx/macro/args/count.hpp"
-
-
-#include "nx/core/detail/property_defs_cxx20.hpp"
+#include "nx/core/detail/object_defs.hpp"
 
 struct _nx_object_this_type {};
 
-_nx_cxx_20_property(TYPE int, NAME Index, DEFAULT 123321, COMMENT "Testing property macro")
+namespace example
+{
+    struct Test : public nx::Object
+    {
+    private:
+        NX_OBJECT(Test)
+
+    public:
+        // void setIndex (int idx) { m_property_index.data = idx; }
+        // int index () const { return m_property_index.data; }
+
+//        _nx_cxx_20_property(TYPE int, NAME index, DEFAULT 10, USING_READ index,
+//        COMMENT "Property for testing the NX_PROPERTY macro :D")
+
+    };
+}
+
 
 struct a
 {
@@ -181,11 +185,36 @@ struct a
     // _nx_property_make_value(DEFAULT 123, CONST)
 };
 
+#include "nx/experimental/reflect"
+
+constexpr void test_reflect ()
+{
+    struct F { int field_a; int field_b; } f {13, 15};
+    struct F2 : public F { int field_c; int field_d; } f2 {17, 19};
+    auto [a, b] = f2;
+
+    std::cerr << a << ", " << b << std::endl;
+
+
+
+    //
+    // reflect::for_each([&f](const auto I) {
+    //  fmt::print("{}\n", reflect::member_name<I>(f)/*, reflect::type_name(reflect::get<I>(f)), reflect::get<I>(f)*/); // prints a:int=4, b:int=2
+    //     }, f);
+}
+
+
 int main(int argc, char* argv[])
 {
 
+    test_reflect();
 
-    _nx_args_apply_rules_d(0, _nx_cxx_20_property_rule_set, TYPE int, NAME value);
+
+
+    example::Test test;
+    // example::Test::property_index_t p;
+    // nx::detail::DumpPropertyInfo(p);
+
 
     return 0;
 }

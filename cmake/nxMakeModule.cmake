@@ -31,7 +31,7 @@ function(nx_make_module)
             PUBLIC_INCLUDE_DIRS
             PRIVATE_INCLUDE_DIRS
     )
-    message("=========================================================================================================")
+#    message("=========================================================================================================")
 
     cmake_parse_arguments(_NX "" "${_one}" "${_multi}" ${ARGN})
     set (DESC "nx_make_module()")
@@ -53,6 +53,7 @@ function(nx_make_module)
     set(_name   ${_NX_NAME})
     set(_t      ${_NX_TARGET})
     set(_alias  ${NX_NAMESPACE}::${_name})
+    set(_ver    ${_NX_VERSION})
     set(DESC "[${_alias}] -- ")
 
     if(NOT NX_BUILD_MODULE_${_name_up} AND NOT NX_BUILD_MODULE_${_name})
@@ -63,15 +64,13 @@ function(nx_make_module)
         return()
     endif()
 
-    message(${DESC} "Configuring component...")
-    message(${DESC} "Ignoring NX_${_name_up}_BUILD_SHARED_LIBS parameter...")
     if(NOT TARGET ${_alias})
         add_library(${_alias} ALIAS ${_t})
     endif()
 
     target_compile_options(${_t} PUBLIC -std=c++${NX_CXX_STANDARD})
 
-    nx_make_module_version(NAME ${_name})
+    nx_make_module_version(NAME ${_name} VERSION ${_ver})
 
     target_include_directories(${_t} PUBLIC
             $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
@@ -149,9 +148,9 @@ function(nx_make_module)
         endif()
     endif()
 
-    message(${DESC}
-            "Installing public header interface: BUILD[${_NX_HEADERS_BASE_DIRS}],
-                                                 INSTALL[${NX_INSTALL_INCLUDEDIR}]")
+    message(${DESC} "Path to headers [BUILD]:   ${_NX_HEADERS_BASE_DIRS}")
+    message(${DESC} "Path to headers [INSTALL]: ${NX_INSTALL_INCLUDEDIR}")
+
     target_include_directories(${_t}
             PUBLIC
             $<BUILD_INTERFACE:${_NX_HEADERS_BASE_DIRS}>

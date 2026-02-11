@@ -6,13 +6,14 @@
 #define NXTBOT_PROPERTY_DEFS_CXX20_PARSER_HPP
 
 #include <nx/macro/args/parse.hpp>
-#include "object_defs.hpp"
 
 #define _nx_property_struct struct
 #define _nx_property_type type
-#define _nx_property_value value
+#define _nx_property_value data
 #define _nx_property_member member
 #define _nx_property_static_field static constexpr
+#define _nx_property_this_type ObjectType
+
 
 #define TYPE                    1
 #define NAME                    2
@@ -130,19 +131,60 @@
 
 #define _nx_property_make_comment_descriptor(...) \
     _nx_logic_if(_nx_args_contains(COMMENT, __VA_ARGS__)) ( \
-        _nx_property_static_field std::string comment = _nx_args_get_value(COMMENT, __VA_ARGS__); ,\
+        _nx_property_static_field std::string_view comment = _nx_args_get_value(COMMENT, __VA_ARGS__); ,\
         _nx_empty() \
     )
 
+#define _nx_property_make_friend_class_descriptor(...) \
+    friend _nx_property_struct _nx_property_descriptor_type(__VA_ARGS__);
+
+// #define _nx_property_make_using_read_descriptor(...) \
+//     _nx_logic_if(_nx_args_contains(USING_READ, __VA_ARGS__)) ( \
+//         _nx_property_static_field auto get = &host_type:: _nx_args_get_value(USING_READ, __VA_ARGS__); , \
+//         _nx_empty() \
+//     )
+
+#define _nx_property_make_using_read_descriptor(...) \
+    _nx_logic_if(_nx_args_contains(USING_READ, __VA_ARGS__)) ( \
+        _nx_property_static_field auto get = [] (host_type & obj) { return obj. _nx_args_get_value(USING_READ, __VA_ARGS__) (); }; , \
+        _nx_empty() \
+)
+
+
+#define _nx_property_make_using_write_descriptor(...) \
+    _nx_logic_if(_nx_args_contains(USING_WRITE, __VA_ARGS__)) ( \
+        _nx_property_static_field auto set = &host_type:: _nx_args_get_value(USING_WRITE, __VA_ARGS__); , \
+        _nx_empty() \
+    )
+
+#define _nx_property_make_using_reset_descriptor(...) \
+    _nx_logic_if(_nx_args_contains(USING_RESET, __VA_ARGS__)) ( \
+        _nx_property_static_field auto reset = &host_type:: _nx_args_get_value(USING_RESET, __VA_ARGS__); , \
+        _nx_empty() \
+)
+
+#define _nx_property_make_using_notify_descriptor(...) \
+    _nx_logic_if(_nx_args_contains(USING_NOTIFY, __VA_ARGS__)) ( \
+        _nx_property_static_field auto notify = &host_type:: _nx_args_get_value(USING_NOTIFY, __VA_ARGS__); , \
+        _nx_empty() \
+)
+
+
 #define _nx_property_create_descriptor_struct(...) \
-    _nx_property_struct _nx_property_descriptor_type(__VA_ARGS__) : ::nx::detail::property_tag<_nx_object_this_type> \
+    _nx_property_make_friend_class_descriptor(__VA_ARGS__) \
+    _nx_property_struct _nx_property_descriptor_type(__VA_ARGS__) : ::nx::detail::property_tag< _nx_property_this_type > \
     { \
-        _nx_property_static_field std::string name = _nx_property_name_str(__VA_ARGS__); \
+        _nx_property_static_field std::string_view name = _nx_property_name_str(__VA_ARGS__); \
         using _nx_property_type = _nx_args_get_value(TYPE, __VA_ARGS__); \
         _nx_property_make_default_value_descriptor(__VA_ARGS__) \
         _nx_property_make_value_descriptor(__VA_ARGS__) \
         _nx_property_make_member_descriptor(__VA_ARGS__) \
         _nx_property_make_comment_descriptor(__VA_ARGS__) \
+        \
+        _nx_property_make_using_read_descriptor(__VA_ARGS__) \
+        _nx_property_make_using_write_descriptor(__VA_ARGS__) \
+        _nx_property_make_using_reset_descriptor(__VA_ARGS__) \
+        _nx_property_make_using_notify_descriptor(__VA_ARGS__) \
     } _nx_property_descriptor_name(__VA_ARGS__) ;
 
 
