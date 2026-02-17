@@ -5,9 +5,7 @@
 #include <iostream>
 #include <any>
 
-#include "../../../reflect-cpp/include/rfl/thirdparty/ctre.hpp"
 #include "nx/experimental/reflect"
-#include "spdlog/fmt/bundled/base.h"
 
 namespace nx::detail
 {

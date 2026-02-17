@@ -22,24 +22,23 @@ option (NX_BUILD_MODULE_APP "Build nx::app module" ON)
 option (NX_BUILD_MODULE_IO "Build nx::io module" ON)
 option (NX_ENABLE_CXX_20_FEATURES "Enable std::c++20 features" ON)
 option (NX_BUILD_EXAMPLES "Build examples" ON)
-option (NX_BUILD_TESTS "Build tests" OFF)
+option (NX_BUILD_TESTS "Build tests" ON)
 
 list (APPEND CMAKE_MODULE_PATH "${NX_MODULE_PATH}")
 
-add_library (nx INTERFACE
-        modules/io/include/nx/io.hpp
-        modules/io/src/io.cpp
-        examples/enum/main.cpp
-        modules/logger/include/nx/logger.hpp
-        modules/logger/src/logger.cpp
-)
+add_library (nx INTERFACE)
 add_library (nx::nx ALIAS nx)
 
 include(nxVersionInfo)
 
 add_subdirectory(modules)
+
 if(NX_BUILD_EXAMPLES)
     add_subdirectory(examples)
+endif()
+
+if(NX_BUILD_TESTS)
+    add_subdirectory(tests)
 endif()
 
 get_property(components GLOBAL PROPERTY NX_ENABLED_COMPONENTS)

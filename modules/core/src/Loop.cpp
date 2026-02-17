@@ -7,7 +7,6 @@
 #include <boost/asio/local/basic_endpoint.hpp>
 
 #include "../include/nx/core/Thread.hpp"
-#include "tgbot/net/BoostHttpOnlySslClient.h"
 
 using namespace nx;
 

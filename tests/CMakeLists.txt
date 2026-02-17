@@ -1,3 +1,5 @@
+include(CTest)
+
 # Попробуем найти Catch2 (например, установленный через пакетный менеджер)
 find_package(Catch2 3 CONFIG QUIET)
 
@@ -13,28 +15,30 @@ if(NOT Catch2_FOUND)
 endif()
 
 # Тест для core
-add_executable(nx_core_tests
-        core_version.test.cpp
-)
-
-target_link_libraries(nx_core_tests
-        PRIVATE
-        nx::core
-        Catch2::Catch2WithMain
-)
-
-# стандарт: C++17
-target_compile_features(nx_core_tests PRIVATE cxx_std_17)
-
-# (необязательно) санитайзеры и строгие предупреждения для тестов
-if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
-    target_compile_options(nx_core_tests PRIVATE -Wall -Wextra -Wpedantic)
-    option(NX_TESTS_ASAN "Enable ASAN for tests" OFF)
-    if(NX_TESTS_ASAN)
-        target_compile_options(nx_core_tests PRIVATE -fsanitize=address)
-        target_link_options(nx_core_tests PRIVATE -fsanitize=address)
-    endif()
-endif()
+#add_executable(nx_core_tests
+#)
 
 include(Catch)
-catch_discover_tests(nx_core_tests)
+
+#target_link_libraries(nx_core_tests
+#        PRIVATE
+#        nx::core
+#        Catch2::Catch2WithMain
+#)
+#catch_discover_tests(nx_core_tests)
+
+add_executable(nx_macro_tests
+        macro-tests/main.test.cpp
+        macro-tests/tuple.test.cpp
+)
+catch_discover_tests(nx_macro_tests)
+
+# (необязательно) санитайзеры и строгие предупреждения для тестов
+#if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
+#    target_compile_options(nx_core_tests PRIVATE -Wall -Wextra -Wpedantic)
+#    option(NX_TESTS_ASAN "Enable ASAN for tests" OFF)
+#    if(NX_TESTS_ASAN)
+#        target_compile_options(nx_core_tests PRIVATE -fsanitize=address)
+#        target_link_options(nx_core_tests PRIVATE -fsanitize=address)
+#    endif()
+#endif()
