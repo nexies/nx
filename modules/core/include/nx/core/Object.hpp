@@ -62,7 +62,11 @@ namespace nx {
         return Result::Err("Not supported event type");
     }
 
-#define void_cast(val) reinterpret_cast<void *>(val)
+// Worked on Linux environment, does not work on MacOS. I am too lazy to
+// dig into compiler settings now
+// vvv
+// #define void_cast(val) reinterpret_cast<void *>(val)
+#define void_cast(val) static_cast<void *>(val)
 
     template <typename Sender, typename Signal, typename Receiver, typename Slot>
     bool connect(Sender* sender, Signal&& signal, Receiver* receiver, Slot&& slot, uint8_t flags)

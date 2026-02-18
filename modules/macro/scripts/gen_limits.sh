@@ -127,7 +127,8 @@ generate_with_format()
 generate_main_ifndef()
 {
   local name="$1"
-  local upper_name="${name^^}"
+#  local upper_name="${name^^}"
+  local upper_name=$(printf '%s\n' "$name" | tr '[:lower:]' '[:upper:]')
   local limit="$2"
 
   {
@@ -154,7 +155,8 @@ generate_private_include()
 generate_limit_define()
 {
   local name="$1"
-  local upper_name="${name^^}"
+#  local upper_name="${name^^}"
+  local upper_name=$(printf '%s\n' "$name" | tr '[:lower:]' '[:upper:]')
   local limit="$2"
 
   printf '\n'
@@ -167,7 +169,8 @@ generate()
 {
   local name="$1"
   local format="format_nx_${name}"
-  local upper_name="${name^^}"
+#  local upper_name="${name^^}"
+  local upper_name=$(printf '%s\n' "$name" | tr '[:lower:]' '[:upper:]')
 
   local limit="$2"
   local filename="${OUT_DIR}/${name}_${limit}.hpp"
