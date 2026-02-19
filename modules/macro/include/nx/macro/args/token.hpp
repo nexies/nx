@@ -70,5 +70,31 @@
 # define _nx_args_arg_name_is(name, arg) \
     _nx_args_token_name_is(name, _nx_args_tokenize(arg))
 
+# define _nx_args_tokenize_all_iterator(n, arg) _nx_args_tokenize(arg)
+
+/// Tokenize all the arguments in the sequence
+# define _nx_args_tokenize_all(...) \
+    NX_DECORATED_ITERATE(_nx_args_tokenize_all_iterator, NX_COMMA_DECORATOR, __VA_ARGS__)
+
+# define _nx_args_max_token_name_cond_d(d, res, ...) \
+    NX_HAS_ARGS(__VA_ARGS__)
+
+# define _nx_args_max_token_name_op_d(d, res, cur_token, ...) \
+    NX_IF(NX_GREATER_D(d, _nx_args_token_name(cur_token), res)) ( \
+        _nx_expand(_nx_args_token_name(cur_token) NX_APPEND_VA_ARGS(__VA_ARGS__)), \
+        _nx_expand(res NX_APPEND_VA_ARGS(__VA_ARGS__)) \
+    )
+
+# define _nx_args_max_token_name_res_d(d, res, ...) \
+    res
+
+/// Find name with the max value among tokens in the sequence
+# define _nx_args_max_token_name_d(d, ...) \
+    _nx_while_d(d)( \
+        _nx_args_max_token_name_cond_d, \
+        _nx_args_max_token_name_op_d, \
+        _nx_args_max_token_name_res_d, \
+        /*res*/ 0, /*tokens*/ __VA_ARGS__ \
+    )
 
 #endif //NX_MACRO_ARGS_TOKEN_HPP

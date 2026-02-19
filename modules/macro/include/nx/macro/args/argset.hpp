@@ -14,6 +14,8 @@
 #include <nx/macro/util/put_at.hpp>
 #include <nx/macro/util/overload.hpp>
 
+#include <nx/macro/args/token.hpp>
+
 /// Argset represents a two-dimensional table of arguments produced while
 /// parsing macro input with named parameters.
 ///
@@ -84,20 +86,32 @@
 
 
 
+# define _nx_args_convert_to_argset_cond_d(d, argset, ...) \
+    NX_HAS_ARGS(__VA_ARGS__)
 
-#define empty_argset _nx_args_make_argset(10)
+# define _nx_args_convert_to_argset_op_d(d, argset, token, ...) \
+    _nx_args_argset_append(argset, _nx_args_token_name(token), _nx_args_token_value(token)) NX_APPEND_VA_ARGS(__VA_ARGS__)
 
-#define argset1 _nx_args_argset_append(empty_argset, 0, 12)
+# define _nx_args_convert_to_argset_res_d(d, argset, ...) \
+    argset
 
-#define argset2 _nx_args_argset_append(argset1, 0, 123)
+# define _nx_args_convert_to_argset_d(d, argset, ...) \
+    _nx_while_d(d)( \
+        _nx_args_convert_to_argset_cond_d, \
+        _nx_args_convert_to_argset_op_d, \
+        _nx_args_convert_to_argset_res_d, \
+        argset, __VA_ARGS__ \
+    )
 
-// _nx_args_argset_get_by_index(argset2, 0, 1)
+# define _nx_args_tokens_to_argset(max_token_name, ...) \
+    _nx_args_convert_to_argset_d(0, _nx_args_argset(NX_INC(max_token_name)), __VA_ARGS__)
 
-// _nx_args_argset_contains_many(argset2, 0)
-_nx_args_argset_get(argset2, 0, 0)
-// _nx_args_argset_contains_single(empty_argset, 0)
-// _nx_args_argset_contains_single(argset1, 0)
-// _nx_args_argset_contains_single(argset2, 0)
+# define _nx_args_tokens_to_argset_autosize(...) \
+    _nx_args_tokens_to_argset(_nx_args_max_token_name_d(0, __VA_ARGS__), __VA_ARGS__)
+
+# define _nx_args_to_argset_autosize(...) \
+    _nx_args_tokens_to_argset_autosize(_nx_args_tokenize_all(__VA_ARGS__))
+
 
 
 #endif //NX_ARGSET_HPP
