@@ -9,6 +9,8 @@
 #include <nx/core/Signal.hpp>
 #include <nx/core/Connection.hpp>
 
+#include <nx/core/detail/function_id.hpp>
+
 namespace nx {
 
     class Thread;
@@ -90,7 +92,7 @@ namespace nx {
         uint8_t conn_flags = flags & 0xf0;
 
         Connection conn (func,
-        void_cast(sender), void_cast(signal), void_cast(receiver), void_cast(slot),
+        void_cast(sender), detail::get_function_id(signal), void_cast(receiver), detail::get_function_id(slot),
         conn_type, conn_flags, receiver_obj != nullptr);
 
         if (!sender_obj->_getConnectionInfo()->addConnection(std::move(conn)))
@@ -124,7 +126,7 @@ namespace nx {
         // uint8_t conn_flags = flags & 0xf0;
 
         Connection conn (func,
-        void_cast(sender), void_cast(signal), void_cast(receiver), void_cast(slot),
+        void_cast(sender), detail::get_function_id(signal), void_cast(receiver), detail::get_function_id(slot),
         Connection::Auto, 0, receiver_obj != nullptr);
 
         if (!sender_obj->_getConnectionInfo()->removeConnection(conn, disconnect_all))
@@ -171,7 +173,7 @@ namespace nx {
     {
         static_assert(std::is_base_of<Object, Sender>::value, "Sender object must be a specialisation of nx::Object");
         Object * sender_obj = static_cast<Object *>(sender);
-        auto sender_id = Connection::MakeId(void_cast(sender), void_cast(signal), 0, 0);
+        auto sender_id = Connection::MakeId(void_cast(sender), detail::get_function_id(signal), 0, 0);
         auto connections = sender_obj->_getConnectionInfo()->getConnections(sender_id);
         for (auto & connection : connections)
         {

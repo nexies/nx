@@ -36,7 +36,6 @@ add_library(nx_macro
         include/nx/macro/detail/limits/eat_64.hpp
         include/nx/macro/detail/put_at_limit.hpp
         include/nx/macro/args/parse-2.hpp
-        include/nx/macro/args/arg_tk.hpp
         include/nx/macro/args/argset.hpp
 )
 

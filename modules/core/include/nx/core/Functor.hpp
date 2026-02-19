@@ -28,6 +28,7 @@
 #define FUNCTOR2_H
 #include <utility>
 #include <memory>
+#include <nx/core/detail/function_id.hpp>
 
 namespace nx
 {
@@ -92,7 +93,7 @@ namespace nx
         size_t hash() override {
             // C-style cast to get around functions and invokables cast restrictions
             auto s1 = std::hash<void *>{}((void *)(_cls));
-            auto s2 = std::hash<void *>{}((void *)(_func));
+            auto s2 = detail::get_function_id(_func);
             return s1 + (s2 << 1);
         }
     };

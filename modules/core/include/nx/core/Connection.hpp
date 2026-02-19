@@ -10,6 +10,7 @@
 
 #include <nx/core/Signal.hpp>
 #include <nx/core/store/DataPool.h>
+#include <nx/core/detail/function_id.hpp>
 
 
 namespace nx {
@@ -18,13 +19,14 @@ namespace nx {
     namespace detail
     {
         size_t hash ( void * o, void * m );
+        size_t hash ( void * o, detail::function_id m );
     }
 
     class Connection
     {
     public:
         using id = size_t;
-        static id MakeId ( void * sender, void * signal, void * receiver, void * slot );
+        static id MakeId ( void * sender, detail::function_id signal, void * receiver, detail::function_id slot );
 
         enum Type : uint8_t
         {
@@ -42,8 +44,8 @@ namespace nx {
         };
 
         Connection (FunctorPtr functor,
-            void * sender, void * signal,
-            void * receiver, void * slot,
+            void * sender, detail::function_id signal,
+            void * receiver, detail::function_id slot,
             Type type, uint8_t flags,
             bool object_receiver = false);
 
@@ -64,9 +66,9 @@ namespace nx {
 
         FunctorPtr functor;
         void * sender;
-        void * signal;
+        detail::function_id signal;
         void * receiver;
-        void * slot;
+        detail::function_id slot;
 
         bool object_receiver;
         Type type;

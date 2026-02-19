@@ -14,6 +14,7 @@ add_library(nx_core
 
         include/nx/experimental/reflect
         include/nx/core/detail/enum_defs.hpp
+        include/nx/core/detail/function_id.hpp
 )
 
 if(WIN32)
@@ -28,6 +29,9 @@ if (NX_ENABLE_CXX_20_FEATURES)
     target_compile_definitions(nx_core PUBLIC -D__nx_cxx_20_property)
     target_compile_definitions(nx_core PUBLIC -D__nx_cxx_20_enum)
 endif()
+
+#find_package(spdlog)
+find_package(spdlog)
 
 target_link_libraries(nx_core PUBLIC
         nx::macro

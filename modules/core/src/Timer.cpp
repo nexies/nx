@@ -83,7 +83,7 @@ bool Timer::_set()
     }
 
     reps_left = reps;
-    timer->async_wait(boost::bind(&Timer::_OnTimeout, this, boost::placeholders::_1));
+    timer->async_wait(std::bind(&Timer::_OnTimeout, this, std::placeholders::_1));
     return true;
 }
 

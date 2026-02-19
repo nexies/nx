@@ -28,7 +28,8 @@ option (NX_BUILD_TESTS "Build tests" ON)
 
 list (APPEND CMAKE_MODULE_PATH "${NX_MODULE_PATH}")
 
-add_library (nx INTERFACE)
+add_library (nx INTERFACE
+        examples/app_example/main.cpp)
 add_library (nx::nx ALIAS nx)
 
 include(nxVersionInfo)
@@ -36,7 +37,7 @@ include(nxVersionInfo)
 add_subdirectory(modules)
 
 #add_subdirectory(third-party/FTXUI)
-add_subdirectory(third-party/spdlog)
+#add_subdirectory(third-party/spdlog)
 
 if(NX_BUILD_EXAMPLES)
     add_subdirectory(examples)

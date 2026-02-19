@@ -17,13 +17,22 @@ size_t detail::hash(void* o, void* m)
     return std::hash<void *>{}(o) + (std::hash<void *>{}(m) << 1);
 }
 
-Connection::id Connection::MakeId(void* sender, void* signal, void* receiver, void* slot)
+size_t detail::hash(void *o, detail::function_id m) {
+    return std::hash<void *>{}(o) + std::hash<function_id>{}(m);
+}
+
+// Connection::id Connection::MakeId(void* sender, void* signal, void* receiver, void* slot)
+// {
+//     return detail::hash(sender, signal) + (detail::hash(receiver, slot) << 1);
+// }
+
+Connection::id Connection::MakeId(void *sender, detail::function_id signal, void *receiver, detail::function_id slot)
 {
     return detail::hash(sender, signal) + (detail::hash(receiver, slot) << 1);
 }
 
-Connection::Connection(FunctorPtr functor, void* sender, void* signal, void* receiver, void* slot, Type type,
-    uint8_t flags, bool object_receiver) :
+Connection::Connection(FunctorPtr functor, void* sender, detail::function_id signal, void* receiver, detail::function_id slot, Type type,
+                       uint8_t flags, bool object_receiver) :
         functor(functor),
         sender(sender),
         signal(signal),
@@ -63,7 +72,7 @@ void* Connection::getReceiver() const
 
 size_t Connection::getSenderId() const
 {
-    return Connection::MakeId(sender, signal, nullptr, nullptr);
+    return Connection::MakeId(sender, signal, NULL, NULL);
 }
 
 size_t Connection::getId() const
