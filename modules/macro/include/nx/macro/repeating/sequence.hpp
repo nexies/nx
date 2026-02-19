@@ -26,11 +26,14 @@ _nx_make_decorated_sequence(count, _nx_sequence_comma_separator, macro, __VA_ARG
 _nx_make_decorated_sequence(count, _nx_sequence_no_decorator, macro, __VA_ARGS__)
 
 
+#define NX_SEQUENCE(count, macro, ...) \
+    _nx_make_sequence(count, macro, __VA_ARGS__)
+
 /// @param count
 /// @param decorator
 /// @param macro
 #define NX_DECORATED_SEQUENCE(count, decorator, macro, ...) \
-    _nx_make_sequence_with_decorator(count, decorator, macro, __VA_ARGS__)
+    _nx_make_decorated_sequence(count, decorator, macro, __VA_ARGS__)
 
 ///
 /// @param count
@@ -42,6 +45,10 @@ _nx_make_decorated_sequence(count, _nx_sequence_no_decorator, macro, __VA_ARGS__
 #define NX_PLACEHOLDERS(count) \
     _nx_make_sequence(count, _nx_rconcat, _)
 
+
+
+#define NX_COMMA_DECORATOR \
+    _nx_sequence_comma_separator
 
 
 

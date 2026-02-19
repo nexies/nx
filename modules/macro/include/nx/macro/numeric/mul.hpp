@@ -39,10 +39,18 @@
 #define _nx_numeric_mul(a, b) \
     _nx_numeric_mul_d(0, a, b)
 
-#define NX_NUMERIC_MUL(a, b) \
+///
+/// @param a
+/// @param b
+# define NX_NUMERIC_MUL(a, b) \
     _nx_numeric_mul(a, b)
 
-#define NX_NUMERIC_MUL_D(d, a, b) \
+
+///
+/// @param d
+/// @param a
+/// @param b
+# define NX_NUMERIC_MUL_D(d, a, b) \
     _nx_numeric_mul_d(d, a, b)
 
 

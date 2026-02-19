@@ -18,9 +18,15 @@
 #define _nx_append_va_args(...) \
     _nx_append_args(__VA_ARGS__)
 
-/**
- *
- */
-#define NX_ARGS_APPEND(...) \
+
+///
+///
+# define NX_APPEND_ARGS(...) \
     _nx_append_args(__VA_ARGS__)
+
+///
+///
+# define NX_APPEND_VA_ARGS(...) \
+    _nx_append_args(__VA_ARGS__)
+
 #endif //NXTBOT_APPEND_ARGS_HPP

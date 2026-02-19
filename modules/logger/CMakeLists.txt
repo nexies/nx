@@ -3,9 +3,9 @@ add_library(nx_logger
         src/logger.cpp
 )
 
-find_package(spdlog)
+#find_package(spdlog)
 
-if(spdlog_FOUND)
+if(spdlog_FOUND OR spdlog::spdlog)
     message(STATUS "Found SPDLOG. Logger will be using spdlog library")
     target_link_libraries(nx_logger PUBLIC spdlog::spdlog)
     target_compile_options(nx_logger PUBLIC NX_LOGGER_USE_SPDLOG)

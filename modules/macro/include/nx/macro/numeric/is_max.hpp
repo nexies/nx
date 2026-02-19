@@ -11,11 +11,9 @@
 #define _nx_is_max(a) \
     _nx_concat_2(_nx_numeric_is_max_, a)
 
-/**
- *
- * @param a
- */
-#define NX_IS_MAX(a) \
+///
+/// @param a
+# define NX_IS_MAX(a) \
     _nx_is_max(a)
 
 #endif //IS_MAX_HPP

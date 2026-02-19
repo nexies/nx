@@ -30,11 +30,14 @@ add_library(nx_macro
         include/nx/macro/detail/is_max_limit.hpp
         include/nx/macro/detail/limits/arg_tk_64.hpp
         include/nx/macro/detail/arg_tk_limit.hpp
-        include/nx/macro/repeating/recursive_while.hpp
         include/nx/macro/tuple/tuple.hpp
         include/nx/macro/args/count.hpp
         include/nx/macro/numeric/is_max.hpp
         include/nx/macro/detail/limits/eat_64.hpp
+        include/nx/macro/detail/put_at_limit.hpp
+        include/nx/macro/args/parse-2.hpp
+        include/nx/macro/args/arg_tk.hpp
+        include/nx/macro/args/argset.hpp
 )
 
 include(nxMakeModule)

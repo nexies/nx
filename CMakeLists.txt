@@ -14,6 +14,8 @@ set (NX_GENERATED_INCLUDEDIR ${CMAKE_BINARY_DIR}/generated/${NX_NAMESPACE})
 set (NX_CXX_STANDARD 20)
 set (NX_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
+set (BUILD_SHARED_LIBS FALSE)
+
 option (NX_BUILD_MODULE_MEMORY "Build nx::memory module" OFF)
 option (NX_BUILD_MODULE_MACRO "Build nx::macro module" ON)
 option (NX_BUILD_MODULE_LOGGER "Build nx::logger module" ON)
@@ -33,6 +35,9 @@ include(nxVersionInfo)
 
 add_subdirectory(modules)
 
+#add_subdirectory(third-party/FTXUI)
+add_subdirectory(third-party/spdlog)
+
 if(NX_BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif()
@@ -49,31 +54,31 @@ endforeach ()
 
 
 include (CMakePackageConfigHelpers)
-install (
-        TARGETS nx
-        EXPORT nxTargets
-)
+#install (
+#        TARGETS nx
+#        EXPORT nxTargets
+#)
 
-write_basic_package_version_file (
-        "${CMAKE_CURRENT_BINARY_DIR}/nxConfigVersion.cmake"
-        VERSION ${PROJECT_VERSION}
-        COMPATIBILITY SameMajorVersion
-)
+#write_basic_package_version_file (
+#        "${CMAKE_CURRENT_BINARY_DIR}/nxConfigVersion.cmake"
+#        VERSION ${PROJECT_VERSION}
+#        COMPATIBILITY SameMajorVersion
+#)
 
-configure_package_config_file(
-        cmake/nxConfig.cmake.in
-        "${CMAKE_CURRENT_BINARY_DIR}/nxConfig.cmake"
-        INSTALL_DESTINATION lib/cmake/nx
-)
+#configure_package_config_file(
+#        cmake/nxConfig.cmake.in
+#        "${CMAKE_CURRENT_BINARY_DIR}/nxConfig.cmake"
+#        INSTALL_DESTINATION lib/cmake/nx
+#)
 
-install(FILES
-        "${CMAKE_CURRENT_BINARY_DIR}/nxConfig.cmake"
-        "${CMAKE_CURRENT_BINARY_DIR}/nxConfigVersion.cmake"
-        DESTINATION lib/cmake/nx
-)
+#install(FILES
+#        "${CMAKE_CURRENT_BINARY_DIR}/nxConfig.cmake"
+#        "${CMAKE_CURRENT_BINARY_DIR}/nxConfigVersion.cmake"
+#        DESTINATION lib/cmake/nx
+#)
 
-install(
-        EXPORT nxTargets
-        NAMESPACE nx::
-        DESTINATION lib/cmake/nx
-)
+#install(
+#        EXPORT nxTargets
+#        NAMESPACE nx::
+#        DESTINATION lib/cmake/nx
+#)

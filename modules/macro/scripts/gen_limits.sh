@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 LIMIT=1024
 OUT_DIR=include/nx/macro/detail/generated
+
 format_nx_while()
 {
   local i="$1"
@@ -110,6 +111,20 @@ format_nx_choose()
   fi
 
   printf ' # define _nx_choose_%d(c, ...) _nx_choose_%d(__VA_ARGS__) \n' \
+    "$i" "$n"
+}
+
+format_nx_put_at()
+{
+  local i="$1"
+  local n=$((i-1))
+
+  if (( i == 0 )); then
+    printf ' # define _nx_macro_put_at_0(val, c, ...) val _nx_append_va_args(__VA_ARGS__) \n'
+    return
+  fi
+
+  printf ' # define _nx_macro_put_at_%d(val, c, ...) c, _nx_macro_put_at_%d(val, __VA_ARGS__) \n' \
     "$i" "$n"
 }
 
@@ -258,3 +273,4 @@ generate_powers "is_max" "$LIMIT"
 generate_powers "arg_tk" "$LIMIT"
 generate_powers "sequence" "$LIMIT"
 generate_powers "choose" "$LIMIT"
+generate_powers "put_at" "$LIMIT"

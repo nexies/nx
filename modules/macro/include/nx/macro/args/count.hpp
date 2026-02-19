@@ -106,7 +106,6 @@
 #define NX_HAS_ARGS(...) \
     __NX_HAS_ARGS_(__VA_ARGS__)
 
-
 #define _nx_concat_many(...) \
     _nx_concat_## _nx_args_count(__VA_ARGS__)(__VA_ARGS__)
 

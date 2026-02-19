@@ -10,6 +10,8 @@
 #define _nx_expand(...) __VA_ARGS__
 #define NX_EXPAND(...) __VA_ARGS__
 
+#define _nx_expand_args(...) ( __VA_ARGS__ )
+
 #define NX_EVAL(x) x
 
 #define _nx_concat_1(x) x

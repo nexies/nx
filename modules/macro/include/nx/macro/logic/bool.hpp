@@ -11,14 +11,16 @@
 #define _nx_bool(a) \
     _nx_concat_2(_nx_logic_bool_, a)
 
-#define NX_BOOL(n) \
-    _nx_bool(n)
-
-
 #define _nx_bool_override_p(macro, bit) \
     _nx_concat_3(macro, _, bit)
 
 #define _nx_bool_override(macro, cond) \
     _nx_bool_override_p(macro, _nx_bool(cond))
+
+
+///
+/// @param n
+# define NX_BOOL(n) \
+    _nx_bool(n)
 
 #endif //NX_MACRO_BOOL_HPP

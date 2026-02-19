@@ -16,8 +16,11 @@ add_library(nx_core
         include/nx/core/detail/enum_defs.hpp
 )
 
+if(WIN32)
+    set(Boost_DIR C:\\devel\\boost_1_75_0\\stage\\x86_64\\lib\\cmake)
+endif()
 
-find_package(Boost COMPONENTS REQUIRED program_options system)
+find_package(Boost COMPONENTS REQUIRED program_options system HINTS C:\\devel\\boost_1_75_0\\stage\\x86_64\\lib\\cmake)
 
 if (NX_ENABLE_CXX_20_FEATURES)
     target_compile_definitions(nx_core PUBLIC -D__nx_cxx_20_features)
@@ -28,7 +31,7 @@ endif()
 
 target_link_libraries(nx_core PUBLIC
         nx::macro
-        spdlog
+        spdlog::spdlog
         Boost::program_options
         Boost::system
 )

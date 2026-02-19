@@ -16,6 +16,8 @@
 #define _nx_logic_if(...) \
     _nx_logic_if_(_nx_expand(__VA_ARGS__))
 
-#define NX_IF(c) _nx_logic_if(c)
+///
+/// @param c
+# define NX_IF(c) _nx_logic_if(c)
 
 #endif //NX_MACRO_IF_HPP

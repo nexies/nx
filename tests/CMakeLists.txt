@@ -1,4 +1,4 @@
-include(CTest)
+#include(CTest)
 
 # Попробуем найти Catch2 (например, установленный через пакетный менеджер)
 find_package(Catch2 3 CONFIG QUIET)
@@ -30,9 +30,14 @@ include(Catch)
 add_executable(nx_macro_tests
         macro-tests/main.test.cpp
         macro-tests/tuple.test.cpp
+        macro-tests/limits.test.cpp
 )
 catch_discover_tests(nx_macro_tests)
 
+target_link_libraries(nx_macro_tests PUBLIC
+        nx::macro
+        Catch2::Catch2WithMain
+)
 # (необязательно) санитайзеры и строгие предупреждения для тестов
 #if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
 #    target_compile_options(nx_core_tests PRIVATE -Wall -Wextra -Wpedantic)
