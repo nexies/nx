@@ -35,6 +35,7 @@ format_nx_dec()
   local n=$((i-1))
 
   if [[ $n -lt 0 ]]; then
+    printf ' # define _nx_numeric_dec_0 0\n'
     return
   fi
 
@@ -100,18 +101,55 @@ format_nx_sequence()
   fi
 }
 
+format_nx_choose_fast()
+{
+  local i="$1"
+
+  printf ' # define _nx_macro_impl_choose_%d(' "$i"
+
+  for ((k=0; k<=i; ++k)); do
+    printf 'c_%d, ' "$k"
+  done
+
+  printf '...) \\\n    c_%d\n' "$i"
+}
+
 format_nx_choose()
 {
   local i="$1"
   local n=$((i-1))
 
-  if (( i == 0 )); then
-    printf ' # define _nx_choose_0(c, ...) c\n'
+#  if (( i == 0 )); then
+#    printf ' # define _nx_choose_0(c, ...) c\n'
+#    return
+#  fi
+
+  if (( i <= 64 )); then
+    format_nx_choose_fast "$i"
     return
   fi
 
-  printf ' # define _nx_choose_%d(c, ...) _nx_choose_%d(__VA_ARGS__) \n' \
+  printf ' # define _nx_macro_impl_choose_%d(c, ...) _nx_macro_impl_choose_%d(__VA_ARGS__) \n' \
     "$i" "$n"
+}
+
+format_nx_put_at_fast()
+{
+  local i="$1"
+
+  printf ' # define _nx_macro_put_at_%d(val' "$i"
+
+  for ((k=0; k<=i; ++k)); do
+    printf ', c_%d' "$k"
+  done
+
+  printf ', ...) \\\n    '
+
+  for ((k=0; k<i; ++k)); do
+    printf 'c_%d, ' "$k"
+  done
+
+  printf 'val _nx_append_va_args(__VA_ARGS__)\n'
 }
 
 format_nx_put_at()
@@ -119,10 +157,15 @@ format_nx_put_at()
   local i="$1"
   local n=$((i-1))
 
-  if (( i == 0 )); then
-    printf ' # define _nx_macro_put_at_0(val, c, ...) val _nx_append_va_args(__VA_ARGS__) \n'
+  if (( i <= 64 )); then
+    format_nx_put_at_fast "$i"
     return
   fi
+
+#  if (( i == 0 )); then
+#    printf ' # define _nx_macro_put_at_0(val, c, ...) val _nx_append_va_args(__VA_ARGS__) \n'
+#    return
+#  fi
 
   printf ' # define _nx_macro_put_at_%d(val, c, ...) c, _nx_macro_put_at_%d(val, __VA_ARGS__) \n' \
     "$i" "$n"

@@ -32,7 +32,8 @@
 
 // _nx_args_max_token_name_d(0, (PARAM1, HELLO), (PARAM2, WORLD), (PARAM3, 333))
 
-
 // _nx_args_tokenize_all(PARAM1 hello, PARAM2 world, PARAM3 another one)
+
+_nx_args_to_argset_autosize(24 VALUVALUVALUVAL, PARAM1 HELLO, PARAM2 HEY, PARAM3 VALUE)
 
 #endif //NX_MACRO_ARGS_PARSE_2_HPP

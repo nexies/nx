@@ -22,96 +22,155 @@
 /// The first index corresponds to the argument @p NAME, which must be defined
 /// as a positive integer in the range [0, @p NX_MAX_NUMBER].
 ///
-/// The second index represents the occurrence index of that argument in the
-/// macro invocation. This allows handling multiple parameters with the same
-/// name.
-#define _nx_args_argset(size) \
-    _nx_args_make_argset(size)
+/// (
+///     ( APPEARANCE_COUNT, ( POSITION1, POSITION2, POSITION3, POSITION4, ... ), ( VALUE1, VALUE2, VALUE3, VALUE4 ... ) )
+///     ( APPEARANCE_COUNT, ( POSITION1, POSITION2, POSITION3, POSITION4, ... ), ( VALUE1, VALUE2, VALUE3, VALUE4 ... ) )
+///     ( APPEARANCE_COUNT, ( POSITION1, POSITION2, POSITION3, POSITION4, ... ), ( VALUE1, VALUE2, VALUE3, VALUE4 ... ) )
+///     ( APPEARANCE_COUNT, ( POSITION1, POSITION2, POSITION3, POSITION4, ... ), ( VALUE1, VALUE2, VALUE3, VALUE4 ... ) )
+/// )
 
-# define _nx_args_make_argset_iterator(n) \
-    NX_TUPLE()
+# define _nx_argset_entry() \
+    NX_TUPLE(0, NX_TUPLE(), NX_TUPLE())
 
-# define _nx_args_make_argset(count) \
-    NX_TUPLE( NX_SEQUENCE(count, _nx_args_make_argset_iterator) )
+# define _nx_argset_entry_get_appearance_count(argset_entry) \
+    NX_TUPLE_GET(argset_entry, 0)
 
-/// Check that argset contains arguments with name @name
-# define _nx_args_argset_contains(argset, name) \
-    NX_TUPLE_NOT_EMPTY(NX_TUPLE_GET(argset, name))
+# define _nx_argset_entry_get_positions(argset_entry) \
+    NX_TUPLE_GET(argset_entry, 1)
 
-# define _nx_args_argset_count(argset, name) \
-    NX_TUPLE_SIZE(NX_TUPLE_GET(argset, name))
+# define _nx_argset_entry_get_position(argset_entry, idx) \
+    NX_TUPLE_GET(_nx_argset_entry_get_positions(argset_entry), idx)
 
-# define _nx_args_argset_contains_single_d(d, argset, name) \
-    NX_EQUAL_D(d, 1, _nx_args_argset_count(argset, name))
+# define _nx_argset_entry_get_values(argset_entry) \
+    NX_TUPLE_GET(argset_entry, 2)
 
-# define _nx_args_argset_contains_single(argset, name) \
-    _nx_args_argset_contains_single_d(0, argset, name)
+# define _nx_argset_entry_get_value(argset_entry, idx) \
+    NX_TUPLE_GET(_nx_argset_entry_get_values(argset_entry), idx)
 
-# define _nx_args_argset_contains_many_d(d, argset, name) \
-    NX_LESS_D(d, 1, _nx_args_argset_count(argset, name))
+# define _nx_argset_entry_add_value(argset_entry, pos, value) \
+    NX_TUPLE( \
+        NX_INC(_nx_argset_entry_get_appearance_count(argset_entry)), \
+        NX_TUPLE_APPEND(_nx_argset_entry_get_positions(argset_entry), pos), \
+        NX_TUPLE_APPEND(_nx_argset_entry_get_values(argset_entry), value) \
+    ) \
 
-# define _nx_args_argset_contains_many(argset, name) \
-    _nx_args_argset_contains_many_d(0, argset, name)
+# define _nx_argset_make_iterator(n) \
+    _nx_argset_entry()
 
-# define _nx_args_argset_get_as_tuple(argset, name) \
+# define _nx_argset_make(size) \
+    NX_TUPLE(NX_SEQUENCE(size, _nx_argset_make_iterator))
+
+# define _nx_argset(size) \
+    _nx_argset_make(size)
+
+# define _nx_argset_get_entry(argset, name) \
     NX_TUPLE_GET(argset, name)
 
-# define _nx_args_argset_set_as_tuple(argset, name, tuple) \
-    NX_TUPLE_SET(argset, name, tuple)
+# define _nx_argset_set_entry(argset, name, entry) \
+    NX_TUPLE_SET(argset, name, entry)
 
-# define _nx_args_argset_append(argset, name, value) \
-    _nx_args_argset_set_as_tuple(argset, name, _nx_tuple_append(_nx_args_argset_get_as_tuple(argset, name), value))
+# define _nx_argset_count(argset, name) \
+    _nx_argset_entry_get_appearance_count(_nx_argset_get_entry(argset, name))
 
-# define _nx_args_argset_get_by_index(argset, name, index) \
-    NX_TUPLE_GET(NX_TUPLE_GET(argset, name), index)
+# define _nx_argset_contains(argset, name) \
+    NX_BOOL(_nx_argset_count(argset, name))
 
-# define _nx_args_argset_get_first(argset, name) \
-    _nx_args_argset_get_by_index(argset, name, 0)
+# define _nx_argset_size(argset) \
+    NX_TUPLE_SIZE(argset)
 
-/// Get a parameter value from argset by its' name and positional index ( if parameter has more than one value )
-# define _nx_args_argset_get_overloaded_3(argset, name, idx) \
-    _nx_args_argset_get_by_index(argset, name, idx)
+# define _nx_argset_add_overload_4(argset, name, pos, value) \
+    _nx_argset_set_entry(argset, name, \
+    _nx_argset_entry_add_value(_nx_argset_get_entry(argset, name), pos, value) \
+)
 
-/// Get a parameter value by its' name.
-/// If parameter has multiple values - returns as tuple
-/// If parameter has single value - returns as value
-# define _nx_args_argset_get_overloaded_2(argset, name) \
-    _nx_logic_if(_nx_args_argset_contains_many(argset, name)) ( \
-        _nx_args_argset_get_as_tuple(argset, name), \
-        _nx_args_argset_get_by_index(argset, name, 0) \
+# define _nx_argset_add_overload_3(argset, name, value) \
+    _nx_argset_add_overload_4(argset, name, _nx_empty()/*pos*/, value)
+
+# define _nx_argset_add(...) \
+    NX_OVERLOAD(_nx_argset_add_overload, __VA_ARGS__)
+
+# define _nx_argset_get_overload_3(argset, name, idx) \
+    _nx_argset_entry_get_value(_nx_argset_get_entry(argset, name), idx)
+
+# define _nx_argset_get_overload_2(argset, name) \
+    _nx_argset_entry_get_values(_nx_argset_get_entry(argset, name))
+
+# define _nx_argset_get(...) \
+    NX_OVERLOAD(_nx_argset_get_overload, __VA_ARGS__)
+
+# define _nx_argset_get_pos_overload_3(argset, name, idx) \
+    _nx_argset_entry_get_position(_nx_argset_get_entry(argset, name), idx)
+
+# define _nx_argset_get_pos_overload_2(argset, name) \
+    _nx_argset_entry_get_positions(_nx_argset_get_entry(argset, name))
+
+# define _nx_argset_get_pos(...) \
+    NX_OVERLOAD(_nx_argset_get_pos_overload, __VA_ARGS__)
+
+# define args1 _nx_argset(3)
+# define args2 _nx_argset_add(args1, 2, 123)
+# define args3 _nx_argset_add(args2, 2, 18)
+# define args4 _nx_argset_add(args3, 0, 1, false)
+
+# define _nx_argset_contains_many(argset, name) \
+    NX_BOOL(NX_DEC(_nx_argset_count(argset, name)))
+
+# define _nx_argset_contains_single(argset, name) \
+    NX_AND( \
+        _nx_argset_contains(argset, name), \
+        NX_NOT(_nx_argset_contains_many(argset, name)) \
     )
 
-# define _nx_args_argset_get(...) \
-    NX_OVERLOAD(_nx_args_argset_get_overloaded, __VA_ARGS__)
+#include <nx/macro/args/token.hpp>
 
-
-
-# define _nx_args_convert_to_argset_cond_d(d, argset, ...) \
+# define _nx_args_tokens_to_argset_cond_d(d, argset, pos, ...) \
     NX_HAS_ARGS(__VA_ARGS__)
 
-# define _nx_args_convert_to_argset_op_d(d, argset, token, ...) \
-    _nx_args_argset_append(argset, _nx_args_token_name(token), _nx_args_token_value(token)) NX_APPEND_VA_ARGS(__VA_ARGS__)
+# define _nx_args_tokens_to_argset_op_d(d, argset, pos, token, ...) \
+    _nx_argset_add(argset, _nx_args_token_name(token), pos, _nx_args_token_value(token)), \
+    NX_INC(pos) \
+    NX_APPEND_VA_ARGS(__VA_ARGS__)
 
-# define _nx_args_convert_to_argset_res_d(d, argset, ...) \
+# define _nx_args_tokens_to_argset_res_d(d, argset, pos, ...) \
     argset
 
-# define _nx_args_convert_to_argset_d(d, argset, ...) \
+# define _nx_args_tokens_to_argset_d(d, argset, ...) \
     _nx_while_d(d)( \
-        _nx_args_convert_to_argset_cond_d, \
-        _nx_args_convert_to_argset_op_d, \
-        _nx_args_convert_to_argset_res_d, \
-        argset, __VA_ARGS__ \
+        _nx_args_tokens_to_argset_cond_d, \
+        _nx_args_tokens_to_argset_op_d, \
+        _nx_args_tokens_to_argset_res_d, \
+        argset, 0 NX_APPEND_VA_ARGS(__VA_ARGS__) \
     )
 
-# define _nx_args_tokens_to_argset(max_token_name, ...) \
-    _nx_args_convert_to_argset_d(0, _nx_args_argset(NX_INC(max_token_name)), __VA_ARGS__)
+# define _nx_args_tokens_to_argset_fixed_size_d(d, size, ...) \
+    _nx_args_tokens_to_argset_d(d, _nx_argset(size), __VA_ARGS__)
 
-# define _nx_args_tokens_to_argset_autosize(...) \
-    _nx_args_tokens_to_argset(_nx_args_max_token_name_d(0, __VA_ARGS__), __VA_ARGS__)
+# define _nx_args_tokens_to_argset_auto_size_d(d, ...) \
+    _nx_args_tokens_to_argset_fixed_size_d(d, NX_INC(_nx_args_max_token_name_d(d, __VA_ARGS__)), __VA_ARGS__)
 
-# define _nx_args_to_argset_autosize(...) \
-    _nx_args_tokens_to_argset_autosize(_nx_args_tokenize_all(__VA_ARGS__))
+# define _nx_args_to_argset_fixed_size_d(d, size, ...) \
+    _nx_args_tokens_to_argset_fixed_size_d(d, size, _nx_args_tokenize_all(__VA_ARGS__))
+
+# define _nx_args_to_argset_auto_size_d(d, ...) \
+    _nx_args_tokens_to_argset_auto_size_d(d, _nx_args_tokenize_all(__VA_ARGS__))
+
+# define _nx_args_to_argset_fixed_size(size, ...) \
+    _nx_args_tokens_to_argset_fixed_size_d(0, size, __VA_ARGS__)
+
+# define _nx_args_to_argset_auto_size(...) \
+    _nx_args_to_argset_auto_size_d(0, __VA_ARGS__)
+
+//_nx_args_tokens_to_argset_d(0, _nx_argset(3), (0, 1), (1, 2), (2, 3), (2, 4)) -> ((1,(0),(1)),(1,(1),(2)),(2,(2,3),(3,4)))
+//_nx_args_tokens_to_argset_fixed_size_d(0, 3, (0, 1), (1, 2), (2, 3), (2, 4)) -> ((1,(0),(1)),(1,(1),(2)),(2,(2,3),(3,4)))
+//_nx_args_tokens_to_argset_auto_size_d(0, (0, 1), (1, 2), (2, 3), (2, 4)) -> ((1,(0),(1)),(1,(1),(2)),(2,(2,3),(3,4)))
+
+// # define _nx_args_tokens_to_argset_fixed_size_d(d, size, ...) \
+//     ARGSET SIZE = size
+
+_nx_args_to_argset_auto_size(11, 0, 0, 0, 0, 1 1, 2 2, 3 45, 4, 5, 5, 5, 10 100)
+//              |
+//              L----> ((1,(0),()),(1,(1),(1)),(1,(2),(2)),(1,(3),(45)),(1,(4),()),(3,(5,6,7),()),(0,(),()),(0,(),()),(0,(),()),(0,(),()),(1,(8),(100)))
 
 
-
+// _nx_args_tokens_to_argset_d(d, _nx_argset(size), __VA_ARGS__)
 #endif //NX_ARGSET_HPP

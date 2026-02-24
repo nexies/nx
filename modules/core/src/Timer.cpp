@@ -120,7 +120,7 @@ void Timer::_OnTimeout(Timer* timer, const boost::system::error_code& e)
     //         break;
     //     }
     case Timer::SingleShot:
-        // obj->_unset();
+        // timer->_unset();
         break;
     }
 }

@@ -9,7 +9,7 @@
 #include <nx/macro/detail/choose_limit.hpp>
 
 #define _nx_choose(pos, ...) \
-    NX_CONCAT(_nx_choose_, pos)(__VA_ARGS__)
+    NX_CONCAT(_nx_macro_impl_choose_, pos)(__VA_ARGS__)
 
 ///
 /// @param pos

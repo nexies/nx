@@ -19,4 +19,7 @@
     _nx_put_at(pos, val, __VA_ARGS__)
 
 
+
+
+
 #endif //NX_PLACE_HPP

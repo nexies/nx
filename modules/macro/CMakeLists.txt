@@ -37,6 +37,7 @@ add_library(nx_macro
         include/nx/macro/detail/put_at_limit.hpp
         include/nx/macro/args/parse-2.hpp
         include/nx/macro/args/argset.hpp
+        include/nx/macro/util/put_at_fast.hpp
 )
 
 include(nxMakeModule)

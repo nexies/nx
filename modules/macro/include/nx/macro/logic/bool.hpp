@@ -8,13 +8,13 @@
 #include <nx/macro.hpp>
 #include <nx/macro/detail/bool_limit.hpp>
 
-#define _nx_bool(a) \
+# define _nx_bool(a) \
     _nx_concat_2(_nx_logic_bool_, a)
 
-#define _nx_bool_override_p(macro, bit) \
+# define _nx_bool_override_p(macro, bit) \
     _nx_concat_3(macro, _, bit)
 
-#define _nx_bool_override(macro, cond) \
+# define _nx_bool_override(macro, cond) \
     _nx_bool_override_p(macro, _nx_bool(cond))
 
 
