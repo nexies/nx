@@ -82,7 +82,7 @@ int nx::App::Exec() {
 }
 
 void nx::App::Exit(int code) {
-    nxDebug("App::Exit called");
+    nxDevDebug("App::Exit called");
     auto self = _Self();
 
     NX_EMIT(self->aboutToQuit);
@@ -266,6 +266,21 @@ nx::Result nx::App::_createLogger() {
     }
 #endif
 
+#if NX_DEVEL_LOGGING
+    {
+        auto const console_sink = std::make_shared<stdout_color_sink_mt>();
+        console_sink->set_color_mode(spdlog::color_mode::always);
+        console_sink->set_level(spdlog::level::trace);
+        auto devel_logger = std::make_shared<spdlog::logger>(NX_DEVEL_LOGGER_NAME, console_sink);
+        devel_logger->set_level(spdlog::level::trace);
+
+        formatter = std::make_unique<spdlog::pattern_formatter>();
+        formatter->add_flag<ThreadFormaterFlag>('T').set_pattern("[%Y-%m-%d %H:%M:%S:%f] [%n] ["/*%t|*/"tid:%T] [%^%l%$] %v (%s:%#)");
+        devel_logger->set_formatter(std::move(formatter));
+
+        spdlog::register_logger(devel_logger);
+    }
+#endif
     return Result::Ok();
 }
 
@@ -274,12 +289,12 @@ nx::Result nx::App::_createEventLoop() {
 }
 
 void nx::App::_printAppInfo() const {
-    nxInfo("Application '{}'", m_preferences.application_name);
-    nxInfo("   --- powered by nx::app version {}",  nx::core::version::str);
-    nxInfo("   --- build date: {}", nx::core::version::build_time_utc);
-    nxInfo("   --- log level: {}", spdlog::level::to_string_view(m_preferences.log_level));
-    nxInfo("   --- executable: {}", m_preferences.executable.string());
-    nxInfo("   --- exec path: {}", m_preferences.execution_path.string());
+    nxDevInfo("Application '{}'", m_preferences.application_name);
+    nxDevInfo("   --- powered by nx::app version {}",  nx::core::version::str);
+    nxDevInfo("   --- build date: {}", nx::core::version::build_time_utc);
+    nxDevInfo("   --- log level: {}", spdlog::level::to_string_view(m_preferences.log_level));
+    nxDevInfo("   --- executable: {}", m_preferences.executable.string());
+    nxDevInfo("   --- exec path: {}", m_preferences.execution_path.string());
 }
 
 nx::Result nx::App::_startEventLoop() {
@@ -303,7 +318,7 @@ void nx::App::_closeThreads()
 void nx::App::_exit(int code)
 {
     auto self = _Self();
-    nxTrace("App::_exit");
+    nxDevTrace("App::_exit");
     self->_closeThreads();
 }
 

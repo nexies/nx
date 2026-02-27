@@ -43,6 +43,8 @@ target_link_libraries(nx_core PUBLIC
         Boost::system
 )
 
+
+target_compile_definitions(nx_core PUBLIC NX_DEVEL_LOGGING=1 NX_TRACE_SIGNALS=0)
 target_compile_options(nx_core PUBLIC "-Wno-pmf-conversions")
 
 include(nxMakeModule)

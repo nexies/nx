@@ -119,7 +119,7 @@ namespace nx::detail
         {
             // if (local_id != id)
             // {
-                nxTrace("Closing thread [tid:{}]", id);
+                nxDevTrace("Closing thread [tid:{}]", id);
                 // thread->exit(0);
                 thread->exit(0);
             // }
@@ -206,7 +206,7 @@ bool Thread::isSleeping() const
 
 void Thread::sleep(Duration duration)
 {
-    this->schedule(Signal::Sleep(this, duration));
+    this->schedule(Signal::Sleep(this, this, duration));
 }
 
 void Thread::sleepUntil(TimePoint t)
@@ -222,7 +222,7 @@ void Thread::exit(int code)
     if (running)
     {
         aboutToQuit();
-        schedule(Signal::Exit(loop(), code));
+        schedule(Signal::Exit(this, loop(), code));
     }
 }
 
@@ -232,7 +232,7 @@ void Thread::exitAndWait(int code)
     if (running)
     {
         aboutToQuit();
-        schedule(Signal::Exit(loop(), code));
+        schedule(Signal::Exit(this, loop(), code));
         thread->join();
         thread.reset(nullptr);
     }
@@ -287,6 +287,11 @@ Loop* Thread::CurrentLoop()
 Thread::Context& Thread::CurrentContext()
 {
     return Current()->context();
+}
+
+Object* Thread::CurrentSignalSender()
+{
+    return Current()->current_sender;
 }
 
 // SignalQueue* Thread::CurrentQueue()

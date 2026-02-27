@@ -123,6 +123,11 @@ Result Object::attachToThread(Thread* thread) const
     return Result::Ok();
 }
 
+Object* Object::sender() const
+{
+    return Thread::CurrentSignalSender();
+}
+
 // std::string Object::objectName() const
 // {
 //     return impl->objectName();

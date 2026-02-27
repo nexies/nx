@@ -45,6 +45,9 @@ namespace nx {
         template<typename EventType>
         Result event (EventType &);
 
+        [[nodiscard]]
+        Object * sender () const;
+
         NX_PROPERTY(TYPE std::string, NAME objectName, READ objectName, WRITE setObjectName, NOTIFY objectNameChanged);
         NX_SIGNAL(destroyed)
 

@@ -13,7 +13,8 @@ public:
 
     void slot ()
     {
-        nxDebug("Invoked slot on BaseObject");
+        auto s = sender();
+        nxDebug("{} -> {}", s->objectName(), objectName());
     }
 };
 
@@ -32,11 +33,14 @@ int main (int argc, char * argv [])
     App::Init(argc, argv);
 
     Timer timer;
+    timer.setObjectName("TIMER OBJECT");
     BaseObject base;
+    base.setObjectName("BASE OBJECT");
     DerivedObject derived;
+    derived.setObjectName("DERIVED OBJECT");
 
-    connect(&timer, &Timer::timeout, &base, &BaseObject::slot );
-    connect(&timer, &Timer::timeout, &derived, &DerivedObject::slot );
+    connect(&timer, &Timer::timeout, &base, &BaseObject::slot, Connection::Queued);
+    connect(&timer, &Timer::timeout, &derived, &DerivedObject::slot, Connection::Queued);
     connect(&timer, &Timer::timeout, &derived, &BaseObject::slot );
     connect(&timer, &Timer::timeout, &derived, &DerivedObject::anotherSlot );
 
@@ -51,7 +55,7 @@ int main (int argc, char * argv [])
 
 
     timer.setType(Timer::Type::Periodic);
-    timer.setDuration(Seconds(1));
+    timer.setDuration(Seconds(5));
 
     timer.startNow();
 

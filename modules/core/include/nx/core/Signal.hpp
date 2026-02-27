@@ -22,10 +22,11 @@ namespace nx {
     class Signal
     {
         InvokerPtr invoker;
-        Object * receiver;
+        Object * sender { nullptr };
+        Object * receiver { nullptr };
 
     public:
-        Signal (Object * receiver, InvokerPtr invoker);
+        Signal (Object * sender, Object * receiver, InvokerPtr invoker);
         Signal(Signal const&) = default;
         Signal& operator=(Signal const&) = default;
 
@@ -37,48 +38,49 @@ namespace nx {
         {
             invoker = std::move(other.invoker);
             receiver = other.receiver;
+            sender = other.sender;
             return *this;
         }
 
         Signal ();
 
         template<typename... Args>
-        Signal(FunctorPtr functor, Args... args) : Signal(nullptr, nx::make_invoker(functor, args...)) {}
+        Signal(Object * s, FunctorPtr functor, Args... args) : Signal(s, nullptr, nx::make_invoker(functor, args...)) {}
 
         template<typename... Args>
-        Signal(Object * o, FunctorPtr functor, Args... args) : Signal (o, nx::make_invoker(functor, args...)) {}
+        Signal(Object * s, Object * o, FunctorPtr functor, Args... args) : Signal (s, o, nx::make_invoker(functor, args...)) {}
 
         template<typename Ret, typename... Args>
-        explicit Signal(Ret(*f)(Args...), Args... args) : Signal(nullptr, nx::make_invoker(f, args...)) {}
+        explicit Signal(Object * s, Ret(*f)(Args...), Args... args) : Signal(s,nullptr, nx::make_invoker(f, args...)) {}
 
         template<typename Class, typename Ret, typename... Args, typename... Params, std::enable_if_t<std::is_base_of<Object, Class>::value, int> = 0>
-        Signal(Class* c, Ret(Class::*f)(Args...), Params&&... params) : Signal(c, nx::make_invoker(c, f, std::forward<Args>(params)...)) {}
+        Signal(Object * s, Class* c, Ret(Class::*f)(Args...), Params&&... params) : Signal(s, c, nx::make_invoker(c, f, std::forward<Args>(params)...)) {}
 
         template<typename Class, typename... Args, std::enable_if_t<not std::is_base_of<Object, Class>::value, int> = 0>
-        explicit Signal(Class* c, Args... args) : Signal(nullptr, nx::make_invoker(c, args...)) {}
+        explicit Signal(Object * s, Class* c, Args... args) : Signal(s, nullptr, nx::make_invoker(c, args...)) {}
 
         [[nodiscard]]
         ThreadId destinationThreadId () const;
 
         void activate () const;
 
-        static Signal Quit (Loop * loop);
-        static Signal Exit (Loop * loop, int code);
-        static Signal Sleep (Thread * thread, int ms);
-        static Signal Sleep (Thread * thread, Duration dur);
-        static Signal SleepUntil (Thread * thread, TimePoint tp);
-        static Signal Interrupt (Loop * loop);
+        static Signal Quit (Object * sender, Loop * loop);
+        static Signal Exit (Object * sender, Loop * loop, int code);
+        static Signal Sleep (Object * sender, Thread * thread, int ms);
+        static Signal Sleep (Object * sender, Thread * thread, Duration dur);
+        static Signal SleepUntil (Object * sender, Thread * thread, TimePoint tp);
+        static Signal Interrupt (Object * sender, Loop * loop);
         static Signal NullSignal ();
-        static Signal Timer (Object * object, TimerId);
+        static Signal Timer (Object * sender, Object * object, TimerId);
 
         template<typename... Args>
         static Signal Custom(Args... args);
 
         template<typename Class, typename... Args, std::enable_if_t<std::is_base_of<Object, Class>::value, int> = 0>
-        static Signal Custom(Class* c, Args... args);
+        static Signal Custom(Object * sender, Class* c, Args... args);
 
         template<typename Class, typename... Args, std::enable_if_t<not std::is_base_of<Object, Class>::value, int> = 0>
-        static Signal Custom(Class* c, Args... args);
+        static Signal Custom(Object * sender, Class* c, Args... args);
 
         void operator () () const;
     };
@@ -86,19 +88,19 @@ namespace nx {
     template <typename ... Args>
     Signal Signal::Custom(Args... args)
     {
-        return Signal(nullptr, nx::make_invoker(args...));
+        return Signal(nullptr, nullptr, nx::make_invoker(args...));
     }
 
     template <typename Class, typename ... Args, std::enable_if_t<std::is_base_of<Object, Class>::value, int>>
-    Signal Signal::Custom(Class* c, Args... args)
+    Signal Signal::Custom(Object * sender, Class* c, Args... args)
     {
-        return Signal(c, nx::make_invoker(c, args...));
+        return Signal(sender, c, nx::make_invoker(c, args...));
     }
 
     template <typename Class, typename ... Args, std::enable_if_t<!std::is_base_of<Object, Class>::value, int>>
-    Signal Signal::Custom(Class* c, Args... args)
+    Signal Signal::Custom(Object * sender, Class* c, Args... args)
     {
-        return Signal(nullptr, nx::make_invoker(c, args...));
+        return Signal(sender, nullptr, nx::make_invoker(c, args...));
     }
 
     template<typename Sender, typename Signal, typename Receiver, typename Slot>

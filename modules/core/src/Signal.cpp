@@ -10,7 +10,8 @@
 
 using namespace nx;
 
-Signal::Signal(Object* receiver, InvokerPtr invoker) :
+Signal::Signal(Object * sender, Object* receiver, InvokerPtr invoker) :
+    sender(sender),
     receiver(receiver),
     invoker(std::move(invoker))
 {
@@ -18,6 +19,7 @@ Signal::Signal(Object* receiver, InvokerPtr invoker) :
 }
 
 Signal::Signal() :
+    sender(nullptr),
     receiver(nullptr),
     invoker(nullptr)
 {
@@ -33,38 +35,40 @@ ThreadId Signal::destinationThreadId() const
 
 void Signal::activate() const
 {
+    Thread::Current()->current_sender = sender;
     if (invoker)
         invoker->invoke();
+    Thread::Current()->current_sender = nullptr;
 }
 
-Signal Signal::Quit(Loop* loop)
+Signal Signal::Quit(Object * sender, Loop* loop)
 {
-    return Signal(loop, &Loop::_quitImpl);
+    return Signal(sender, loop, &Loop::_quitImpl);
 }
 
-Signal Signal::Exit(Loop* loop, int code)
+Signal Signal::Exit(Object * sender, Loop* loop, int code)
 {
-    return Signal(loop, &Loop::_exitImpl, code);
+    return Signal(sender, loop, &Loop::_exitImpl, code);
 }
 
-Signal Signal::Sleep(Thread* thread, int ms)
+Signal Signal::Sleep(Object * sender, Thread* thread, int ms)
 {
-    return Signal(thread, &Thread::_sleepImpl, Milliseconds(ms));
+    return Signal(sender, thread, &Thread::_sleepImpl, Milliseconds(ms));
 }
 
-Signal Signal::Sleep(Thread* thread, Duration dur)
+Signal Signal::Sleep(Object * sender, Thread* thread, Duration dur)
 {
-    return Signal(thread, &Thread::_sleepImpl, dur);
+    return Signal(sender, thread, &Thread::_sleepImpl, dur);
 }
 
-Signal Signal::SleepUntil(Thread* thread, TimePoint tp)
+Signal Signal::SleepUntil(Object * sender, Thread* thread, TimePoint tp)
 {
-    return Signal(thread, &Thread::_sleepImpl, tp - Clock::now());
+    return Signal(sender, thread, &Thread::_sleepImpl, tp - Clock::now());
 }
 
-Signal Signal::Interrupt(Loop* loop)
+Signal Signal::Interrupt(Object * sender, Loop* loop)
 {
-    return Signal(loop, &Loop::_interruptImpl);
+    return Signal(sender, loop, &Loop::_interruptImpl);
 }
 
 Signal Signal::NullSignal()

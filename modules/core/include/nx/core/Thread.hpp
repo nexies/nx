@@ -94,6 +94,7 @@ namespace nx
         static ThreadId CurrentId ();
         static Loop* CurrentLoop ();
         static Context & CurrentContext ();
+        static Object * CurrentSignalSender ();
 
         Loop* loop() const;
         Context & context();
@@ -117,6 +118,8 @@ namespace nx
         Context io_context;
         ContextLocker context_locker { io_context };
         std::stack<Loop *> loops;
+
+        Object * current_sender { nullptr };
 
     private:
     };

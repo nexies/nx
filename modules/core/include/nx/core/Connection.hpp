@@ -81,9 +81,10 @@ namespace nx {
         if (object_receiver)
         {
             auto r = static_cast <Object *> (receiver);
-            return _transmitImpl (Signal(r, functor, std::forward<Args>(args)...));
+            auto s = static_cast <Object *> (sender);
+            return _transmitImpl (Signal(s, r, functor, std::forward<Args>(args)...));
         }
-        return _transmitImpl (Signal(functor, std::forward<Args>(args)...));
+        return _transmitImpl (Signal(nullptr, nullptr, functor, std::forward<Args>(args)...));
     }
 
     using ConnectionPtr = std::shared_ptr<Connection>;
