@@ -1,11 +1,12 @@
 add_library(nx_core
-        src/core.cpp
         src/Connection.cpp
         src/Object.cpp
         src/Loop.cpp
         src/Signal.cpp
         src/Thread.cpp
         src/Timer.cpp
+        src/App.cpp
+
         include/nx/core/detail/property_impl.hpp
         include/nx/core/Property.hpp
         include/nx/core/detail/property_defs_cxx20.hpp
@@ -15,6 +16,8 @@ add_library(nx_core
         include/nx/experimental/reflect
         include/nx/core/detail/enum_defs.hpp
         include/nx/core/detail/function_id.hpp
+        include/nx/core/detail/logger_defs.hpp
+        include/nx/core/detail/units.hpp
 )
 
 if(WIN32)

@@ -2,8 +2,9 @@
 // Created by nexie on 09.11.2025.
 //
 
-#include "nx/app.hpp"
-#include "nx/app/App.hpp"
+#include "nx/core.hpp"
+#include <nx/core/version.hpp>
+#include <nx/core/App.hpp>
 #include <iostream>
 #include <signal.h>
 
@@ -274,8 +275,8 @@ nx::Result nx::App::_createEventLoop() {
 
 void nx::App::_printAppInfo() const {
     nxInfo("Application '{}'", m_preferences.application_name);
-    nxInfo("   --- powered by nx::app version {}",  version());
-    nxInfo("   --- build date: {}", build_time_utc());
+    nxInfo("   --- powered by nx::app version {}",  nx::core::version::str);
+    nxInfo("   --- build date: {}", nx::core::version::build_time_utc);
     nxInfo("   --- log level: {}", spdlog::level::to_string_view(m_preferences.log_level));
     nxInfo("   --- executable: {}", m_preferences.executable.string());
     nxInfo("   --- exec path: {}", m_preferences.execution_path.string());

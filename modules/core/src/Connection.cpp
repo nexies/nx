@@ -5,8 +5,9 @@
 #include "nx/core/Connection.hpp"
 
 // #include <boost/asio/execution/sender.hpp>
-#include <sys/socket.h>
 
+#include <nx/core/detail/logger_defs.hpp>
+#include <sys/socket.h>
 #include "nx/core/Object.hpp"
 #include "nx/core/Thread.hpp"
 

@@ -3,5 +3,5 @@ add_executable(nx_app_example
 )
 
 target_link_libraries(nx_app_example PRIVATE
-        nx::app
+        nx::core
 )

@@ -22,9 +22,5 @@ if (NX_BUILD_MODULE_IO)
     add_subdirectory(io)
 endif()
 
-if (NX_BUILD_MODULE_APP)
-    add_subdirectory(app)
-endif()
-
 
 #message("=========================================================================================================")

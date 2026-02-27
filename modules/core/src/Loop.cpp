@@ -2,11 +2,11 @@
 // Created by nexie on 13.11.2025.
 //
 
-#include "../include/nx/core/Loop.hpp"
-
 #include <boost/asio/local/basic_endpoint.hpp>
 
-#include "../include/nx/core/Thread.hpp"
+#include <nx/core/detail/logger_defs.hpp>
+#include <nx/core/Loop.hpp>
+#include <nx/core/Thread.hpp>
 
 using namespace nx;
 

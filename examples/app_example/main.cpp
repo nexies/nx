@@ -2,7 +2,7 @@
 // Created by nexie on 19.02.2026.
 //
 
-#include <nx/app/App.hpp>
+#include <../../modules/core/include/nx/core/App.hpp>
 
 #include "nx/core/Timer.hpp"
 

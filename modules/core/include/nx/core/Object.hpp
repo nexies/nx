@@ -5,11 +5,15 @@
 #ifndef OBJECT_HPP
 #define OBJECT_HPP
 
-#include <nx/core.hpp>
+#include <nx/core/detail/signal_defs.hpp>
+#include <nx/core/detail/property_defs.hpp>
+#include <nx/core/detail/function_id.hpp>
+
+#include <nx/core/Result.hpp>
 #include <nx/core/Signal.hpp>
 #include <nx/core/Connection.hpp>
 
-#include <nx/core/detail/function_id.hpp>
+#include "Callable.hpp"
 
 namespace nx {
 
@@ -73,8 +77,11 @@ namespace nx {
     template <typename Sender, typename Signal, typename Receiver, typename Slot>
     bool connect(Sender* sender, Signal&& signal, Receiver* receiver, Slot&& slot, uint8_t flags)
     {
-        Functor sig_func (sender, signal);
-        Functor slot_func (receiver, slot);
+        using SenderBaseType = nx::detail::FunctionDescriptor<Signal>::MemberOf;
+        using ReceiverBaseType = nx::detail::FunctionDescriptor<Slot>::MemberOf;
+
+        Functor sig_func (static_cast<SenderBaseType*>(sender), signal);
+        Functor slot_func (static_cast<ReceiverBaseType*>(receiver), slot);
         static_assert(std::is_same<typename decltype(slot_func)::ArgsTuple, typename decltype(sig_func)::ArgsTuple>::value, "signal and slot functions must have same argument types");
         static_assert(std::is_base_of<Object, Sender>::value, "Sender object must be a specialisation of nx::Object");
 
@@ -87,7 +94,7 @@ namespace nx {
         if (!sender_obj)
             return false;
 
-        auto func = nx::make_functor(receiver, slot);
+        auto func = nx::make_functor(static_cast<ReceiverBaseType*>(receiver), slot);
         Connection::Type conn_type = static_cast<Connection::Type>(flags & 0x0f);
         uint8_t conn_flags = flags & 0xf0;
 
@@ -107,8 +114,11 @@ namespace nx {
     template <typename Sender, typename Signal, typename Receiver, typename Slot>
     bool disconnect(Sender* sender, Signal&& signal, Receiver* receiver, Slot&& slot, bool disconnect_all)
     {
-        Functor sig_func (sender, signal);
-        Functor slot_func (receiver, slot);
+        using SenderBaseType = nx::detail::FunctionDescriptor<Signal>::MemberOf;
+        using ReceiverBaseType = nx::detail::FunctionDescriptor<Slot>::MemberOf;
+
+        Functor sig_func (static_cast<SenderBaseType*>(sender), signal);
+        Functor slot_func (static_cast<ReceiverBaseType*>(receiver), slot);
         static_assert(std::is_same<typename decltype(slot_func)::ArgsTuple, typename decltype(sig_func)::ArgsTuple>::value, "signal and slot functions must have same argument types");
         static_assert(std::is_base_of<Object, Sender>::value, "Sender object must be a specialisation of nx::Object");
 
@@ -121,7 +131,7 @@ namespace nx {
         if (!sender_obj)
             return false;
 
-        auto func = nx::make_functor(receiver, slot);
+        auto func = nx::make_functor(static_cast<ReceiverBaseType*>(receiver), slot);
         // Connection::Type conn_type = static_cast<Connection::Type>(flags & 0x0f);
         // uint8_t conn_flags = flags & 0xf0;
 

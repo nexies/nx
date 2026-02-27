@@ -37,7 +37,6 @@
 #include <nx/macro/util/choose.hpp>
 #include <nx/macro/args/count.hpp>
 
-#include <nx/core.hpp>
 #include <nx/core/Overload.h>
 
 #define __NX_SIGNAL_ARGUMENT_MAKER_MACRO(n, prefix, ...) \

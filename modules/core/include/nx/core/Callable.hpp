@@ -115,6 +115,12 @@ namespace nx
         };
 
         template <typename Ret, typename Class, typename... Args>
+        struct FunctionDescriptor<Ret(Class::*&)(Args...)>
+            : FunctionDescriptor<Ret(Class::*)(Args...)>
+        {
+        };
+
+        template <typename Ret, typename Class, typename... Args>
         struct FunctionDescriptor<Ret(Class::*)(Args...) noexcept>
         {
             typedef Ret Return;
@@ -129,6 +135,12 @@ namespace nx
 
             static constexpr bool Member = true;
             typedef Class MemberOf;
+        };
+
+        template <typename Ret, typename Class, typename... Args>
+        struct FunctionDescriptor<Ret(Class::*&)(Args...) noexcept>
+            : FunctionDescriptor<Ret(Class::*)(Args...) noexcept>
+        {
         };
 
         template <typename Ret, typename Class, typename... Args>
@@ -149,6 +161,12 @@ namespace nx
         };
 
         template <typename Ret, typename Class, typename... Args>
+        struct FunctionDescriptor<Ret(Class::*&)(Args...) const>
+            : FunctionDescriptor<Ret(Class::*)(Args...) const>
+        {
+        };
+
+        template <typename Ret, typename Class, typename... Args>
         struct FunctionDescriptor<Ret(Class::*)(Args...) const noexcept>
         {
             typedef Ret Return;
@@ -163,6 +181,11 @@ namespace nx
 
             static constexpr bool Member = true;
             typedef Class MemberOf;
+        };
+        template <typename Ret, typename Class, typename... Args>
+        struct FunctionDescriptor<Ret(Class::*&)(Args...) const noexcept>
+            : FunctionDescriptor<Ret(Class::*)(Args...) const noexcept>
+        {
         };
 
         template <typename Ret, typename Class, typename... Args>
@@ -183,6 +206,13 @@ namespace nx
         };
 
         template <typename Ret, typename Class, typename... Args>
+        struct FunctionDescriptor<Ret(Class::*&)(Args...) volatile>
+            : FunctionDescriptor<Ret(Class::*)(Args...) volatile>
+        {
+        };
+
+
+        template <typename Ret, typename Class, typename... Args>
         struct FunctionDescriptor<Ret(Class::*)(Args...) volatile noexcept>
         {
             typedef Ret Return;
@@ -197,6 +227,12 @@ namespace nx
 
             static constexpr bool Member = true;
             typedef Class MemberOf;
+        };
+
+        template <typename Ret, typename Class, typename... Args>
+        struct FunctionDescriptor<Ret(Class::*&)(Args...) volatile noexcept>
+            : FunctionDescriptor<Ret(Class::*)(Args...) volatile noexcept>
+        {
         };
 
         template <typename Ret, typename Class, typename... Args>
@@ -217,6 +253,12 @@ namespace nx
         };
 
         template <typename Ret, typename Class, typename... Args>
+        struct FunctionDescriptor<Ret(Class::*&)(Args...) const volatile>
+            : FunctionDescriptor<Ret(Class::*)(Args...) const volatile>
+        {
+        };
+
+        template <typename Ret, typename Class, typename... Args>
         struct FunctionDescriptor<Ret(Class::*)(Args...) const volatile noexcept>
         {
             typedef Ret Return;
@@ -231,6 +273,12 @@ namespace nx
 
             static constexpr bool Member = true;
             typedef Class MemberOf;
+        };
+
+        template <typename Ret, typename Class, typename... Args>
+        struct FunctionDescriptor<Ret(Class::*&)(Args...) const volatile noexcept>
+            : FunctionDescriptor<Ret(Class::*)(Args...) const volatile noexcept>
+        {
         };
 
         template <typename Invokable, typename ArgTuple>

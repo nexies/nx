@@ -9,7 +9,8 @@
 #include <atomic>
 #include <condition_variable>
 
-#include <nx/core.hpp>
+#include <nx/core/detail/signal_defs.hpp>
+#include <nx/core/detail/units.hpp>
 #include <nx/core/Invoker.hpp>
 #include <nx/core/Result.hpp>
 

@@ -2,8 +2,10 @@
 // Created by nexie on 25.11.2025.
 //
 
-#include "../include/nx/core/Timer.hpp"
-#include "../include/nx/core/Thread.hpp"
+#include <nx/core/detail/logger_defs.hpp>
+
+#include <nx/core/Timer.hpp>
+#include <nx/core/Thread.hpp>
 
 using namespace nx;
 

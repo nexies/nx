@@ -5,7 +5,7 @@
 #ifndef APP_HPP
 #define APP_HPP
 
-#include "nx/app.hpp"
+#include "nx/core.hpp"
 #include <nx/core/Signal.hpp>
 #include <nx/core/Object.hpp>
 // #include "Dispatcher.hpp"
