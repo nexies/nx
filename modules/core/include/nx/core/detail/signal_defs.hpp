@@ -78,10 +78,10 @@ void signalName (__NX_SIGNAL_MAKE_ARGUMENTS(__VA_ARGS__)) \
 
 #if NX_TRACE_SIGNALS
 #   define __NX_SIGNAL_LOGGER_CALL_0(signalName, ...) \
-        SPDLOG_LOGGER_TRACE(::spdlog::get(NX_TRACE_SIGNALS_LOGGER_NAME), "emmiting " #signalName "()")
+        SPDLOG_LOGGER_TRACE(::spdlog::get(NX_TRACE_SIGNALS_LOGGER_NAME), "emmiting " #signalName "()");
 
 #   define __NX_SIGNAL_LOGGER_CALL_1(signalName, ...) \
-        SPDLOG_LOGGER_TRACE(::spdlog::get(NX_TRACE_SIGNALS_LOGGER_NAME), "emmiting " #signalName "(" #__VA_ARGS__")")
+        SPDLOG_LOGGER_TRACE(::spdlog::get(NX_TRACE_SIGNALS_LOGGER_NAME), "emmiting " #signalName "(" #__VA_ARGS__")");
 
 #   define __NX_SIGNAL_LOGGER_CALL(signalName, ...) \
         NX_CONCAT(__NX_SIGNAL_LOGGER_CALL_, NX_HAS_ARGS(__VA_ARGS__))(signalName, __VA_ARGS__)
@@ -91,7 +91,7 @@ void signalName (__NX_SIGNAL_MAKE_ARGUMENTS(__VA_ARGS__)) \
 
 #ifndef __NX_BETTER_SIGNALS
 #define NX_EMIT(signalName, ...)  \
-    __NX_SIGNAL_LOGGER_CALL(signalName, __VA_ARGS__); \
+    __NX_SIGNAL_LOGGER_CALL(signalName, __VA_ARGS__) \
     signalName( __VA_ARGS__ );
 #else
 #define NX_EMIT(signalName, ...) \

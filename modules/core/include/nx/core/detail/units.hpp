@@ -27,6 +27,7 @@ namespace nx
     using ThreadHandle      = std::thread::native_handle_type;
     using TimerId           = size_t;
 
+    using small_size_t      = unsigned short int;
 }
 
 #endif //NX_CORE_DETAIL_UNITS_HPP

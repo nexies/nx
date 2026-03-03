@@ -22,6 +22,7 @@ option (NX_BUILD_MODULE_LOGGER "Build nx::logger module" ON)
 option (NX_BUILD_MODULE_CORE "Build nx::core module" ON)
 option (NX_BUILD_MODULE_APP "Build nx::app module" ON)
 option (NX_BUILD_MODULE_IO "Build nx::io module" ON)
+option (NX_BUILD_MODULE_TUI "Build nx::tui module" ON)
 option (NX_ENABLE_CXX_20_FEATURES "Enable std::c++20 features" ON)
 option (NX_BUILD_EXAMPLES "Build examples" ON)
 option (NX_BUILD_TESTS "Build tests" ON)
@@ -30,7 +31,10 @@ list (APPEND CMAKE_MODULE_PATH "${NX_MODULE_PATH}")
 
 add_library (nx INTERFACE
         examples/app_example/main.cpp
-        examples/connection_example/main.cpp)
+        examples/connection_example/main.cpp
+        modules/tui/include/nx/tui/App.hpp
+        modules/tui/src/App.hpp.cpp
+        examples/tui_example/main.cpp)
 add_library (nx::nx ALIAS nx)
 
 include(nxVersionInfo)

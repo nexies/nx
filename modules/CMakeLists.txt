@@ -23,4 +23,9 @@ if (NX_BUILD_MODULE_IO)
 endif()
 
 
+if (NX_BUILD_MODULE_TUI)
+    add_subdirectory(tui)
+endif()
+
+
 #message("=========================================================================================================")

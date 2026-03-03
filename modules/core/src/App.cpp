@@ -182,25 +182,31 @@ nx::Result nx::App::_makeMainThread(){
 nx::Result nx::App::_makeDispatcher() {
 
     auto & context = this->thread()->context();
-    auto signal = new boost::asio::signal_set(thread()->context(), SIGINT, SIGTERM);
+    auto signals = new boost::asio::signal_set(thread()->context());
 
-    signal->async_wait([] (const boost::system::error_code & err, int signal)
+    signals->add(SIGINT);
+    signals->add(SIGTERM);
+    signals->add(SIGILL);
+    signals->add(SIGABRT);
+    signals->add(SIGFPE);
+    signals->add(SIGSEGV);
+
+    signals->add(SIGHUP);
+    signals->add(SIGQUIT);
+    signals->add(SIGTRAP);
+    signals->add(SIGKILL);
+    signals->add(SIGPIPE);
+    signals->add(SIGALRM);
+
+
+    signals->async_wait([this] (const boost::system::error_code & err, int signal)
     {
         if (!err) {
-            // A signal occurred.
-            std::cout << "Received signal: " << signal << std::endl;
-            // Perform cleanup or graceful shutdown here.
-            nx::App::Quit();
+            this->_onSignalFromOS(signal);
         } else {
-            // An error occurred during signal wait.
             std::cerr << "Signal wait error: " << err.message() << std::endl;
         }
     });
-
-    // m_signal = boost::asio::signal_set (thread()->context(), SIGINT, SIGTERM);
-    // m_poll_thread = new PollThread();
-    // m_poll_thread->addService(std::make_shared<SystemSignalPollService>());
-    // m_poll_thread->start();
 
     return Result::Ok();
 }
@@ -298,19 +304,12 @@ void nx::App::_printAppInfo() const {
 }
 
 nx::Result nx::App::_startEventLoop() {
-
-    // PollLoop loop;
-    // loop.setWaitDuration(Milliseconds(1));
-    // loop.addService(std::make_shared<SystemSignalPollService>());
-    // return loop.exec();
-
     Loop loop;
     return loop.exec();
 }
 
 void nx::App::_closeThreads()
 {
-    // nxTrace("Closing all threads ({})", detail::ThreadInfo::Instance().threadCount());
     detail::ThreadInfo::Instance().exitAllThreads();
     detail::ThreadInfo::Instance().waitForAllThreadsExit();
 }
@@ -321,6 +320,23 @@ void nx::App::_exit(int code)
     nxDevTrace("App::_exit");
     self->_closeThreads();
 }
+
+void nx::App::_onSignalFromOS(int signal)
+{
+    switch (signal)
+    {
+    case SIGINT:
+    case SIGTERM:
+    case SIGHUP:
+    case SIGQUIT:
+        ::nx::App::Quit();
+        break;
+    default:
+        NX_EMIT(this->signalFromOS, signal)
+        break;
+    }
+}
+
 
 nx::App * nx::App::_Self() {
     if (!m_self)

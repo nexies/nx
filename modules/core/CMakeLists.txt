@@ -18,6 +18,8 @@ add_library(nx_core
         include/nx/core/detail/function_id.hpp
         include/nx/core/detail/logger_defs.hpp
         include/nx/core/detail/units.hpp
+        include/nx/core/App/App.hpp
+        include/nx/core/App/ProgramArguments.hpp
 )
 
 if(WIN32)

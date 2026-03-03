@@ -37,10 +37,6 @@ namespace nx {
         //! Abort execution (hard-exit)
         static void Abort ();
 
-        // static TimerId AddTimer(TimerType, Duration, detail::timer_callback_t);
-
-        // static Result CancelTimer (TimerId timerId);
-
         //! Set command-line application options
         //! @return
         static Result AddProgramOptions (const options_description & desc);
@@ -57,28 +53,15 @@ namespace nx {
 
         NX_SIGNAL(applicationNameChanged, const std::string &);
         NX_SIGNAL(aboutToQuit)
+        NX_SIGNAL(signalFromOS, int)
 
         static App * Get ();
-    private:
-        App();
-        Result _init (int argc, char * argv[]);
-        Result _parseOptions (int argc, char * argv[]);
-        Result _readDotEnvFile ();
-        Result _createLogger (); // <- params ?
-        Result _makeMainThread ();
-        Result _makeDispatcher ();
-        Result _createEventLoop ();
-        void _printAppInfo () const;
-        Result _startEventLoop ();
-        void _closeThreads ();
 
-        NX_SIGNAL(_signalForExit, int)
-        void _exit(int code);
+    protected:
+        virtual void _onSignalFromOS (int signal);
 
-    private:
         static App * m_self;
         static App * _Self ();
-
 
         struct Preferences {
             using path = std::filesystem::path;
@@ -93,10 +76,23 @@ namespace nx {
             // spdlog::level::level_enum log_level =  spdlog::level::debug;
         } m_preferences;
 
-        // MainDispatcher * m_dispatcher { nullptr };
-        // PollThread * m_poll_thread { nullptr };
-        // boost::asio::signal_set m_signal;
+
+        App();
+        Result _init (int argc, char * argv[]);
+        Result _parseOptions (int argc, char * argv[]);
+        Result _readDotEnvFile ();
+        Result _createLogger (); // <- params ?
+        Result _makeMainThread ();
+        Result _makeDispatcher ();
+        Result _createEventLoop ();
+        void _printAppInfo () const;
+        Result _startEventLoop ();
+        void _closeThreads ();
+
+        NX_SIGNAL(_signalForExit, int)
+        void _exit(int code);
     };
+
 }
 
 
