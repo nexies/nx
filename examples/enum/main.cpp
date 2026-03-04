@@ -5,16 +5,31 @@
 #include <nx/core/detail/enum_defs.hpp>
 #include <iostream>
 
-enum MyEnum
+
+enum MyFlag
 {
-    Value1,
-    Value2,
-    Value3,
+    E1 = 1,
+    E2 = 2,
+    E3 = 4,
+    E4 = 8
 };
+
+using MyFlags = make_flags_from_enum<MyFlag>;
+
+constexpr MyFlags operator|(const MyFlag a, const MyFlag b) noexcept {
+    return MyFlags {static_cast<MyFlags::underlying_type>(a) | static_cast<MyFlags::underlying_type>(b) };
+}
+constexpr MyFlags operator&(const MyFlag a, const MyFlag b) noexcept {
+    return MyFlags {static_cast<MyFlags::underlying_type>(a) & static_cast<MyFlags::underlying_type>(b) };
+}
+constexpr MyFlags operator^(const MyFlag a, const MyFlag b) noexcept {
+    return MyFlags {static_cast<MyFlags::underlying_type>(a) ^ static_cast<MyFlags::underlying_type>(b) };
+}
 
 int main (int argc, char * argv[])
 {
-    std::cout << reflect::enum_name(MyEnum::Value1) << std::endl;
-
+    MyFlags f = MyFlag::E1 | MyFlag::E4;
+    MyFlags f2 = MyFlag::E2 | MyFlag::E1;
+    MyFlags f3 = MyFlag::E3 | MyFlag::E2;
     return 0;
 }

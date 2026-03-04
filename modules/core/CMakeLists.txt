@@ -20,6 +20,7 @@ add_library(nx_core
         include/nx/core/detail/units.hpp
         include/nx/core/App/App.hpp
         include/nx/core/App/ProgramArguments.hpp
+        src/App/Application.cpp
 )
 
 if(WIN32)

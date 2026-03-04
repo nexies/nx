@@ -11,18 +11,18 @@ namespace nx
 {
     class Application : public Object
     {
-        struct Preferences {
-            using path = std::filesystem::path;
-            std::string application_name {"nx_app"};
-            path execution_path {"/"};
-            path executable {"/"};
-            options_description opt_desc;
-            boost::program_options::variables_map options;
-            path env_file {application_name + ".env"};
-            path log_file {application_name + ".log"};
-            spdlog::level::level_enum log_level = spdlog::level::trace;
-            // spdlog::level::level_enum log_level =  spdlog::level::debug;
-        } m_preferences;
+        // struct Preferences {
+        //     using path = std::filesystem::path;
+        //     std::string application_name {"nx_app"};
+        //     path execution_path {"/"};
+        //     path executable {"/"};
+        //     options_description opt_desc;
+        //     boost::program_options::variables_map options;
+        //     path env_file {application_name + ".env"};
+        //     path log_file {application_name + ".log"};
+        //     spdlog::level::level_enum log_level = spdlog::level::trace;
+        //     // spdlog::level::level_enum log_level =  spdlog::level::debug;
+        // } m_preferences;
 
     public:
         Application ();
@@ -49,9 +49,11 @@ namespace nx
 
         NX_SIGNAL(_signalForExit, int)
     private:
+        Result _parseArguments (int args, char * argv[]);
         Result _makeMainThread ();
-        Result _asyncWaitSIGNAL();
+        Result _asyncWaitSIGNAL ();
         Result _startEventLoop ();
+        Result _doExit (int code);
     };
 }
 
