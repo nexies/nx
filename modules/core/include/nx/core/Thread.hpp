@@ -8,11 +8,12 @@
 #include <stack>
 
 #include <nx/core/Object.hpp>
-#include <nx/core/Signal.hpp>
-#include <nx/core/Singleton.hpp>
+#include <nx/core/object/Signal.hpp>
+#include <nx/core/types/Singleton.hpp>
 
 #include <thread>
 #include <unordered_map>
+#include <unordered_set>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/executor_work_guard.hpp>
 
@@ -160,7 +161,7 @@ namespace nx
 
             size_t threadCount() const;
 
-            void exitAllThreads();
+            void exitAllThreads(int code = 0);
             void waitForAllThreadsExit();
         };
 

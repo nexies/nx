@@ -8,8 +8,8 @@
 #include <memory>
 #include <sys/stat.h>
 
-#include "Result.hpp"
-#include <nx/core/Exception.hpp>
+#include <nx/core/types/Result.hpp>
+#include <nx/core/types/Exception.hpp>
 
 namespace nx {
     template <class Class>
@@ -26,12 +26,23 @@ namespace nx {
             return inst;
         }
 
+        // template<typename... Args>
+        // Result _createInstance(Args&&... args) {
+        //     if (_class_instance)
+        //         return Result::Ok({"Already exists"});
+        //     _class_instance = std::make_unique<Class>(std::forward<Args>(args)...);
+        //     if (!_class_instance)
+        //         return Result::Err("Failed to create instance");
+        //     return Result::Ok();
+        // }
+
         std::unique_ptr<Class> _class_instance { nullptr };
     public:
         template<typename... Args>
         static Result Init(Args&&... args);
         static Result Free();
         static Class & Instance ();
+        static Class * RawInstance ();
     };
 
     template<class Class>
@@ -64,6 +75,15 @@ namespace nx {
             if (!Init()) throw nx::Exception("Instance is not initialized and does not have a default constructor");
 
         return *S_this_instance()._class_instance.get();
+    }
+
+    template<class Class>
+    Class * Singleton<Class>::RawInstance() {
+        auto & self = S_this_instance();
+        if (!self._class_instance)
+            if (!Init()) throw nx::Exception("Instance is not initialized and does not have a default constructor");
+
+        return S_this_instance()._class_instance.get();
     }
 }
 

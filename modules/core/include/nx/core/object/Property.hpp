@@ -5,11 +5,10 @@
 #ifndef PROPERTY_HPP
 #define PROPERTY_HPP
 
+#ifdef __nx_cxx_20_property
 #include <nx/core/detail/property_impl.hpp>
-
-#ifndef NX_CXX20_PROPERTY_IMPL
-#include <nx/core/detail/property_defs.hpp>
 #else
-
+#include <nx/core/detail/property_defs.hpp>
 #endif
+
 #endif //PROPERTY_HPP

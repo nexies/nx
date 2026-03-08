@@ -5,9 +5,9 @@
 #ifndef CALLABLE_HPP
 #define CALLABLE_HPP
 
-#include "Tuple.hpp"
+#include <nx/core/types/Tuple.hpp>
 
-#include "nx/experimental/reflect"
+// #include "nx/experimental/reflect"
 
 namespace nx
 {
@@ -298,7 +298,7 @@ namespace nx
             constexpr bool isConst() const { return Desc::Const; }
             constexpr bool isVolatile() const { return Desc::Volatile; }
             constexpr bool isMember() const { return Desc::Member; }
-            constexpr std::string_view getTypeName() const { return reflect::type_name<Invokable>(); };
+            // constexpr std::string_view getTypeName() const { return reflect::type_name<Invokable>(); };
 
             // constexpr std::string_view getPointerType () const;
 

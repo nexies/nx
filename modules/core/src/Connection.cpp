@@ -2,7 +2,7 @@
 // Created by nexie on 17.11.2025.
 //
 
-#include "nx/core/Connection.hpp"
+#include "../include/nx/core/object/Connection.hpp"
 
 // #include <boost/asio/execution/sender.hpp>
 

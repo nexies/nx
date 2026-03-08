@@ -6,8 +6,9 @@
 #define NX_APP_HPP
 
 #include <nx/core/Object.hpp>
+#include <nx/core/types/Singleton.hpp>
 
-namespace nx
+namespace nx::core
 {
     class Application : public Object
     {
@@ -28,14 +29,13 @@ namespace nx
         Application ();
         Application (int argc, char * argv[]);
 
-        virtual Result init ();
-        virtual Result init (int argc, char * argv[]);
-
         int exec ();
-
         void quit ();
         void exit (int code);
         void abort ();
+
+        Result init ();
+        virtual Result init (int argc, char * argv[]);
 
         NX_SIGNAL(aboutToQuit)
         NX_SIGNAL(signalFromOS, int)
@@ -50,11 +50,32 @@ namespace nx
         NX_SIGNAL(_signalForExit, int)
     private:
         Result _parseArguments (int args, char * argv[]);
+        Result _createLogger ();
         Result _makeMainThread ();
         Result _asyncWaitSIGNAL ();
         Result _startEventLoop ();
-        Result _doExit (int code);
+        void _closeThreads (int exit_code);
+        void _doExit (int code);
+
+    /// STATIC FUNCTIONS
+    public:
+        static void Init(int argc, char * argv[]);
+
+        static void Init();
+
+        static int  Exec();
+
+        static void Quit();
+
+        static void Exit(int exit_code);
+
+        static void Abort();
+
+    /// STATIC MEMBER
+    private:
+        static Application * s_instance;
     };
 }
+
 
 #endif //NX_APP_HPP

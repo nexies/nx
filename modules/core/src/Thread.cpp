@@ -2,6 +2,7 @@
 // Created by nexie on 12.11.2025.
 //
 
+#include <iostream>
 #include <nx/core/Thread.hpp>
 #include <mutex>
 #include <boost/asio.hpp>
@@ -111,25 +112,18 @@ namespace nx::detail
         return threads_by_id.size();
     }
 
-    void ThreadInfoInstance::exitAllThreads()
+    void ThreadInfoInstance::exitAllThreads(int code)
     {
-        auto local_id = Thread::CurrentId();
-        // nxTrace("exitAllThreads. Local ID: {}", local_id);
         for (auto [id, thread] : threads_by_id)
         {
-            // if (local_id != id)
-            // {
-                nxDevTrace("Closing thread [tid:{}]", id);
-                // thread->exit(0);
-                thread->exit(0);
-            // }
+            nxTrace("Closing thread [tid:{}]", id);
+            thread->exit(code);
         }
     }
 
     void ThreadInfoInstance::waitForAllThreadsExit()
     {
         auto local_id = Thread::CurrentId();
-        // nxTrace("waitForAllThreadsExit. Local ID: {}", local_id);
         for (auto [id, thread] : threads_by_id)
         {
             if (local_id != id)
@@ -218,7 +212,7 @@ void Thread::sleepUntil(TimePoint t)
 
 void Thread::exit(int code)
 {
-    // nxTrace("Thread[{}]::exit", getId());
+    nxTrace("Thread[{}]::exit", getId());
     if (running)
     {
         aboutToQuit();

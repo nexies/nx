@@ -1,5 +1,5 @@
-add_executable(nx_enum_example main.cpp)
+add_executable(nx_example_enum main.cpp)
 
-target_link_libraries(nx_enum_example PRIVATE
+target_link_libraries(nx_example_enum PRIVATE
         nx::core
 )

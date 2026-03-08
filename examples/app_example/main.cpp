@@ -6,6 +6,8 @@
 
 #include "nx/core/Timer.hpp"
 
+#include <nx/core/app/Application.hpp>
+
 struct TimeoutReceiver : public nx::Object
 {
     void onTimeout()
@@ -19,7 +21,6 @@ struct TimeoutReceiver : public nx::Object
 
 int main(int argc, char * argv[]) {
     using namespace nx;
-
     App::Init(argc, argv);
 
     Timer timer;
@@ -35,5 +36,6 @@ int main(int argc, char * argv[]) {
     timer.setType(Timer::Type::Periodic);
     timer.startNow();
 
-    return App::Exec();
+    auto res = App::Exec();
+    return res;
 }

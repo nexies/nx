@@ -2,7 +2,7 @@
 // Created by nexie on 14.11.2025.
 //
 
-#include "../include/nx/core/Signal.hpp"
+#include "../include/nx/core/object/Signal.hpp"
 
 #include "../include/nx/core/Loop.hpp"
 #include "../include/nx/core/Object.hpp"

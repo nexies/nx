@@ -3,7 +3,7 @@
 //
 
 #include <nx/core.hpp>
-#include <nx/core/Functor.hpp>
+#include <../../modules/core/include/nx/core/functional/Functor.hpp>
 
 using namespace nx;
 
@@ -44,6 +44,13 @@ int main (int argc, char * argv [])
     connect(&timer, &Timer::timeout, &derived, &BaseObject::slot );
     connect(&timer, &Timer::timeout, &derived, &DerivedObject::anotherSlot );
 
+
+    auto f1 = nx::detail::get_function_id(&DerivedObject::slot);
+    auto f2 = nx::detail::get_function_id(&BaseObject::slot);
+
+    nxDebug("Base::slot id {}; Derived::slot id {}", f1, f2);
+    nxDebug("IDs equal: {}", f1 == f2);
+
     // connect(&timer, &Timer::timeout, &derived, &BaseObject::slot );
 
     // auto & tf = &Timer::timeout;
@@ -51,8 +58,6 @@ int main (int argc, char * argv [])
     // using a = nx::detail::FunctionDescriptor<void (DerivedObject::*&)()>::MemberOf;
 
     // auto df = &DerivedObject::slot;
-
-
 
     timer.setType(Timer::Type::Periodic);
     timer.setDuration(Seconds(5));

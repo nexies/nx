@@ -18,8 +18,8 @@ if (NX_BUILD_MODULE_CORE)
     add_subdirectory(core)
 endif ()
 
-if (NX_BUILD_MODULE_IO)
-    add_subdirectory(io)
+if (NX_BUILD_MODULE_NETWORK)
+    add_subdirectory(network)
 endif()
 
 

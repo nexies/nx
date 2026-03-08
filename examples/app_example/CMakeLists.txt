@@ -1,7 +1,7 @@
-add_executable(nx_app_example
+add_executable(nx_example_app
         main.cpp
 )
 
-target_link_libraries(nx_app_example PRIVATE
+target_link_libraries(nx_example_app PRIVATE
         nx::core
 )

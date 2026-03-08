@@ -18,4 +18,5 @@
 #include <nx/core/App.hpp>
 
 
+
 #endif //CORE_HPP

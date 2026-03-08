@@ -8,7 +8,7 @@ add_library(nx_core
         src/App.cpp
 
         include/nx/core/detail/property_impl.hpp
-        include/nx/core/Property.hpp
+        include/nx/core/object/Property.hpp
         include/nx/core/detail/property_defs_cxx20.hpp
         include/nx/core/detail/property_defs_cxx20_parser.hpp
         include/nx/core/detail/object_defs.hpp
@@ -16,11 +16,15 @@ add_library(nx_core
         include/nx/experimental/reflect
         include/nx/core/detail/enum_defs.hpp
         include/nx/core/detail/function_id.hpp
+        include/nx/core/IODevice.hpp
         include/nx/core/detail/logger_defs.hpp
         include/nx/core/detail/units.hpp
-        include/nx/core/App/App.hpp
+        include/nx/core/App/Application.hpp
         include/nx/core/App/ProgramArguments.hpp
         src/App/Application.cpp
+        src/App/AppFunctions.cpp
+        include/nx/core/object/Object.hpp
+        include/nx/core/object/ConnectionInfo.hpp
 )
 
 if(WIN32)
@@ -32,7 +36,7 @@ find_package(Boost COMPONENTS REQUIRED program_options system HINTS C:\\devel\\b
 if (NX_ENABLE_CXX_20_FEATURES)
     target_compile_definitions(nx_core PUBLIC -D__nx_cxx_20_features)
     target_compile_definitions(nx_core PUBLIC -D__nx_cxx_20_reflect)
-    target_compile_definitions(nx_core PUBLIC -D__nx_cxx_20_property)
+#    target_compile_definitions(nx_core PUBLIC -D__nx_cxx_20_property)
     target_compile_definitions(nx_core PUBLIC -D__nx_cxx_20_enum)
 endif()
 

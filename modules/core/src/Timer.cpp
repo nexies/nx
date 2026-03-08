@@ -66,7 +66,7 @@ bool Timer::_set()
 {
     if (!thread())
     {
-        nxError("Try to set timer outside of nx::Thread");
+        nxError("Tried to to set timer outside of nx::Thread");
         return false;
     }
 

@@ -11,8 +11,8 @@
 
 #include <nx/core/detail/signal_defs.hpp>
 #include <nx/core/detail/units.hpp>
-#include <nx/core/Invoker.hpp>
-#include <nx/core/Result.hpp>
+#include <nx/core/functional/Invoker.hpp>
+#include <nx/core/types/Result.hpp>
 
 namespace nx {
     class Thread;

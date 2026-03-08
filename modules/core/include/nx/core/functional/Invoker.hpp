@@ -13,7 +13,7 @@
 #ifndef INVOKER_HPP
 #define INVOKER_HPP
 
-#include <nx/core/Functor.hpp>
+#include <nx/core/functional/Functor.hpp>
 
 namespace nx {
 
