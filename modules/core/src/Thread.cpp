@@ -150,7 +150,7 @@ Thread::~Thread()
 {
     if (thread and thread->joinable())
     {
-        exit( 0 );
+        // exit( 0 );
         waitForExit();
     }
 
@@ -217,6 +217,7 @@ void Thread::exit(int code)
     {
         aboutToQuit();
         schedule(Signal::Exit(this, loop(), code));
+
     }
 }
 

@@ -116,7 +116,7 @@ namespace nx
 
         // SignalQueue signal_queue;
         // Loop* current_loop{nullptr};
-        Context io_context;
+        Context io_context { 1 };
         ContextLocker context_locker { io_context };
         std::stack<Loop *> loops;
 

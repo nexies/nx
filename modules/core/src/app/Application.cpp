@@ -55,8 +55,8 @@ namespace nx::core
 
         s_instance = this;
 
-        nx::connect(this, &Application::_signalForExit,
-                    this, &Application::_doExit);
+        // nx::connect(this, &Application::_signalForExit,
+        //             this, &Application::_doExit);
 
         _createLogger();
         _makeMainThread();
@@ -80,6 +80,7 @@ namespace nx::core
 
     int Application::exec() {
         auto res = _startEventLoop();
+        _removeMainThread();
         if (!res) {
             nxDebug("Exiting with error code {}: \"\"", res.get_err().code());
             return res.get_err().code();
@@ -133,6 +134,7 @@ namespace nx::core
         case SIGINT:
         case SIGQUIT:
         case SIGTERM:
+        case SIGPIPE:
             // std::cerr << "Received exit signal" << std::endl;
             quit();
             break;
@@ -238,15 +240,15 @@ namespace nx::core
         signals->add(SIGINT);
         signals->add(SIGTERM);
         signals->add(SIGILL);
-        signals->add(SIGABRT);
-        signals->add(SIGFPE);
-        signals->add(SIGSEGV);
+        // signals->add(SIGABRT);
+        // signals->add(SIGFPE);
+        // signals->add(SIGSEGV);
 
         signals->add(SIGHUP);
         signals->add(SIGQUIT);
-        signals->add(SIGTRAP);
+        // signals->add(SIGTRAP);
         signals->add(SIGPIPE);
-        signals->add(SIGALRM);
+        // signals->add(SIGALRM);
 
         signals->async_wait([this] (const boost::system::error_code & err, int signal)
         {
@@ -277,6 +279,11 @@ namespace nx::core
     void Application::_doExit(int code) {
         // std::cerr << "_DoExit" << std::endl;
         _closeThreads(code);
+    }
+
+    void Application::_removeMainThread() {
+        if (thread())
+            delete thread();
     }
 
     void Application::Init(int argc, char *argv[]) {

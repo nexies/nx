@@ -56,6 +56,7 @@ namespace nx::core
         Result _startEventLoop ();
         void _closeThreads (int exit_code);
         void _doExit (int code);
+        void _removeMainThread ();
 
     /// STATIC FUNCTIONS
     public:

@@ -47,6 +47,7 @@ public:
 
     ~Impl()
     {
+        //TODO: Notify receivers that the object is destroyed
         connection_info.reset();
         detachFromLocalThread();
     }
