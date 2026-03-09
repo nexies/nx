@@ -1,7 +1,8 @@
 add_library(nx_tui
     src/App.cpp
-        include/nx/tui/Terminal.hpp
+        include/nx/tui/terminal/Terminal.hpp
         src/Terminal.cpp
+        include/nx/tui/types/Size.hpp
 )
 
 target_link_libraries(nx_tui PUBLIC

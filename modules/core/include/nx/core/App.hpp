@@ -19,6 +19,8 @@
 namespace nx {
     using App = ::nx::core::Application;
 
+    # define nxApp (::nx::core::Application::Instance())
+
     // namespace App {
     //     void Init(int argc, char * argv[]);
     //

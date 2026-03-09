@@ -5,13 +5,13 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 
-#include <nx/tui/Terminal.hpp>
+#include <../include/nx/tui/terminal/Terminal.hpp>
 
 using namespace nx::tui;
 
-WindowSize Terminal::getWindowSize()
+WindowSize Terminal::GetWindowSize()
 {
-    struct winsize w;
+    winsize w { 0 };
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
-    return {w.ws_col, w.ws_row, w.ws_xpixel, w.ws_ypixel};
+    return {w.ws_row, w.ws_col, w.ws_xpixel, w.ws_ypixel};
 }

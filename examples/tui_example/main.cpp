@@ -9,15 +9,21 @@ struct WinSizeRecv : public nx::Object
     void onWinSizeChange(nx::tui::WindowSize ws)
     {
         nxDebug("Window size changed -- rows[{}], columns[{}], height[{}], width[{}]",
-            ws.rows, ws.columns, ws.pixelHeight, ws.pixelWidth);
+            ws.chars.height, ws.chars.width, ws.pixels.height, ws.pixels.width);
 
     }
 };
 
 int main (int argc, char * argv[])
 {
-    nx::tui::App::Init(argc, argv);
+    using namespace nx::tui;
+
+    Application a(argc, argv);
     WinSizeRecv wsrecv;
 
-    return nx::tui::App::Exec();
+    nx::connect(&a, &Application::windowChanged,
+        &wsrecv, &WinSizeRecv::onWinSizeChange);
+
+
+    return a.exec();
 }

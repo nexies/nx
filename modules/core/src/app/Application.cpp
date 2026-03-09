@@ -248,6 +248,7 @@ namespace nx::core
         signals->add(SIGQUIT);
         // signals->add(SIGTRAP);
         signals->add(SIGPIPE);
+        signals->add(SIGWINCH);
         // signals->add(SIGALRM);
 
         signals->async_wait([this] (const boost::system::error_code & err, int signal)
@@ -308,5 +309,9 @@ namespace nx::core
 
     void Application::Abort() {
         s_instance->abort();
+    }
+
+    Application * Application::Instance() {
+        return s_instance;
     }
 }

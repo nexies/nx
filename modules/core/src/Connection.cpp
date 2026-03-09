@@ -158,8 +158,11 @@ ConnectionInfo::ConnectionInfo(Object* obj) :
 
 nx::ConnectionInfo::~ConnectionInfo()
 {
-    for (auto & sender : senders)
-        sender->_getConnectionInfo()->receiverDestroyed(self);
+    for (auto & sender : senders) {
+        auto senderConnInfo = sender->_getConnectionInfo();
+        if (senderConnInfo)
+            senderConnInfo->receiverDestroyed(self);
+    }
 }
 
 void ConnectionInfo::addSender(Object* sender)

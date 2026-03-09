@@ -12,19 +12,6 @@ namespace nx::core
 {
     class Application : public Object
     {
-        // struct Preferences {
-        //     using path = std::filesystem::path;
-        //     std::string application_name {"nx_app"};
-        //     path execution_path {"/"};
-        //     path executable {"/"};
-        //     options_description opt_desc;
-        //     boost::program_options::variables_map options;
-        //     path env_file {application_name + ".env"};
-        //     path log_file {application_name + ".log"};
-        //     spdlog::level::level_enum log_level = spdlog::level::trace;
-        //     // spdlog::level::level_enum log_level =  spdlog::level::debug;
-        // } m_preferences;
-
     public:
         Application ();
         Application (int argc, char * argv[]);
@@ -71,6 +58,8 @@ namespace nx::core
         static void Exit(int exit_code);
 
         static void Abort();
+
+        static Application * Instance();
 
     /// STATIC MEMBER
     private:
