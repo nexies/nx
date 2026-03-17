@@ -18,6 +18,8 @@
 #include <spdlog/details/log_msg.h>
 #include <spdlog/common-inl.h>
 
+boost::asio::signal_set * g_signal_set;
+
 namespace
 {
     class ThreadFormaterFlag : public spdlog::custom_flag_formatter
@@ -55,12 +57,9 @@ namespace nx::core
 
         s_instance = this;
 
-        // nx::connect(this, &Application::_signalForExit,
-        //             this, &Application::_doExit);
-
         _createLogger();
         _makeMainThread();
-        _asyncWaitSIGNAL();
+        _beginAsyncWaitSIGNAL();
     }
 
     Application::Application(int argc, char* argv[]) :
@@ -68,15 +67,6 @@ namespace nx::core
     {
         _parseArguments (argc, argv);
     }
-
-    // Result Application::init() {
-        // _makeMainThread ();
-        // _asyncWaitSIGNAL ();
-    // }
-
-    // Result Application::init(int argc, char *argv[]) {
-
-    // }
 
     int Application::exec() {
         auto res = _startEventLoop();
@@ -110,7 +100,7 @@ namespace nx::core
     Result Application::init(int argc, char *argv[]) {
         _parseArguments(argc, argv);
         _makeMainThread();
-        _asyncWaitSIGNAL();
+        _beginAsyncWaitSIGNAL();
         return Result::Ok();
     }
 
@@ -231,35 +221,28 @@ namespace nx::core
         return Result::Err("Failure while creating main thread");
     }
 
-    Result Application::_asyncWaitSIGNAL() {
+    Result Application::_beginAsyncWaitSIGNAL()
+    {
         if (!thread())
             return Result::Err("Application::_asyncWaitSIGNAL: Thread is not initialized");
 
-        auto signals = new boost::asio::signal_set(thread()->context());
+        g_signal_set = new boost::asio::signal_set(thread()->context());
 
-        signals->add(SIGINT);
-        signals->add(SIGTERM);
-        signals->add(SIGILL);
+        g_signal_set->add(SIGINT);
+        g_signal_set->add(SIGTERM);
+        g_signal_set->add(SIGILL);
         // signals->add(SIGABRT);
         // signals->add(SIGFPE);
         // signals->add(SIGSEGV);
 
-        signals->add(SIGHUP);
-        signals->add(SIGQUIT);
+        g_signal_set->add(SIGHUP);
+        g_signal_set->add(SIGQUIT);
         // signals->add(SIGTRAP);
-        signals->add(SIGPIPE);
-        signals->add(SIGWINCH);
+        g_signal_set->add(SIGPIPE);
+        g_signal_set->add(SIGWINCH);
         // signals->add(SIGALRM);
 
-        signals->async_wait([this] (const boost::system::error_code & err, int signal)
-        {
-            if (!err) {
-                this->_onSIGNAL(signal);
-            } else {
-                nxError("Error on receiving signal {} from OS: {}", signal, err.to_string());
-            }
-        });
-
+        g_signal_set->async_wait(_asyncWaitSIGNAL);
         return Result::Ok();
     }
 
@@ -269,6 +252,19 @@ namespace nx::core
         auto res = loop.exec();
         _afterExec();
         return res;
+    }
+
+    void Application::_asyncWaitSIGNAL(const boost::system::error_code & er, int signal_code)
+    {
+        if (!s_instance)
+            nxCritical("Error in asyncWaitSIGNAL: Application is not initialized");
+
+        if (!er)
+            s_instance->_onSIGNAL(signal_code);
+        else
+            nxError("Error in asyncWaitSIGNAL: {}", er.what());
+
+        g_signal_set->async_wait(_asyncWaitSIGNAL);
     }
 
     void Application::_closeThreads(int exit_code) {
