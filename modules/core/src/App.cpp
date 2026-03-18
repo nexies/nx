@@ -230,7 +230,7 @@ nx::Result nx::App::_createLogger() {
     auto logger = std::make_shared<spdlog::logger>(MAIN_LOGGER_NAME, combined);
     logger->set_level(m_preferences.log_level);
     auto formatter = std::make_unique<spdlog::pattern_formatter>();
-    formatter->add_flag<ThreadFormaterFlag>('T').set_pattern("[%Y-%m-%d %H:%M:%S.%f] [%n] ["/*%t|#1#"tid:%T] [%^%l%$] %v (%s:%#)");
+    formatter->add_flag<ThreadFormaterFlag>('T').set_pattern("[%Y-%m-%d %H:%M:%S.%f] [%n] ["%t|#1#"tid:%T] [%^%l%$] %v (%s:%#)");
 
     logger->set_formatter(std::move(formatter));
     spdlog::set_default_logger(logger);
@@ -244,7 +244,7 @@ nx::Result nx::App::_createLogger() {
         signal_logger->set_level(spdlog::level::trace);
 
         formatter = std::make_unique<spdlog::pattern_formatter>();
-        formatter->add_flag<ThreadFormaterFlag>('T').set_pattern("%^[%Y-%m-%d %H:%M:%S:%f] [%n] ["/*%t|#1#"tid:%T] [%l] %v %$(%s:%#)");
+        formatter->add_flag<ThreadFormaterFlag>('T').set_pattern("%^[%Y-%m-%d %H:%M:%S:%f] [%n] ["%t|#1#"tid:%T] [%l] %v %$(%s:%#)");
         signal_logger->set_formatter(std::move(formatter));
 
         spdlog::register_logger(signal_logger);
@@ -260,7 +260,7 @@ nx::Result nx::App::_createLogger() {
         devel_logger->set_level(spdlog::level::trace);
 
         formatter = std::make_unique<spdlog::pattern_formatter>();
-        formatter->add_flag<ThreadFormaterFlag>('T').set_pattern("[%Y-%m-%d %H:%M:%S:%f] [%n] ["/*%t|#1#"tid:%T] [%^%l%$] %v (%s:%#)");
+        formatter->add_flag<ThreadFormaterFlag>('T').set_pattern("[%Y-%m-%d %H:%M:%S:%f] [%n] ["%t|#1#"tid:%T] [%^%l%$] %v (%s:%#)");
         devel_logger->set_formatter(std::move(formatter));
 
         spdlog::register_logger(devel_logger);

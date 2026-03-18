@@ -20,9 +20,68 @@ struct TimeoutReceiver : public nx::Object
 };
 
 
+namespace run_before_main
+{
+    class BeforeMainRunner {
+    public:
+        constexpr
+        BeforeMainRunner() noexcept {
+            // fprintf(stdout, "BeforeMainRunner: ctor\n");
+            // delete this;
+        }
+    };
+
+    struct property_descriptor {
+        static inline std::string_view name = "123";
+    };
+
+    template <class ObjectType>
+    struct MetaPropertyManager {
+        std::vector<int> vec;
+
+        constexpr void
+        registerProperty (int i) { vec.push_back(i); }
+
+    };
+
+    template <class ObjectType>
+    using MetaProperty = nx::Singleton<MetaPropertyManager<ObjectType>>;
+
+
+
+    template<typename ObjectType>
+    [[nodiscard]] constexpr auto
+    registerProperty (int id) -> decltype(auto) {
+        MetaProperty<ObjectType>::Instance().registerProperty(id);
+        return id;
+    }
+
+    // auto _ = BeforeMainRunner();
+
+    class TestObject {
+    public:
+
+        static inline auto m_propertydescriptor = registerProperty<TestObject>(1);
+        static inline auto m_propertydescriptor1 = registerProperty<TestObject>(2);
+        static inline auto m_propertydescriptor2 = registerProperty<TestObject>(3);
+        static inline auto m_propertydescriptor3 = registerProperty<TestObject>(4);
+        static inline auto m_propertydescriptor4 = registerProperty<TestObject>(5);
+        static inline auto m_propertydescriptor5 = registerProperty<TestObject>(6);
+    };
+}
+
+
 int main(int argc, char * argv[]) {
     using namespace nx;
-    App::Init(argc, argv);
+    fprintf(stdout, "main: begin\n");
+
+    using namespace run_before_main;
+
+    std::cerr << TestObject::m_propertydescriptor << std::endl;
+    std::cerr << MetaProperty<TestObject>::Instance().vec.size() << std::endl;
+
+    // std::cerr << run_before_main::TestObject::m_propertydescriptor::name;
+    // App::Init(argc, argv);
 
     Timer timer;
     TimeoutReceiver receiver;
@@ -39,6 +98,7 @@ int main(int argc, char * argv[]) {
     timer.setType(Timer::Type::Periodic);
     timer.startNow();
 
-    auto res = App::Exec();
-    return res;
+    // auto res = App::Exec();
+    // return res;
+    return 0;
 }
