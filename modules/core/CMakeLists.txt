@@ -1,6 +1,7 @@
 add_library(nx_core
         src/Connection.cpp
-        src/Object.cpp
+        src/object/object.cpp
+        src/object/object_impl.p.cpp
         src/Loop.cpp
         src/Signal.cpp
         src/Thread.cpp
@@ -19,12 +20,16 @@ add_library(nx_core
         include/nx/core/IODevice.hpp
         include/nx/core/detail/logger_defs.hpp
         include/nx/core/detail/units.hpp
-        include/nx/core/App/Application.hpp
-        include/nx/core/App/ProgramArguments.hpp
-        src/App/Application.cpp
-        src/App/AppFunctions.cpp
+        include/nx/core/app/Application.hpp
+        include/nx/core/app/ProgramArguments.hpp
+        src/app/Application.cpp
+        src/app/AppFunctions.cpp
         include/nx/core/object/Object.hpp
         include/nx/core/object/ConnectionInfo.hpp
+        include/nx/core/meta/MetaObject.hpp
+        include/nx/core/meta/MetaProperty.hpp
+        include/nx/core/meta/enum_flags.hpp
+        include/nx/core/meta/enum.hpp
 )
 
 if(WIN32)

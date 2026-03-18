@@ -3,6 +3,16 @@ add_library(nx_tui
         include/nx/tui/terminal/Terminal.hpp
         src/Terminal.cpp
         include/nx/tui/types/Size.hpp
+        include/nx/tui/terminal/Screen.hpp
+        include/nx/tui/terminal/Grapheme.hpp
+        include/nx/tui/terminal/Image.hpp
+        include/nx/tui/graphics/pixel.hpp
+        include/nx/tui/graphics/canvas.hpp
+        src/graphics/canvas.cpp
+        include/nx/tui/types/rect.hpp
+        include/nx/tui/types/point.hpp
+        include/nx/tui/types/color.hpp
+        src/types/color.cpp
 )
 
 target_link_libraries(nx_tui PUBLIC

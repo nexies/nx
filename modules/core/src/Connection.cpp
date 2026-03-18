@@ -158,11 +158,7 @@ ConnectionInfo::ConnectionInfo(Object* obj) :
 
 nx::ConnectionInfo::~ConnectionInfo()
 {
-    for (auto & sender : senders) {
-        auto senderConnInfo = sender->_getConnectionInfo();
-        if (senderConnInfo)
-            senderConnInfo->receiverDestroyed(self);
-    }
+
 }
 
 void ConnectionInfo::addSender(Object* sender)
@@ -282,4 +278,13 @@ ConnectionInfo::List<std::shared_ptr<Connection>> ConnectionInfo::getConnections
     }
 
     return out;
+}
+
+void ConnectionInfo::cleaup()
+{
+    for (auto & sender : senders) {
+        auto senderConnInfo = sender->_getConnectionInfo();
+        if (senderConnInfo)
+            senderConnInfo->receiverDestroyed(self);
+    }
 }

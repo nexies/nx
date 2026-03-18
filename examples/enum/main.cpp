@@ -5,6 +5,8 @@
 #include <nx/core/detail/enum_defs.hpp>
 #include <iostream>
 
+#include "nx/core/detail/logger_defs.hpp"
+
 
 enum MyFlag
 {
@@ -14,22 +16,20 @@ enum MyFlag
     E4 = 8
 };
 
-using MyFlags = make_flags_from_enum<MyFlag>;
+// NX_ENUM(MyFlag)
 
-constexpr MyFlags operator|(const MyFlag a, const MyFlag b) noexcept {
-    return MyFlags {static_cast<MyFlags::underlying_type>(a) | static_cast<MyFlags::underlying_type>(b) };
-}
-constexpr MyFlags operator&(const MyFlag a, const MyFlag b) noexcept {
-    return MyFlags {static_cast<MyFlags::underlying_type>(a) & static_cast<MyFlags::underlying_type>(b) };
-}
-constexpr MyFlags operator^(const MyFlag a, const MyFlag b) noexcept {
-    return MyFlags {static_cast<MyFlags::underlying_type>(a) ^ static_cast<MyFlags::underlying_type>(b) };
-}
+// using MyFlags = make_flags_from_enum<MyFlag>;
+
+
 
 int main (int argc, char * argv[])
 {
-    MyFlags f = MyFlag::E1 | MyFlag::E4;
-    MyFlags f2 = MyFlag::E2 | MyFlag::E1;
-    MyFlags f3 = MyFlag::E3 | MyFlag::E2;
+    // MyFlags f = MyFlag::E1 | MyFlag::E4;
+    // MyFlags f2 = MyFlag::E2 | MyFlag::E1;
+    // MyFlags f3 = MyFlag::E3 | MyFlag::E2;
+
+    // nxInfo("{:q}", MyFlag::E1);
+
+    // std::cerr << fmt::format("{}", MyFlag::E1) << std::endl;
     return 0;
 }

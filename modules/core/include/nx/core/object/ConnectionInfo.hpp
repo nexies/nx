@@ -34,6 +34,7 @@ namespace nx {
         std::unordered_map<receiver_id, Set<connection_id>> connections_for_receiver;
 
         std::set<Object *> senders;
+        std::set<Object *> receivers;
 
         Object * self { nullptr };
 
@@ -52,6 +53,8 @@ namespace nx {
         bool removeConnection (const Connection & connection, bool remove_all = false);
 
         List<ConnectionPtr> getConnections (sender_id sender) const;
+
+        void cleaup();
     };
 }
 

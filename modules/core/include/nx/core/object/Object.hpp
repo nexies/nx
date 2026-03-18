@@ -38,7 +38,10 @@ namespace nx {
         [[nodiscard]]
         Result attachToThread (Thread *) const;
 
-        void setParent(Object * new_parent);
+        void
+        setParent(Object * new_parent) const;
+
+        [[nodiscard]]
         Object * parent() const;
 
         template<typename EventType>
