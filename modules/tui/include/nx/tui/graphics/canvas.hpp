@@ -34,17 +34,17 @@ namespace nx::tui
         resize (size_type hrow, size_type wcol);
 
         pixel_reference
-        pixelAt(size_type x, size_type y);
+        pixelAt (size_type x, size_type y);
 
         [[nodiscard]] const_pixel_reference
-        pixelAt(size_type x, size_type y) const;
+        pixelAt (size_type x, size_type y) const;
 
         [[nodiscard]]
         character_type&
-        at(size_type x, size_type y);
+        at (size_type x, size_type y);
 
         [[nodiscard]] const character_type&
-        at(size_type x, size_type y) const;
+        at (size_type x, size_type y) const;
 
         [[nodiscard]] size_type
         hrow () const;
@@ -54,7 +54,6 @@ namespace nx::tui
 
         void
         clear ();
-
     };
 }
 
