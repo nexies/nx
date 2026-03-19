@@ -1,7 +1,7 @@
 add_library(nx_tui
     src/App.cpp
         include/nx/tui/terminal/Terminal.hpp
-        src/Terminal.cpp
+        src/terminal.cpp
         include/nx/tui/types/Size.hpp
         include/nx/tui/terminal/Screen.hpp
         include/nx/tui/terminal/Image.hpp
@@ -13,7 +13,7 @@ add_library(nx_tui
         include/nx/tui/types/color.hpp
         src/types/color.cpp
         include/nx/tui/graphics/painter.hpp
-        include/nx/tui/terminal/ansi_codes.p.hpp
+        src/ansi_codes.p.hpp
 )
 
 target_link_libraries(nx_tui PUBLIC

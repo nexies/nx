@@ -8,7 +8,7 @@
 
 #include <nx/tui/types/color.hpp>
 
-#include <nx/tui/terminal/Terminal.hpp>
+#include <nx/tui/terminal/terminal.hpp>
 
 namespace
 {

@@ -17,7 +17,7 @@ struct WinSizeRecv : public nx::Object
     }
 };
 
-#include <nx/tui/terminal/ansi_codes.p.hpp>
+#include <../../modules/tui/src/ansi_codes.p.hpp>
 
 int main (int argc, char * argv[])
 {
@@ -39,13 +39,33 @@ int main (int argc, char * argv[])
     // std::cout << ansi::EraseScreen << std::endl;
 
 
-    fprintf(stdout, "%s", ansi::EnableAltBuffer);
+    // Terminal::MoveCursorHome();
+
+    // fprintf(stdout, "%s", ansi::EnableAltBuffer);
+    Terminal::SaveCursor();
+
+    Terminal::EnableAltBuffer();
+    Terminal::EraseScreen();
+    Terminal::MoveCursorHome();
+    Terminal::SetCursorVisible(false);
     // fprintf(stdout, "%s", ansi::SaveScreen);
+    Terminal::EnableUnderline(true);
+    Terminal::EnableDim(true);
+
+    auto w = Terminal::GetWindowSize();
+    Terminal::MoveCursor(w.chars.height / 2, w.chars.width / 2);
+
     fprintf(stdout, "Screen saved");
+    Terminal::EnableUnderline(false);
+    Terminal::EnableDim(false);
     std::cin.get();
     // fprintf(stdout, "%s", ansi::RestoreScreen);
     fprintf(stdout, "Screen restored");
-    fprintf(stdout, "%s", ansi::DisableAltBuffer);
+    Terminal::SetCursorVisible(true);
+    Terminal::EraseScreen();
+    Terminal::DisableAltBuffer();
+    Terminal::RestoreCursor();
 
+    // fprintf(stdout, "%s", ansi::DisableAltBuffer);
     return 0;
 }

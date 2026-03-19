@@ -6,7 +6,7 @@
 #define NX_TUI_APP_HPP
 
 #include <nx/core.hpp>
-#include <nx/tui/terminal/Terminal.hpp>
+#include <nx/tui/terminal/terminal.hpp>
 
 namespace nx::tui
 {

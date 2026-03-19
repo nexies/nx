@@ -1,0 +1,165 @@
+//
+// Created by nexie on 03.03.2026.
+//
+
+#ifndef NX_TERMINAL_HPP
+#define NX_TERMINAL_HPP
+
+#include <nx/core.hpp>
+#include <nx/tui/types/size.hpp>
+#include <nx/tui/types/color.hpp>
+
+#include "nx/tui/types/point.hpp"
+
+namespace nx::tui
+{
+    class Terminal
+    {
+        inline static FILE * ostream_ = stdout;
+    public:
+
+        enum class Mode
+        {
+            Text_Mono_40x25,
+            Text_Color_40x25,
+            Text_Mono_80x25,
+            Text_Color_80x25,
+            Graph_4_Color_320x200,
+            Graph_Mono_320x200,
+            Graph_Mono_640x200,
+            Graph_Color_320x200,
+            Graph_Color_640x200,
+            Graph_Mono_640x350,
+            Graph_16_Color_640x350,
+            Graph_Mono_640x480,
+            Graph_16_Color_640x480,
+            Graph_256_Color_320x200
+        };
+
+        static WindowSize
+        GetWindowSize();
+
+        static ColorType
+        GetColorSupport();
+
+        static void
+        SetColorSupport(ColorType type);
+
+        static void
+        SetOutput(FILE * stream);
+
+        static void
+        MoveCursorHome ();
+
+        static void
+        MoveCursor (int rows, int columns);
+
+        static void
+        MoveCursorUp (int rows);
+
+        static void
+        MoveCursorDown (int rows);
+
+        static void
+        MoveCursorRight (int columns);
+
+        static void
+        MoveCursorLeft (int columns);
+
+        static void
+        MoveCursorNextLineBegin (int lines);
+
+        static void
+        MoveCursorPrevLineBegin (int lines);
+
+        static void
+        MoveCursorToColumn (int column);
+
+        [[nodiscard]] static Point<int>
+        GetCursorPos ();
+
+        static void
+        ScrollUp ();
+
+        static void
+        SaveCursor ();
+
+        static void
+        RestoreCursor ();
+
+        static void
+        EraseInDisplay ();
+
+        static void
+        EraseToScreenEnd ();
+
+        static void
+        EraseToScreenBegin ();
+
+        static void
+        EraseScreen ();
+
+        static void
+        EraseSavedLines ();
+
+        static void
+        EraseInLine ();
+
+        static void
+        EraseToLineEnd ();
+
+        static void
+        EraseToLineBegin ();
+
+        static void
+        EraseLine ();
+
+
+        static void
+        EnableDim (bool enable);
+
+        static void
+        EnableItalic (bool enable);
+
+        static void
+        EnableUnderline (bool enable);
+
+        static void
+        EnableBlinking (bool enable);
+
+        static void
+        EnableInverse (bool enable);
+
+        static void
+        EnableHidden (bool enable);
+
+        static void
+        EnableLineWrap (bool enable);
+
+        static void
+        EnableStrikeThrough (bool enable);
+
+        static void
+        SetCursorVisible (bool visible);
+
+        static void
+        SaveScreen ();
+
+        static void
+        RestoreScreen ();
+
+        static void
+        EnableAltBuffer ();
+
+        static void
+        DisableAltBuffer ();
+
+        static void
+        SetScreenMode (Mode mode);
+
+        static void
+        ResetScreenMode (Mode mode);
+    };
+}
+
+#endif //NX_TERMINAL_HPP
