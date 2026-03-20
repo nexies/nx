@@ -45,9 +45,19 @@ namespace nx::tui
         // }
 
         template <typename... Args>
-        static void Print(std::string_view format, Args&&... args)
+        static void Print(fmt::format_string<Args...> format, Args&&... args)
         {
-            fmt::print(ostream_, fmt::runtime(format), std::forward<Args>(args)...);
+            fmt::print(ostream_, format, std::forward<Args>(args)...);
+        }
+
+        static void Print(std::string_view text)
+        {
+            fmt::print(ostream_, "{}", text);
+        }
+
+        static void Print(char ch)
+        {
+            fmt::print(ostream_, "{}", ch);
         }
 
         static WindowSize
