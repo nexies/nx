@@ -84,6 +84,11 @@ void Terminal::SetOutput(FILE* stream)
     ostream_ = stream;
 }
 
+FILE* Terminal::GetOutputStream()
+{
+    return ostream_;
+}
+
 
 void Terminal::MoveCursorHome()
 {
@@ -260,6 +265,58 @@ void Terminal::EnableStrikeThrough(bool enable)
         fmt::print(ostream_, ansi::g_set_strike_through_cmd);
     else
         fmt::print(ostream_, ansi::g_reset_strike_through_cmd);
+}
+
+void Terminal::SetPixelStyle(PixelStyle style)
+{
+    if (!style)
+        return;
+
+    if (style.has(PixelStyleOptions::Blink))
+        EnableBlinking(true);
+    if (style.has(PixelStyleOptions::Dim))
+        EnableDim(true);
+    if (style.has(PixelStyleOptions::Inverted))
+        EnableInverse(true);
+    if (style.has(PixelStyleOptions::Italic))
+        EnableItalic(true);
+    if (style.has(PixelStyleOptions::StrikeThrough))
+        EnableStrikeThrough(true);
+    if (style.has(PixelStyleOptions::Underlined))
+        EnableUnderline(true);
+    if (style.has(PixelStyleOptions::UnderlinedDouble))
+        EnableUnderline(true);
+}
+
+void Terminal::ResetPixelStyle(PixelStyle style)
+{
+    if (!style)
+        return;
+
+    if (style.has(PixelStyleOptions::Blink))
+        EnableBlinking(false);
+    if (style.has(PixelStyleOptions::Dim))
+        EnableDim(false);
+    if (style.has(PixelStyleOptions::Inverted))
+        EnableInverse(false);
+    if (style.has(PixelStyleOptions::Italic))
+        EnableItalic(false);
+    if (style.has(PixelStyleOptions::StrikeThrough))
+        EnableStrikeThrough(false);
+    if (style.has(PixelStyleOptions::Underlined))
+        EnableUnderline(false);
+    if (style.has(PixelStyleOptions::UnderlinedDouble))
+        EnableUnderline(false);
+}
+
+void Terminal::SetColor(Color color)
+{
+    Print(color.print());
+}
+
+void Terminal::SetBackgroundColor(Color color)
+{
+    Print(color.print(true));
 }
 
 void Terminal::SetCursorVisible(bool visible)

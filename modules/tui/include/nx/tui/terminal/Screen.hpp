@@ -6,12 +6,25 @@
 #define NX_SCREEN_HPP
 
 #include <nx/core/Object.hpp>
+#include <nx/tui/graphics/display_buffer.hpp>
 
 namespace nx::tui
 {
     class Screen : public Object
     {
+        DisplayBuffer buffer_;
+    public:
+        explicit
+        Screen(Object * parent = nullptr);
+        void render ();
 
+
+        DisplayBuffer & getBuffer();
+    protected:
+        void onWindowSizeChanged(WindowSize w);
+
+        NX_SIGNAL(_signalToRender)
+        void _renderOnScreen ();
     };
 }
 

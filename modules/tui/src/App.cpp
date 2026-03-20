@@ -33,3 +33,26 @@ Application::Application(int argc, char *argv []) :
 Application * Application::Instance() {
     return dynamic_cast<nx::tui::Application *>(nx::core::Application::Instance());
 }
+
+nx::Result Application::_beforeExec()
+{
+    Terminal::SaveCursor();
+    Terminal::EnableAltBuffer();
+    Terminal::EraseScreen();
+    Terminal::MoveCursorHome();
+    Terminal::SetCursorVisible(false);
+
+    return core::Application::_beforeExec();
+    // return Result::Ok();
+}
+
+nx::Result Application::_afterExec()
+{
+    Terminal::SetCursorVisible(true);
+    Terminal::EraseScreen();
+    Terminal::DisableAltBuffer();
+    Terminal::RestoreCursor();
+
+    // return Result::Ok();
+    return core::Application::_afterExec();
+}

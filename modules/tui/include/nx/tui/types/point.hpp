@@ -13,11 +13,25 @@ namespace nx::tui
     template<typename Type = int>
     struct Point
     {
-        using traits_type = SizeTraits<Type>;
-        using size_type = typename traits_type::size_type;
+        using units = SizeTraits<Type>::size_type;
 
-        size_type x;
-        size_type y;
+        Point(units p_x, units p_y) noexcept
+            : x {p_x}
+            , y {p_y}
+        {}
+
+        Point()
+            : x { 0 }
+            , y { 0 }
+        {}
+
+        Point(Size<Type> p_size) noexcept
+            : x { p_size.width }
+            , y { p_size.height }
+        {}
+
+        units x;
+        units y;
     };
 
 

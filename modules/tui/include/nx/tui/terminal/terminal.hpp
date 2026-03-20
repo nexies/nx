@@ -9,6 +9,7 @@
 #include <nx/tui/types/size.hpp>
 #include <nx/tui/types/color.hpp>
 
+#include "nx/tui/graphics/pixel.hpp"
 #include "nx/tui/types/point.hpp"
 
 namespace nx::tui
@@ -36,6 +37,19 @@ namespace nx::tui
             Graph_256_Color_320x200
         };
 
+        // template<typename ...Args>
+        // static void
+        // Print (fmt::format_string<Args...> fmt, Args && ... args)
+        // {
+        //     fmt::print(ostream_, fmt, std::forward<Args>(args)...);
+        // }
+
+        template <typename... Args>
+        static void Print(std::string_view format, Args&&... args)
+        {
+            fmt::print(ostream_, fmt::runtime(format), std::forward<Args>(args)...);
+        }
+
         static WindowSize
         GetWindowSize();
 
@@ -47,6 +61,9 @@ namespace nx::tui
 
         static void
         SetOutput(FILE * stream);
+
+        [[nodiscard]] static FILE *
+        GetOutputStream ();
 
         static void
         MoveCursorHome ();
@@ -114,7 +131,6 @@ namespace nx::tui
         static void
         EraseLine ();
 
-
         static void
         EnableDim (bool enable);
 
@@ -138,6 +154,18 @@ namespace nx::tui
 
         static void
         EnableStrikeThrough (bool enable);
+
+        static void
+        SetPixelStyle (PixelStyle style);
+
+        static void
+        ResetPixelStyle (PixelStyle style);
+
+        static void
+        SetColor (Color color);
+
+        static void
+        SetBackgroundColor (Color color);
 
         static void
         SetCursorVisible (bool visible);

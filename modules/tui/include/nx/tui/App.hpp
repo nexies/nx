@@ -21,6 +21,9 @@ namespace nx::tui
         static Application * Instance ();
 
     protected:
+        Result _beforeExec () override;
+        Result _afterExec () override;
+
         void _onSIGWINCH();
         void _onSIGNAL(int signal) override;
     };

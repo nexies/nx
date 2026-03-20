@@ -79,6 +79,18 @@ namespace nx::tui
 
         [[nodiscard]] std::string
         print (bool background = false) const;
+
+        [[nodiscard]] constexpr bool
+        operator == (const Color & other) const
+        {
+            return (red() == other.red() && green() == other.green() && blue() == other.blue());
+        }
+
+        [[nodiscard]] constexpr bool
+        operator != (const Color & other) const
+        {
+            return !(*this == other);
+        }
     };
 }
 

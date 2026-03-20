@@ -75,6 +75,30 @@ namespace nx::tui
             return size_.width;
         }
 
+        [[nodiscard]] constexpr point_type
+        topLeft () const noexcept
+        {
+            return pos_;
+        }
+
+        [[nodiscard]] constexpr point_type
+        topRight () const noexcept
+        {
+            return { pos_.x + size_.width - 1, pos_.y };
+        }
+
+        [[nodiscard]] constexpr point_type
+        bottomLeft () const noexcept
+        {
+            return { pos_.x, pos_.y + size_.height - 1 };
+        }
+
+        [[nodiscard]] constexpr point_type
+        bottomRight () const noexcept
+        {
+            return { pos_.x + size_.width - 1, pos_.y + size_.height - 1 };
+        }
+
         [[nodiscard]] constexpr bool
         contains (units x, units y) const noexcept
         {
@@ -83,9 +107,15 @@ namespace nx::tui
         }
 
         [[nodiscard]] constexpr bool
-        contains (point_type point) const noexcept
+        contains (const point_type & point) const noexcept
         {
             return contains(point.x, point.y);
+        }
+
+        [[nodiscard]] constexpr bool
+        contains (const Rect & other)
+        {
+            return contains(other.topLeft(), other.topRight());
         }
 
         [[nodiscard]] rect_type
@@ -110,6 +140,12 @@ namespace nx::tui
         perimeter () const noexcept
         {
             return std::abs(2*(size_.width + size_.height));
+        }
+
+        [[nodiscard]] constexpr size_type
+        size () const noexcept
+        {
+            return size_;
         }
     };
 }

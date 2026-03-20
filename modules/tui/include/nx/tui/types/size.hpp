@@ -5,6 +5,8 @@
 #ifndef NX_TUI_SIZE_HPP
 #define NX_TUI_SIZE_HPP
 
+#include <type_traits>
+
 namespace nx::tui {
 
     template<typename Type>
@@ -21,6 +23,34 @@ namespace nx::tui {
         traits_type::size_type height;
         traits_type::size_type width;
     };
+
+    template<typename Type = int>
+    [[nodiscard]] constexpr auto
+    operator + (const Size<Type> & left, const Size<Type> & right) -> Size<Type>
+    {
+        return {left.height + right.height, left.width + right.width};
+    }
+
+    template<typename Type = int>
+    [[nodiscard]] constexpr auto
+    operator - (const Size<Type> & left, const Size<Type> & right) -> Size<Type>
+    {
+        return {left.height - right.height, left.width - right.width};
+    }
+
+    template<typename Type = int, typename Operand = Type>
+    [[nodiscard]] constexpr auto
+    operator * (const Size<Type> & left, const Operand & right) -> decltype(auto)
+    {
+        return Size(left.height * right, left.width * right);
+    }
+
+    template<typename Type = int, typename Operand = Type>
+    [[nodiscard]] constexpr auto
+    operator / (const Size<Type> & left, const Operand & right) -> decltype(auto)
+    {
+        return Size(left.height / right, left.width / right);
+    }
 
     struct WindowSize {
         Size<int> chars;

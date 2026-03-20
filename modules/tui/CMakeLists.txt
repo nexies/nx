@@ -4,7 +4,6 @@ add_library(nx_tui
         src/terminal.cpp
         include/nx/tui/types/Size.hpp
         include/nx/tui/terminal/Screen.hpp
-        include/nx/tui/terminal/Image.hpp
         include/nx/tui/graphics/pixel.hpp
         include/nx/tui/graphics/canvas.hpp
         src/graphics/canvas.cpp
@@ -14,6 +13,9 @@ add_library(nx_tui
         src/types/color.cpp
         include/nx/tui/graphics/painter.hpp
         src/ansi_codes.p.hpp
+        src/screen.cpp
+        src/graphics/painter.cpp
+        src/graphics/display_buffer.cpp
 )
 
 target_link_libraries(nx_tui PUBLIC
