@@ -37,13 +37,6 @@ namespace nx::tui
             Graph_256_Color_320x200
         };
 
-        // template<typename ...Args>
-        // static void
-        // Print (fmt::format_string<Args...> fmt, Args && ... args)
-        // {
-        //     fmt::print(ostream_, fmt, std::forward<Args>(args)...);
-        // }
-
         template <typename... Args>
         static void Print(fmt::format_string<Args...> format, Args&&... args)
         {
