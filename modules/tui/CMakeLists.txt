@@ -1,12 +1,10 @@
 add_library(nx_tui
     src/App.cpp
-        include/nx/tui/terminal/Terminal.hpp
+        include/nx/tui/terminal/terminal.hpp
         src/terminal.cpp
-        include/nx/tui/types/Size.hpp
+        include/nx/tui/types/size.hpp
         include/nx/tui/terminal/Screen.hpp
         include/nx/tui/graphics/pixel.hpp
-        include/nx/tui/graphics/canvas.hpp
-        src/graphics/canvas.cpp
         include/nx/tui/types/rect.hpp
         include/nx/tui/types/point.hpp
         include/nx/tui/types/color.hpp

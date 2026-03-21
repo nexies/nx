@@ -16,7 +16,7 @@ namespace nx::tui
 {
     class Terminal
     {
-        inline static FILE * ostream_ = stdout;
+        inline static FILE * ostream_ = stderr;
     public:
 
         enum class Mode

@@ -102,8 +102,8 @@ namespace nx::tui
         [[nodiscard]] constexpr bool
         contains (units x, units y) const noexcept
         {
-            return (x >= pos_.x && x < pos_.x + size_.width)
-                &&  ( y >= pos_.y && y < pos_.y + size_.height);
+            return (x >= pos_.x && x <= pos_.x + size_.width)
+                &&  ( y >= pos_.y && y <= pos_.y + size_.height);
         }
 
         [[nodiscard]] constexpr bool

@@ -60,7 +60,7 @@ namespace nx::tui
 
     }
 
-    constexpr Painter::point_type Painter::_projectPoint(const point_type & pos) const
+    Painter::point_type Painter::_projectPoint(const point_type & pos) const
     {
         return { pos.x + rect_.x(), pos.y + rect_.y() };
     }

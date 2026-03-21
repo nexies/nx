@@ -81,9 +81,9 @@ namespace nx::tui
             }
 
             Terminal::Print(pixel.character);
-            if ((counter % rect.width() - 1) == 0)
+            if (((counter % rect.width()) - 1) == 0)
             {
-                Terminal::MoveCursorNextLineBegin(0);
+                Terminal::Print("\n");
             }
 
             counter += 1;

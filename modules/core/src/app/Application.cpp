@@ -106,12 +106,12 @@ namespace nx::core
 
 
     Result Application::_beforeExec() {
-        nxTrace("Applicaiton::_beforeExec");
+        // nxTrace("Applicaiton::_beforeExec");
         return Result::Ok();
     }
 
     Result Application::_afterExec() {
-        nxTrace("Application::_afterExec");
+        // nxTrace("Application::_afterExec");
         return Result::Ok();
     }
 

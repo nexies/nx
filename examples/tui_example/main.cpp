@@ -36,17 +36,25 @@ int main (int argc, char * argv[])
 
     auto p = screen.getBuffer().getPainter();
     p.setColor(Color::YellowLight);
-    p.setStyle( Underlined | StrikeThrough );
+    p.setStyle( Underlined  );
+
+    p.drawText({20, 10}, "Hello, Ayana!!! :)");
 
 
     std::string text = "*";
     // Point point ((screen.getBuffer().size().width - text.size())/2, screen.getBuffer().size().height/2);
     auto rect = screen.getBuffer().rect();
 
-    p.drawText(rect.topLeft(), text);
-    p.drawText(rect.topRight(), text);
-    p.drawText(rect.bottomLeft(), text);
-    p.drawText(rect.bottomLeft(), text);
+    // for (int i = 0; i < 300; i++)
+        // std::cerr << ((i+1) % 10);
+    // std::cerr << std::endl;
+
+    // std::cerr << rect.width() << std::endl;
+
+    // p.drawText(rect.topLeft(), text);
+    // p.drawText(rect.topRight(), text);
+    // p.drawText(rect.bottomLeft(), text);
+    // p.drawText(rect.bottomLeft(), text);
 
     screen.render();
 

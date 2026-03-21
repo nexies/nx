@@ -30,6 +30,12 @@ add_library(nx_core
         include/nx/core/meta/MetaProperty.hpp
         include/nx/core/meta/enum_flags.hpp
         include/nx/core/meta/enum.hpp
+
+        src/asio/context/context.cpp
+        src/asio/context/context_impl.hpp
+        src/asio/context/context_impl.cpp
+        src/asio/backend/backend.cpp
+        src/asio/backend/backend_epoll.inl
 )
 
 if(WIN32)

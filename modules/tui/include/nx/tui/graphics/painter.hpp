@@ -25,7 +25,7 @@ namespace nx::tui {
         Color background_color_;
         PixelStyle pixel_style_;
 
-        [[nodiscard]] constexpr point_type
+        [[nodiscard]] point_type
         _projectPoint (const point_type & pos) const;
 
     public:

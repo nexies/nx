@@ -29,7 +29,7 @@ option (NX_BUILD_TESTS "Build tests" ON)
 
 list (APPEND CMAKE_MODULE_PATH "${NX_MODULE_PATH}")
 
-add_library (nx INTERFACE )
+add_library (nx INTERFACE)
 add_library (nx::nx ALIAS nx)
 
 include(nxVersionInfo)
