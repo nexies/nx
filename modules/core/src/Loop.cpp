@@ -2,7 +2,7 @@
 // Created by nexie on 13.11.2025.
 //
 
-#include <boost/asio/local/basic_endpoint.hpp>
+// #include <boost/asio/local/basic_endpoint.hpp>
 
 #include <nx/core/detail/logger_defs.hpp>
 #include <nx/core/Loop.hpp>

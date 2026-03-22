@@ -5,7 +5,7 @@
 #include <iostream>
 #include <nx/core/Thread.hpp>
 #include <mutex>
-#include <boost/asio.hpp>
+// #include <boost/asio.hpp>
 
 #include <nx/core.hpp>
 #include <nx/core/Loop.hpp>

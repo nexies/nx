@@ -14,9 +14,10 @@
 #include <thread>
 #include <unordered_map>
 #include <unordered_set>
-#include <boost/asio/io_context.hpp>
-#include <boost/asio/executor_work_guard.hpp>
+// #include <boost/asio/io_context.hpp>
+// #include <boost/asio/executor_work_guard.hpp>
 
+#include <nx/core/asio/context/context.hpp>
 
 namespace nx
 {
@@ -35,26 +36,27 @@ namespace nx
         friend class ::nx::Signal;
         friend class ::nx::Loop;
 
-        using Context = boost::asio::io_context;
+        using Context = ::nx::asio::Context;
         struct ContextLocker
         {
-            using Guard = boost::asio::executor_work_guard<Context::executor_type>;
-            std::unique_ptr<Guard> guard { nullptr };
+            // using Guard = boost::asio::executor_work_guard<Context::executor_type>;
+            // std::unique_ptr<Guard> guard { nullptr };
             Context & context;
 
             explicit ContextLocker(Context & context) : context(context) {};
             void lock ()
             {
-                if (!guard)
-                    guard = std::make_unique<Guard>(boost::asio::make_work_guard(context));
+                // if (!guard)
+                    // guard = std::make_unique<Guard>(boost::asio::make_work_guard(context));
             }
             void unlock ()
             {
-                if (guard)
-                {
-                    guard->reset();
-                    guard.reset(nullptr);
-                }
+                // if (guard)
+                // {
+                    // guard->reset();
+                    // guard.reset(nullptr);
+                // }
+                context.stop();
             }
         };
 
@@ -100,8 +102,8 @@ namespace nx
         Loop* loop() const;
         Context & context();
 
-        void setSigmaskBlock(sigset_t& set);
-        void setSigmaskAllow(sigset_t& set);
+        // void setSigmaskBlock(sigset_t& set);
+        // void setSigmaskAllow(sigset_t& set);
 
     protected:
         void _sleepImpl(Duration);

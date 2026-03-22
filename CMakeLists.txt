@@ -37,7 +37,7 @@ include(nxVersionInfo)
 add_subdirectory(modules)
 
 #add_subdirectory(third-party/FTXUI)
-#add_subdirectory(third-party/spdlog)
+add_subdirectory(third-party/spdlog)
 
 if(NX_BUILD_EXAMPLES)
     add_subdirectory(examples)

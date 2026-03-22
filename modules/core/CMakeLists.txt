@@ -41,11 +41,11 @@ add_library(nx_core
         include/nx/core/detail/os_defs.hpp
 )
 
-if(WIN32)
-    set(Boost_DIR C:\\devel\\boost_1_75_0\\stage\\x86_64\\lib\\cmake)
-endif()
+#if(WIN32)
+#    set(Boost_DIR C:\\devel\\boost_1_75_0\\stage\\x86_64\\lib\\cmake)
+#endif()
 
-find_package(Boost COMPONENTS REQUIRED program_options system HINTS C:\\devel\\boost_1_75_0\\stage\\x86_64\\lib\\cmake)
+#find_package(Boost COMPONENTS REQUIRED program_options system HINTS C:\\devel\\boost_1_75_0\\stage\\x86_64\\lib\\cmake)
 
 if (NX_ENABLE_CXX_20_FEATURES)
     target_compile_definitions(nx_core PUBLIC -D__nx_cxx_20_features)
@@ -55,13 +55,13 @@ if (NX_ENABLE_CXX_20_FEATURES)
 endif()
 
 #find_package(spdlog)
-find_package(spdlog)
+#find_package(spdlog)
 
 target_link_libraries(nx_core PUBLIC
         nx::macro
         spdlog::spdlog
-        Boost::program_options
-        Boost::system
+#        Boost::program_options
+#        Boost::system
 )
 
 
@@ -75,3 +75,4 @@ nx_make_module(
         HEADERS_BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
+add_subdirectory(tests)

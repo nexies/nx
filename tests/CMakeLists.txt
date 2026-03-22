@@ -31,7 +31,7 @@ add_executable(nx_macro_tests
         macro-tests/main.test.cpp
         macro-tests/tuple.test.cpp
         macro-tests/limits.test.cpp
-        core-test-func/asio_context.cpp
+        ../modules/core/tests/asio_context.cpp
 )
 catch_discover_tests(nx_macro_tests)
 

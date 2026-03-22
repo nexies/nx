@@ -5,7 +5,7 @@
 #ifndef NX_APP_HPP
 #define NX_APP_HPP
 
-#include <boost/asio/error.hpp>
+// #include <boost/asio/error.hpp>
 #include <nx/core/Object.hpp>
 #include <nx/core/types/Singleton.hpp>
 
