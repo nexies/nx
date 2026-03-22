@@ -86,7 +86,26 @@ namespace nx::asio {
         std::atomic_bool running_ { false };
         std::thread::id owner_thread_id {};
 
-        //TODO: timers
+        struct TimerOp {
+            TimePoint expiry;
+            Task task;
+            bool canceled;
+            TimerId id;
+        };
+
+        // struct TimerOpCmp {
+        //     bool operator < (const TimerOp & left, const TimerOp & right) {
+        //         return left.expiry < right.expiry;
+        //     }
+        // };
+
+        std::priority_queue<std::shared_ptr<TimerOp>,
+                            std::vector<std::shared_ptr<TimerOp>>,
+                            std::greater<>> timers_;
+
+        std::unordered_map<std::uint64_t, std::shared_ptr<TimerOp>> timer_storage_;
+        TimerId next_timer_id_ { 0 };
+
     };
 }
 

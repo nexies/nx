@@ -36,6 +36,9 @@ add_library(nx_core
         src/asio/context/context_impl.cpp
         src/asio/backend/backend.cpp
         src/asio/backend/backend_epoll.inl
+        src/asio/backend/backend_iocp.inl
+        src/asio/backend/backend_kevent.inl
+        include/nx/core/detail/os_defs.hpp
 )
 
 if(WIN32)

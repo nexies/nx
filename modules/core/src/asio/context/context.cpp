@@ -24,7 +24,7 @@ namespace nx::asio {
     }
 
     std::size_t Context::run() {
-        return impl_->run();
+        return impl_->run(std::nullopt);
     }
 
     std::size_t Context::runOnce() {
@@ -32,11 +32,11 @@ namespace nx::asio {
     }
 
     std::size_t Context::runFor(Duration duration) {
-        return impl_->runFor(duration);
+        return impl_->run(duration);
     }
 
     std::size_t Context::runUntil(TimePoint time_point) {
-        return impl_->runFor(time_point - Clock::now());
+        return impl_->run(time_point - Clock::now());
     }
 
     std::size_t Context::poll() {

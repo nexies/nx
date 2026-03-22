@@ -32,6 +32,9 @@ namespace nx::asio {
         virtual std::size_t
         wait (BackendEvent * out, std::size_t capacity, std::optional<duration_type> timeout) = 0;
 
+        virtual std::size_t
+        poll (BackendEvent * out, std::size_t capacity);
+
         static std::unique_ptr<Backend> CreateBackend();
     };
 }

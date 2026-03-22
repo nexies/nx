@@ -15,11 +15,11 @@
 #include "nx/core/detail/units.hpp"
 
 namespace nx::asio {
-    class BackendEpoll : public Backend {
+    class EpollBackend : public Backend {
         NativeHandle epoll_fd_;
         NativeHandle event_fd_;
     public:
-        BackendEpoll () {
+        EpollBackend () {
             epoll_fd_ = epoll_create1(0);
             if (epoll_fd_ == -1) {
                 throw std::runtime_error("epoll_create1 failed");
@@ -39,7 +39,7 @@ namespace nx::asio {
             }
         }
 
-        ~BackendEpoll() override {
+        ~EpollBackend() override {
             close(epoll_fd_);
             close(event_fd_);
         }

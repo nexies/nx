@@ -8,9 +8,13 @@
 #include "backend_iocp.inl"
 
 namespace nx::asio {
+    std::size_t Backend::poll(BackendEvent *out, std::size_t capacity) {
+        return wait(out, capacity, Duration(0));
+    }
+
     std::unique_ptr<Backend> Backend::CreateBackend() {
 #if defined(NX_CORE_ASIO_BACKEND_EPOLL_INL)
-        return std::make_unique<BackendEpoll>();
+        return std::make_unique<EpollBackend>();
 #elif defined (NX_CORE_ASIO_BACKEND_KEVENT_INL)
         // return std::make_unique<>()
 #endif

@@ -1,4 +1,6 @@
-#if !defined(NX_CORE_ASIO_BACKEND_KEVENT_INL) && defined(TARGET_OS_MAC)
+#include <nx/core/detail/os_defs.hpp>
+
+#if !defined(NX_CORE_ASIO_BACKEND_KEVENT_INL) && defined(NX_OS_MACOS)
 #define NX_CORE_ASIO_BACKEND_KEVENT_INL
 
 #include <iostream>
@@ -14,9 +16,9 @@
 
 namespace nx::asio {
 
-class BackendKEvent : public Backend {
+class KEventBackend : public Backend {
 public:
-    BackendKEvent() {
+    KEventBackend() {
         // Создаём kqueue
         kqueue_fd_ = kqueue();
         if (kqueue_fd_ == -1) {
@@ -24,7 +26,7 @@ public:
         }
     }
 
-    ~BackendKEvent() override {
+    ~KEventBackend() override {
         if (kqueue_fd_ != -1)
             close(kqueue_fd_);
     }
@@ -70,10 +72,10 @@ public:
     }
 
     void wake() override {
-        uint64_t one = 1;
-        if (write(event_fd_, &one, sizeof(one)) != sizeof(one)) {
-            throw std::runtime_error("Failed to wakeup eventfd");
-        }
+        // uint64_t one = 1;
+        // if (write(event_fd_, &one, sizeof(one)) != sizeof(one)) {
+            // throw std::runtime_error("Failed to wakeup eventfd");
+        // }
     }
 
     std::size_t wait(BackendEvent* out, std::size_t capacity, std::optional<std::chrono::steady_clock::duration> timeout) override {
@@ -95,9 +97,18 @@ public:
         for (int i = 0; i < event_count; ++i) {
             // out[i].events. = events[i].ident;
             out[i].token = events[i].udata;
-            out[i].events = (events[i].filter == EVFILT_READ) ? IOEvent::Read : IOInterest::Write;
+            // out[i].events = (events[i].filter == EVFILT_READ) ? IOEvent::Read : IOInterest::Write;
+            if (events[i].filter == EVFILT_READ)
+                out[i].events = IOEvent::Read;
+            else if (events[i].filter == EVFILT_WRITE)
+                out[i].events = IOEvent::Write;
+            else if (events[i].filter == EVFILT_EXCEPT)
+                out[i].events = IOEvent::Error;
+            // if (events[i].filter == EVFILT_)
+            // if (events[i].)
+            else
+                out[i].events = IOEvent::Wakeup;
         }
-
         return event_count;
     }
 
