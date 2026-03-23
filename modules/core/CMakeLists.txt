@@ -39,13 +39,21 @@ add_library(nx_core
         src/asio/backend/backend_iocp.inl
         src/asio/backend/backend_kevent.inl
         include/nx/core/detail/os_defs.hpp
+        include/nx/core/asio/reactor/reactor.hpp
+        include/nx/core/asio/steady_timer.hpp
+        src/asio/steady_timer.cpp
+        include/nx/core/asio/signal_set.hpp
+        include/nx/core/asio/backend/reactor_handle.hpp
+        src/asio/signal_set/signal_set.cpp
+        src/asio/signal_set/signal_set_impl.hpp
+        src/asio/signal_set/signal_set_impl.cpp
 )
 
 #if(WIN32)
 #    set(Boost_DIR C:\\devel\\boost_1_75_0\\stage\\x86_64\\lib\\cmake)
 #endif()
 
-#find_package(Boost COMPONENTS REQUIRED program_options system HINTS C:\\devel\\boost_1_75_0\\stage\\x86_64\\lib\\cmake)
+find_package(Boost COMPONENTS REQUIRED program_options system HINTS C:\\devel\\boost_1_75_0\\stage\\x86_64\\lib\\cmake)
 
 if (NX_ENABLE_CXX_20_FEATURES)
     target_compile_definitions(nx_core PUBLIC -D__nx_cxx_20_features)
@@ -55,13 +63,13 @@ if (NX_ENABLE_CXX_20_FEATURES)
 endif()
 
 #find_package(spdlog)
-#find_package(spdlog)
+find_package(spdlog)
 
 target_link_libraries(nx_core PUBLIC
         nx::macro
         spdlog::spdlog
-#        Boost::program_options
-#        Boost::system
+        Boost::program_options
+        Boost::system
 )
 
 

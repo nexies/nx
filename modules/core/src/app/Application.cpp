@@ -9,7 +9,6 @@
 #include <nx/core/Loop.hpp>
 #include <nx/core/detail/logger_defs.hpp>
 
-#include <boost/asio/signal_set.hpp>
 #include "spdlog/pattern_formatter.h"
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/ringbuffer_sink.h>
@@ -18,7 +17,11 @@
 #include <spdlog/details/log_msg.h>
 #include <spdlog/common-inl.h>
 
-boost::asio::signal_set * g_signal_set;
+// #include <boost/asio/signal_set.hpp>
+#include <nx/core/asio/signal_set.hpp>
+
+// boost::asio::signal_set * g_signal_set;
+nx::asio::SignalSet * g_signal_set;
 
 namespace
 {
@@ -226,7 +229,8 @@ namespace nx::core
         if (!thread())
             return Result::Err("Application::_asyncWaitSIGNAL: Thread is not initialized");
 
-        g_signal_set = new boost::asio::signal_set(thread()->context());
+        // g_signal_set = new boost::asio::signal_set(thread()->context());
+        g_signal_set = new nx::asio::SignalSet(Thread::CurrentContext());
 
         g_signal_set->add(SIGINT);
         g_signal_set->add(SIGTERM);
@@ -242,7 +246,7 @@ namespace nx::core
         g_signal_set->add(SIGWINCH);
         // signals->add(SIGALRM);
 
-        g_signal_set->async_wait(_asyncWaitSIGNAL);
+        g_signal_set->asyncWait(_asyncWaitSIGNAL);
         return Result::Ok();
     }
 
@@ -254,17 +258,14 @@ namespace nx::core
         return res;
     }
 
-    void Application::_asyncWaitSIGNAL(const boost::system::error_code & er, int signal_code)
+    void Application::_asyncWaitSIGNAL(/*const boost::system::error_code & er,*/ int signal_code)
     {
-        if (!s_instance)
-            nxCritical("Error in asyncWaitSIGNAL: Application is not initialized");
-
-        if (!er)
+        if (s_instance)
             s_instance->_onSIGNAL(signal_code);
         else
-            nxError("Error in asyncWaitSIGNAL: {}", er.what());
+            nxCritical("Error in asyncWaitSIGNAL: Application is not initialized");
 
-        g_signal_set->async_wait(_asyncWaitSIGNAL);
+        g_signal_set->asyncWait(_asyncWaitSIGNAL);
     }
 
     void Application::_closeThreads(int exit_code) {

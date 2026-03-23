@@ -93,7 +93,7 @@ namespace nx::asio {
 
         std::size_t wait(BackendEvent *out, std::size_t capacity, std::optional<duration_type> timeout) override {
             int timeout_ms = timeout ? std::chrono::duration_cast<Milliseconds>(timeout.value()).count() : -1;
-            epoll_event events [capacity];
+            auto * events = static_cast<epoll_event *>(malloc(capacity * sizeof(epoll_event)));
 
             int n = epoll_wait(epoll_fd_, events, static_cast<int>(capacity), timeout_ms);
 
@@ -106,6 +106,9 @@ namespace nx::asio {
             for (int i = 0; i < n; i++) {
                 BackendEvent & ev = out[event_count++];
                 ev.token = events[i].data.ptr;
+                ev.identity = events[i].data.fd;
+                ev.u32 = events[i].data.u32;
+                ev.u64 = events[i].data.u64;
 
                 if (events[i].events & EPOLLIN)
                     ev.events = IOEvent::Read;
@@ -115,10 +118,13 @@ namespace nx::asio {
                     ev.events = IOEvent::Error;
                 if (events[i].events & EPOLLHUP)
                     ev.events = IOEvent::Hangup;
-                if (events[i].data.fd == epoll_fd_)
+                if (events[i].events & EPOLLWAKEUP)
+                    ev.events = IOEvent::Wakeup;
+                if (events[i].data.fd == event_fd_)
                     ev.events = IOEvent::Wakeup;
             }
 
+            free(events);
             return event_count;
         }
     };

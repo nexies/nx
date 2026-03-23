@@ -76,8 +76,8 @@ bool Timer::_set()
         return false;
     }
 
-    uint64_t microsecs = std::chrono::duration_cast<std::chrono::microseconds>(duration()).count();
-    timer = std::make_unique<timer_type>(thread()->context(), boost::posix_time::microseconds(microsecs));
+    // uint64_t microsecs = std::chrono::duration_cast<std::chrono::microseconds>(duration()).count();
+    timer = std::make_unique<timer_type>(thread()->context());
     if (!timer)
     {
         nxError("Failed to set a timer");
@@ -85,21 +85,21 @@ bool Timer::_set()
     }
 
     reps_left = reps;
-    timer->async_wait(std::bind(&Timer::_OnTimeout, this, std::placeholders::_1));
+    timer->asyncWait(duration(), std::bind(&Timer::_OnTimeout, this));
     return true;
 }
 
 void Timer::_unset()
 {
-    if (timer)
+    if (timer && timer->running())
     {
         timer->cancel();
-        timer.reset(nullptr);
     }
+    timer.reset(nullptr);
     reps_left = 0;
 }
 
-void Timer::_OnTimeout(Timer* timer, const boost::system::error_code& e)
+void Timer::_OnTimeout(Timer* timer/*, const boost::system::error_code& e*/)
 {
     NX_EMIT(timer->timeout)
     timer->_unset();

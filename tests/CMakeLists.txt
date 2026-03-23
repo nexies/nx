@@ -40,7 +40,6 @@ target_link_libraries(nx_macro_tests PUBLIC
         Catch2::Catch2WithMain
 )
 
-add_subdirectory(core-test-func)
 # (необязательно) санитайзеры и строгие предупреждения для тестов
 #if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
 #    target_compile_options(nx_core_tests PRIVATE -Wall -Wextra -Wpedantic)

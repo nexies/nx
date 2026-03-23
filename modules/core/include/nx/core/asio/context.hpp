@@ -11,9 +11,14 @@
 namespace nx::asio {
 
     class Backend;
+    class SteadyTimer;
 
     class Context {
     public:
+        friend class Reactor;
+        friend class SteadyTimer;
+        friend class SignalSet;
+
         using Task = std::function<void()>;
 
         Context ();

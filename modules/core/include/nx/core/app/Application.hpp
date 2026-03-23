@@ -5,7 +5,7 @@
 #ifndef NX_APP_HPP
 #define NX_APP_HPP
 
-// #include <boost/asio/error.hpp>
+#include <boost/asio/error.hpp>
 #include <nx/core/Object.hpp>
 #include <nx/core/types/Singleton.hpp>
 
@@ -43,7 +43,7 @@ namespace nx::core
         Result _beginAsyncWaitSIGNAL ();
         Result _startEventLoop ();
 
-        static void _asyncWaitSIGNAL (const boost::system::error_code & er, int signal_code);
+        static void _asyncWaitSIGNAL (/*const boost::system::error_code & er,*/ int signal_code);
         void _closeThreads (int exit_code);
         void _doExit (int code);
         void _removeMainThread ();

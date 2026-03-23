@@ -184,7 +184,8 @@ NativeThreadId Thread::getNativeId() const
 
 bool Thread::schedule(Signal && signal)
 {
-    boost::asio::post(io_context, [signal] () { signal.activate(); });
+    // boost::asio::post(io_context, [signal] () { signal.activate(); });
+    io_context.post([signal] () { signal.activate(); });
     return true;
 }
 

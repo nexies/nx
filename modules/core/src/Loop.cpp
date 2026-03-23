@@ -65,7 +65,7 @@ Result Loop::processEventsFor(Duration dur)
     size_t count = 0;
     try
     {
-        count = thread()->context().run_for(dur);
+        count = thread()->context().runFor(dur);
     } catch ( boost::system::error_code & e ) {
         return Result::Err(fmt::format ("Process events error: {}", e.what()));
     } catch ( std::exception & e ) {

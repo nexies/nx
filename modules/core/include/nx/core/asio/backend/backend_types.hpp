@@ -70,9 +70,13 @@ namespace nx::asio {
         return static_cast<IOEvent>(static_cast<U>(a) ^ static_cast<U>(b));
     }
 
+
     struct BackendEvent {
         void * token = nullptr;
+        NativeHandle identity { 0 };
         IOEvent events = IOEvent::None;
+        uint64_t u64 { 0 };
+        uint32_t u32 { 0 };
     };
 
     using Clock = std::chrono::system_clock;
@@ -80,6 +84,7 @@ namespace nx::asio {
     using TimePoint = Clock::time_point;
 
     using TimerId = ::nx::TimerId;
+
 }
 
 #endif //NX_ASIO_BACKEND_TYPES_HPP

@@ -75,30 +75,32 @@ int main(int argc, char * argv[]) {
     using namespace nx;
     fprintf(stdout, "main: begin\n");
 
-    using namespace run_before_main;
-
-    std::cerr << TestObject::m_propertydescriptor << std::endl;
-    std::cerr << MetaProperty<TestObject>::Instance().vec.size() << std::endl;
-
-    // std::cerr << run_before_main::TestObject::m_propertydescriptor::name;
     // App::Init(argc, argv);
 
-    Timer timer;
-    TimeoutReceiver receiver;
+    // using namespace run_before_main;
 
-    nx::connect(&timer, &Timer::timeout,
-        &receiver, &TimeoutReceiver::receivedTimeout, Connection::Queued);
-    nx::connect(&timer, &Timer::timeout,
-        &receiver, &TimeoutReceiver::receivedTimeout, Connection::Queued);
+    // std::cerr << TestObject::m_propertydescriptor << std::endl;
+    // std::cerr << MetaProperty<TestObject>::Instance().vec.size() << std::endl;
 
-    nx::connect(&receiver, &TimeoutReceiver::receivedTimeout,
-                &receiver, &TimeoutReceiver::onTimeout);
+    // std::cerr << run_before_main::TestObject::m_propertydescriptor::name;
+    App::Init(argc, argv);
 
-    timer.setDuration(Milliseconds(500));
-    timer.setType(Timer::Type::Periodic);
-    timer.startNow();
+    // Timer timer;
+    // TimeoutReceiver receiver;
+    //
+    // nx::connect(&timer, &Timer::timeout,
+    //     &receiver, &TimeoutReceiver::receivedTimeout, Connection::Queued);
+    // nx::connect(&timer, &Timer::timeout,
+    //     &receiver, &TimeoutReceiver::receivedTimeout, Connection::Queued);
+    //
+    // nx::connect(&receiver, &TimeoutReceiver::receivedTimeout,
+    //             &receiver, &TimeoutReceiver::onTimeout);
+    //
+    // timer.setDuration(Milliseconds(500));
+    // timer.setType(Timer::Type::Periodic);
+    // timer.startNow();
 
-    // auto res = App::Exec();
-    // return res;
+    auto res = App::Exec();
+    return res;
     return 0;
 }

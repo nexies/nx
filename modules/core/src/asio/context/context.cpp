@@ -2,7 +2,7 @@
 // Created by nexie on 21.03.2026.
 //
 
-#include <nx/core/asio/context/context.hpp>
+#include <nx/core/asio/context.hpp>
 #include "nx/core/asio/backend/backend.hpp"
 #include "context_impl.hpp"
 

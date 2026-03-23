@@ -27,6 +27,12 @@ namespace nx
     using ThreadHandle      = std::thread::native_handle_type;
     using TimerId           = size_t;
 
+    static constexpr TimerId
+    g_invalidTimerId = std::numeric_limits<TimerId>::max();
+
+    static constexpr TimerId
+    nextTimerId(TimerId & tid) { while (tid++ == g_invalidTimerId) {}; return tid; }
+
     using small_size_t      = unsigned short int;
 }
 

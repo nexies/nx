@@ -7,46 +7,54 @@
 // #include <bits/valarray_array.h>
 
 #include "nx/core/asio/backend/backend.hpp"
+#include "nx/core/asio/backend/reactor_handle.hpp"
 
 
-namespace nx::asio {
+namespace nx::asio
+{
     Context::Impl::Impl(std::unique_ptr<Backend> backend)
         : backend_(std::move(backend))
-        , stopped_(false)
-        , running_(false)
+          , stopped_(false)
+          , running_(false)
     {
     }
 
-    Context::Impl::~Impl() {
+    Context::Impl::~Impl()
+    {
         stop();
     }
 
-    void Context::Impl::post(Task task) {
+    void Context::Impl::post(Task task)
+    {
         std::lock_guard lg(incoming_mutex_);
         ready_.push_back(std::move(task));
         backend_->wake();
     }
 
-    void Context::Impl::dispatch(Task task) {
+    void Context::Impl::dispatch(Task task)
+    {
         if (runningInThisThread())
             task();
         else
             post(std::move(task));
     }
 
-    std::size_t Context::Impl::runOnce() {
+    std::size_t Context::Impl::runOnce()
+    {
     }
 
-    std::size_t Context::Impl::run(std::optional<Duration> duration) {
+    std::size_t Context::Impl::run(std::optional<Duration> duration)
+    {
         running_.store(true, std::memory_order_release);
 
         {
-            std::lock_guard lg {state_mutex_};
+            std::lock_guard lg{state_mutex_};
             owner_thread_id = std::this_thread::get_id();
         }
 
-        std::size_t tasks_processed { 0 };
-        while (!stopped_.load(std::memory_order_acquire)) {
+        std::size_t tasks_processed{0};
+        while (!stopped_.load(std::memory_order_acquire))
+        {
             drainExpiredTimers();
             tasks_processed += executeReady();
 
@@ -61,37 +69,61 @@ namespace nx::asio {
         return tasks_processed;
     }
 
-    std::size_t Context::Impl::poll() {
+    std::size_t Context::Impl::poll()
+    {
+        running_.store(true, std::memory_order_release);
+
+        {
+            std::lock_guard lg{state_mutex_};
+            owner_thread_id = std::this_thread::get_id();
+        }
+
+        std::size_t tasks_processed{0};
+        drainExpiredTimers();
+        tasks_processed += executeReady();
+
+        BackendEvent events[64];
+        auto event_count = backend_->wait(events, 64, Duration::zero());
+        processBackendEvents(events, event_count);
+        running_.store(false);
+        return tasks_processed;
     }
 
-    std::size_t Context::Impl::pollOnce() {
+    std::size_t Context::Impl::pollOnce()
+    {
     }
 
-    void Context::Impl::stop() {
+    void Context::Impl::stop()
+    {
         stopped_.store(true, std::memory_order_release);
         backend_->wake();
     }
 
-    void Context::Impl::restart() {
+    void Context::Impl::restart()
+    {
         stopped_.store(false, std::memory_order_release);
         backend_->wake();
     }
 
-    bool Context::Impl::stopped() const noexcept {
+    bool Context::Impl::stopped() const noexcept
+    {
         return stopped_.load(std::memory_order_acquire);
     }
 
-    bool Context::Impl::runningInThisThread() const noexcept {
+    bool Context::Impl::runningInThisThread() const noexcept
+    {
         if (!running_.load(std::memory_order_acquire))
             return false;
         {
-            std::lock_guard lg {state_mutex_};
+            std::lock_guard lg{state_mutex_};
             return (std::this_thread::get_id() == owner_thread_id);
         }
     }
 
-    nx::TimerId Context::Impl::createTimer(TimePoint expiry, Task task) {
-        auto id = next_timer_id_++;
+    nx::TimerId Context::Impl::createTimer(TimePoint expiry, Task task)
+    {
+        // auto id = next_timer_id_++;
+        auto id = nextTimerId(next_timer_id_);
         auto timer_op = std::make_shared<TimerOp>(expiry, task, false, id);
 
         if (!timer_op)
@@ -104,29 +136,47 @@ namespace nx::asio {
         return id;
     }
 
-    void Context::Impl::cancelTimer(TimerId id) {
-        timer_storage_[id]->canceled = true;
+    void Context::Impl::cancelTimer(TimerId id)
+    {
+        if (timer_storage_.find(id) != timer_storage_.end())
+        {
+            auto& ts = timer_storage_[id];
+            if (ts)
+                ts->canceled = true;
+        }
     }
 
-    void Context::Impl::registerReactorHandle(NativeHandle handle, void *token, IOInterest interest) {
+    void Context::Impl::registerReactorHandle(NativeHandle handle, void* token, IOInterest interest)
+    {
+        backend_->add(handle, token, interest);
+        backend_->wake();
     }
 
-    void Context::Impl::modifyReactorHandle(NativeHandle handle, void *token, IOInterest interest) {
+    void Context::Impl::modifyReactorHandle(NativeHandle handle, void* token, IOInterest interest)
+    {
+        backend_->modify(handle, token, interest);
+        backend_->wake();
     }
 
-    void Context::Impl::unregisterReactorHandle(NativeHandle handle, void *token, IOInterest interest) {
+    void Context::Impl::unregisterReactorHandle(NativeHandle handle)
+    {
+        backend_->remove(handle);
+        backend_->wake();
     }
 
-    void Context::Impl::drainIncoming() {
+    void Context::Impl::drainIncoming()
+    {
     }
 
-    void Context::Impl::drainExpiredTimers() {
+    void Context::Impl::drainExpiredTimers()
+    {
         auto now = Clock::now();
-        while (!timers_.empty()) {
+        while (!timers_.empty())
+        {
             if (timers_.top()->expiry > now)
                 break;
 
-            auto & top = timers_.top();
+            auto& top = timers_.top();
             if (!top->canceled)
                 post(std::move(top->task));
 
@@ -135,13 +185,15 @@ namespace nx::asio {
         }
     }
 
-    std::optional<Duration> Context::Impl::computeWaitTimeout(std::optional<Duration> max_duration) const {
+    std::optional<Duration> Context::Impl::computeWaitTimeout(std::optional<Duration> max_duration) const
+    {
         std::optional<Duration> out = std::nullopt;
 
         if (!timers_.empty())
             out = timers_.top()->expiry - Clock::now();
 
-        if (max_duration.has_value()) {
+        if (max_duration.has_value())
+        {
             out = out.value_or(max_duration.value());
             out = out > max_duration ? max_duration : out;
         }
@@ -149,16 +201,18 @@ namespace nx::asio {
         return out;
     }
 
-    std::size_t Context::Impl::executeReady() {
+    std::size_t Context::Impl::executeReady()
+    {
         std::deque<Task> tasks_to_execute;
-        std::size_t tasks_processed { 0 };
+        std::size_t tasks_processed{0};
 
         {
-            std::lock_guard lg (incoming_mutex_);
+            std::lock_guard lg(incoming_mutex_);
             std::swap(tasks_to_execute, ready_);
         }
 
-        for (auto & task : tasks_to_execute) {
+        for (auto& task : tasks_to_execute)
+        {
             task();
             tasks_processed++;
         }
@@ -167,7 +221,16 @@ namespace nx::asio {
         return tasks_processed;
     }
 
-    void Context::Impl::processBackendEvents(BackendEvent *events, std::size_t count) {
+    void Context::Impl::processBackendEvents(BackendEvent* events, std::size_t count)
+    {
+        for (auto i = 0; i < count; i++)
+        {
+            if (events[i].events == IOEvent::Wakeup)
+            {
+                continue;
+            }
 
+            reinterpret_cast<ReactorHandler*>(events[i].token)->react(events[i].events);
+        }
     }
 }

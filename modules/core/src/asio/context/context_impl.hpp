@@ -5,12 +5,13 @@
 #ifndef NX_ASIO_CONTEXT_IMPL_HPP
 #define NX_ASIO_CONTEXT_IMPL_HPP
 
-#include <nx/core/asio/context/context.hpp>
+#include <nx/core/asio/context.hpp>
 #include <nx/core.hpp>
 
 #include "nx/core/asio/backend/backend_types.hpp"
 
 namespace nx::asio {
+
 
     class Context::Impl {
     public:
@@ -56,7 +57,7 @@ namespace nx::asio {
         void
         modifyReactorHandle(NativeHandle handle, void * token, IOInterest interest);
         void
-        unregisterReactorHandle(NativeHandle handle, void * token, IOInterest interest);
+        unregisterReactorHandle(NativeHandle handle);
 
     private:
         void

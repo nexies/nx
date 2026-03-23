@@ -17,7 +17,7 @@
 // #include <boost/asio/io_context.hpp>
 // #include <boost/asio/executor_work_guard.hpp>
 
-#include <nx/core/asio/context/context.hpp>
+#include <nx/core/asio/context.hpp>
 
 namespace nx
 {
@@ -37,6 +37,7 @@ namespace nx
         friend class ::nx::Loop;
 
         using Context = ::nx::asio::Context;
+        // using Context = boost::asio::io_context;
         struct ContextLocker
         {
             // using Guard = boost::asio::executor_work_guard<Context::executor_type>;
@@ -118,7 +119,8 @@ namespace nx
 
         // SignalQueue signal_queue;
         // Loop* current_loop{nullptr};
-        Context io_context { 1 };
+        // Context io_context { 1 };
+        Context io_context { };
         ContextLocker context_locker { io_context };
         std::stack<Loop *> loops;
 
