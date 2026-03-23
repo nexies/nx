@@ -15,8 +15,10 @@ namespace nx::asio {
 
 # ifdef _WIN32
     using NativeHandle = void *;
+    constexpr static NativeHandle g_nullHandle = NULL;
 #else
     using NativeHandle = int;
+    constexpr static NativeHandle g_nullHandle = 0;
 # endif
 
     enum class IOInterest : std::uint32_t {

@@ -7,8 +7,6 @@
 
 #include "backend_types.hpp"
 
-// https://chatgpt.com/c/69bdaf35-92fc-8386-be74-8228228f75a8
-
 namespace nx::asio {
 
     class Backend {

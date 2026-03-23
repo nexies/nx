@@ -18,6 +18,7 @@ namespace nx::asio {
         friend class Reactor;
         friend class SteadyTimer;
         friend class SignalSet;
+        friend class HandleNotifier;
 
         using Task = std::function<void()>;
 

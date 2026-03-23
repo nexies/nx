@@ -47,6 +47,10 @@ add_library(nx_core
         src/asio/signal_set/signal_set.cpp
         src/asio/signal_set/signal_set_impl.hpp
         src/asio/signal_set/signal_set_impl.cpp
+        include/nx/core/asio/handle_notifier.hpp
+        src/asio/handle_notifier/handle_notifier.cpp
+        src/asio/handle_notifier/handle_notifier_impl.cpp
+        src/asio/handle_notifier/handle_notifier_impl.hpp
 )
 
 #if(WIN32)
@@ -68,8 +72,6 @@ find_package(spdlog)
 target_link_libraries(nx_core PUBLIC
         nx::macro
         spdlog::spdlog
-        Boost::program_options
-        Boost::system
 )
 
 

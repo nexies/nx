@@ -6,7 +6,7 @@
 #define NX_TUI_RECT_HPP
 
 #include <type_traits>
-#include <nx/tui/types/Size.hpp>
+#include <nx/tui/types/size.hpp>
 
 #include "point.hpp"
 
