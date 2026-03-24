@@ -31,26 +31,25 @@ add_library(nx_core
         include/nx/core/meta/enum_flags.hpp
         include/nx/core/meta/enum.hpp
 
-        src/asio/context/context.cpp
-        src/asio/context/context_impl.hpp
-        src/asio/context/context_impl.cpp
-        src/asio/backend/backend.cpp
-        src/asio/backend/backend_epoll.inl
-        src/asio/backend/backend_iocp.inl
-        src/asio/backend/backend_kevent.inl
-        include/nx/core/detail/os_defs.hpp
-        include/nx/core/asio/reactor/reactor.hpp
-        include/nx/core/asio/steady_timer.hpp
-        src/asio/steady_timer.cpp
-        include/nx/core/asio/signal_set.hpp
-        include/nx/core/asio/backend/reactor_handle.hpp
-        src/asio/signal_set/signal_set.cpp
-        src/asio/signal_set/signal_set_impl.hpp
-        src/asio/signal_set/signal_set_impl.cpp
-        include/nx/core/asio/handle_notifier.hpp
-        src/asio/handle_notifier/handle_notifier.cpp
-        src/asio/handle_notifier/handle_notifier_impl.cpp
-        src/asio/handle_notifier/handle_notifier_impl.hpp
+#        src/asio/context/context.cpp
+#        src/asio/context/context_impl.hpp
+#        src/asio/context/context_impl.cpp
+#        src/asio/backend/backend.cpp
+#        src/asio/backend/backend_epoll.inl
+#        src/asio/backend/backend_iocp.inl
+#        src/asio/backend/backend_kevent.inl
+#        include/nx/core/detail/os_defs.hpp
+#        include/nx/core/asio/steady_timer.hpp
+#        src/asio/steady_timer.cpp
+#        include/nx/core/asio/signal_set.hpp
+#        include/nx/core/asio/backend/reactor_handle.hpp
+#        src/asio/signal_set/signal_set.cpp
+#        src/asio/signal_set/signal_set_impl.hpp
+#        src/asio/signal_set/signal_set_impl.cpp
+#        include/nx/core/asio/handle_notifier.hpp
+#        src/asio/handle_notifier/handle_notifier.cpp
+#        src/asio/handle_notifier/handle_notifier_impl.cpp
+#        src/asio/handle_notifier/handle_notifier_impl.hpp
 )
 
 #if(WIN32)
@@ -70,6 +69,8 @@ endif()
 find_package(spdlog)
 
 target_link_libraries(nx_core PUBLIC
+        nx::common
+        nx::asio
         nx::macro
         spdlog::spdlog
 )

@@ -57,11 +57,11 @@ function(nx_make_module)
     set(DESC "[${_alias}] -- ")
 
     if(NOT NX_BUILD_MODULE_${_name_up} AND NOT NX_BUILD_MODULE_${_name})
+#        message("${DESC} ignoring absence of NX_BUILD_MODULE_${_name_up} definition...")
         get_property(_all GLOBAL PROPERTY NX_AVAILABLE_COMPONENTS)
         list(APPEND _all "${_name}")
         list(REMOVE_DUPLICATES _all)
         set_property(GLOBAL PROPERTY NX_AVAILABLE_COMPONENTS "${_all}")
-        return()
     endif()
 
     if(NOT TARGET ${_alias})
@@ -111,7 +111,7 @@ function(nx_make_module)
         endif()
 #        message(${DESC} "Headers base dir is set to ${_NX_HEADERS_BASE_DIRS}...")
         list(LENGTH _NX_PUBLIC_HEADERS _headers_count)
-        message(${DESC} "Found ${_headers_count} public headers")
+#        message(${DESC} "Found ${_headers_count} public headers")
         target_sources(${_t}
                 PUBLIC
                 FILE_SET public_headers
@@ -122,7 +122,7 @@ function(nx_make_module)
     endif()
 
     if(_do_fileset)
-        message(${DESC} "Installing using fileset...")
+#        message(${DESC} "Installing using fileset...")
         install(TARGETS ${_t}
                 EXPORT ${NX_EXPORT_SET}
                 FILE_SET public_headers DESTINATION ${NX_INSTALL_INCLUDEDIR}
@@ -141,15 +141,15 @@ function(nx_make_module)
                 INCLUDES DESTINATION ${NX_INSTALL_INCLUDEDIR}
         )
         if(_NX_PUBLIC_HEADERS)
-            message(${DESC} "Has public headers, installing...")
+#            message(${DESC} "Has public headers, installing...")
             install(FILES ${_NX_PUBLIC_HEADERS}
                     DESTINATION ${NX_INSTALL_INCLUDEDIR}
             )
         endif()
     endif()
 
-    message(${DESC} "Path to headers [BUILD]:   ${_NX_HEADERS_BASE_DIRS}")
-    message(${DESC} "Path to headers [INSTALL]: ${NX_INSTALL_INCLUDEDIR}")
+#    message(${DESC} "Path to headers [BUILD]:   ${_NX_HEADERS_BASE_DIRS}")
+#    message(${DESC} "Path to headers [INSTALL]: ${NX_INSTALL_INCLUDEDIR}")
 
     target_include_directories(${_t}
             PUBLIC

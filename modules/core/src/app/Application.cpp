@@ -18,10 +18,10 @@
 #include <spdlog/common-inl.h>
 
 // #include <boost/asio/signal_set.hpp>
-#include <nx/core/asio/signal_set.hpp>
+#include <nx/asio/signal_set.hpp>
 
 // boost::asio::signal_set * g_signal_set;
-nx::asio::SignalSet * g_signal_set;
+nx::asio::signal_set * g_signal_set;
 
 namespace
 {
@@ -73,7 +73,7 @@ namespace nx::core
 
     int Application::exec() {
         auto res = _startEventLoop();
-        _removeMainThread();
+        // _removeMainThread();
         if (!res) {
             nxDebug("Exiting with error code {}: \"\"", res.get_err().code());
             return res.get_err().code();
@@ -230,7 +230,7 @@ namespace nx::core
             return Result::Err("Application::_asyncWaitSIGNAL: Thread is not initialized");
 
         // g_signal_set = new boost::asio::signal_set(thread()->context());
-        g_signal_set = new nx::asio::SignalSet(Thread::CurrentContext());
+        g_signal_set = new nx::asio::signal_set(Thread::CurrentContext());
 
         g_signal_set->add(SIGINT);
         g_signal_set->add(SIGTERM);
@@ -246,7 +246,7 @@ namespace nx::core
         g_signal_set->add(SIGWINCH);
         // signals->add(SIGALRM);
 
-        g_signal_set->asyncWait(_asyncWaitSIGNAL);
+        g_signal_set->async_wait(_asyncWaitSIGNAL);
         return Result::Ok();
     }
 
@@ -265,7 +265,7 @@ namespace nx::core
         else
             nxCritical("Error in asyncWaitSIGNAL: Application is not initialized");
 
-        g_signal_set->asyncWait(_asyncWaitSIGNAL);
+        g_signal_set->async_wait(_asyncWaitSIGNAL);
     }
 
     void Application::_closeThreads(int exit_code) {

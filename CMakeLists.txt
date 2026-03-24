@@ -16,20 +16,20 @@ set (NX_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 set (BUILD_SHARED_LIBS FALSE)
 
-option (NX_BUILD_MODULE_MEMORY "Build nx::memory module" OFF)
-option (NX_BUILD_MODULE_MACRO "Build nx::macro module" ON)
-option (NX_BUILD_MODULE_LOGGER "Build nx::logger module" ON)
-option (NX_BUILD_MODULE_CORE "Build nx::core module" ON)
-option (NX_BUILD_MODULE_APP "Build nx::app module" ON)
-option (NX_BUILD_MODULE_NETWORK "Build nx::network module" ON)
-option (NX_BUILD_MODULE_TUI "Build nx::tui module" ON)
+#option (NX_BUILD_MODULE_MEMORY "Build nx::memory module" OFF)
+#option (NX_BUILD_MODULE_MACRO "Build nx::macro module" ON)
+#option (NX_BUILD_MODULE_LOGGER "Build nx::logger module" ON)
+#option (NX_BUILD_MODULE_CORE "Build nx::core module" ON)
+#option (NX_BUILD_MODULE_APP "Build nx::app module" ON)
+#option (NX_BUILD_MODULE_NETWORK "Build nx::network module" ON)
+#option (NX_BUILD_MODULE_TUI "Build nx::tui module" ON)
 option (NX_ENABLE_CXX_20_FEATURES "Enable std::c++20 features" ON)
 option (NX_BUILD_EXAMPLES "Build examples" ON)
 option (NX_BUILD_TESTS "Build tests" ON)
 
 list (APPEND CMAKE_MODULE_PATH "${NX_MODULE_PATH}")
 
-add_library (nx INTERFACE)
+add_library (nx INTERFACE )
 add_library (nx::nx ALIAS nx)
 
 include(nxVersionInfo)
@@ -43,14 +43,15 @@ if(NX_BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif()
 
-if(NX_BUILD_TESTS)
-    add_subdirectory(tests)
-endif()
+#if(NX_BUILD_TESTS)
+#    add_subdirectory(modules/macro/tests)
+#endif()
 
 get_property(components GLOBAL PROPERTY NX_ENABLED_COMPONENTS)
+string(JOIN ", " _comp_str ${components})
+message("[nx::nx] -- enabled components: ${_comp_str}")
 foreach (comp IN LISTS components)
     target_link_libraries (nx INTERFACE nx::${comp})
-    message (STATUS "Linking component nx::${comp} to nx::nx...")
 endforeach ()
 
 

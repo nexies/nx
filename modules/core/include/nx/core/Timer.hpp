@@ -7,7 +7,7 @@
 
 // #include <boost/asio/deadline_timer.hpp>
 
-#include <nx/core/asio/steady_timer.hpp>
+#include <nx/asio/steady_timer.hpp>
 #include <nx/core/Object.hpp>
 
 namespace nx
@@ -40,7 +40,7 @@ namespace nx
 
     private:
         // using timer_type = boost::asio::deadline_timer;
-        using timer_type = nx::asio::SteadyTimer;
+        using timer_type = nx::asio::steady_timer;
         std::unique_ptr<timer_type> timer;
 
         TimePoint time_started;

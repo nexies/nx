@@ -13,11 +13,8 @@
 
 #include <thread>
 #include <unordered_map>
-#include <unordered_set>
-// #include <boost/asio/io_context.hpp>
-// #include <boost/asio/executor_work_guard.hpp>
 
-#include <nx/core/asio/context.hpp>
+#include <nx/asio/context/io_context.hpp>
 
 namespace nx
 {
@@ -36,7 +33,7 @@ namespace nx
         friend class ::nx::Signal;
         friend class ::nx::Loop;
 
-        using Context = ::nx::asio::Context;
+        using Context = ::nx::asio::io_context;
         // using Context = boost::asio::io_context;
         struct ContextLocker
         {
