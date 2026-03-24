@@ -8,15 +8,13 @@
 #include <stack>
 
 #include <nx/core/Object.hpp>
-#include <nx/core/Signal.hpp>
-#include <nx/core/Singleton.hpp>
+#include <nx/core/object/Signal.hpp>
+#include <nx/core/types/Singleton.hpp>
 
 #include <thread>
 #include <unordered_map>
-#include <boost/asio/io_context.hpp>
-#include <boost/asio/executor_work_guard.hpp>
 
-#include "tgbot/Api.h"
+#include <nx/asio/context/io_context.hpp>
 
 namespace nx
 {
@@ -35,26 +33,28 @@ namespace nx
         friend class ::nx::Signal;
         friend class ::nx::Loop;
 
-        using Context = boost::asio::io_context;
+        using Context = ::nx::asio::io_context;
+        // using Context = boost::asio::io_context;
         struct ContextLocker
         {
-            using Guard = boost::asio::executor_work_guard<Context::executor_type>;
-            std::unique_ptr<Guard> guard { nullptr };
+            // using Guard = boost::asio::executor_work_guard<Context::executor_type>;
+            // std::unique_ptr<Guard> guard { nullptr };
             Context & context;
 
             explicit ContextLocker(Context & context) : context(context) {};
             void lock ()
             {
-                if (!guard)
-                    guard = std::make_unique<Guard>(boost::asio::make_work_guard(context));
+                // if (!guard)
+                    // guard = std::make_unique<Guard>(boost::asio::make_work_guard(context));
             }
             void unlock ()
             {
-                if (guard)
-                {
-                    guard->reset();
-                    guard.reset(nullptr);
-                }
+                // if (guard)
+                // {
+                    // guard->reset();
+                    // guard.reset(nullptr);
+                // }
+                context.stop();
             }
         };
 
@@ -95,12 +95,13 @@ namespace nx
         static ThreadId CurrentId ();
         static Loop* CurrentLoop ();
         static Context & CurrentContext ();
+        static Object * CurrentSignalSender ();
 
         Loop* loop() const;
         Context & context();
 
-        void setSigmaskBlock(sigset_t& set);
-        void setSigmaskAllow(sigset_t& set);
+        // void setSigmaskBlock(sigset_t& set);
+        // void setSigmaskAllow(sigset_t& set);
 
     protected:
         void _sleepImpl(Duration);
@@ -115,9 +116,12 @@ namespace nx
 
         // SignalQueue signal_queue;
         // Loop* current_loop{nullptr};
-        Context io_context;
+        // Context io_context { 1 };
+        Context io_context { };
         ContextLocker context_locker { io_context };
         std::stack<Loop *> loops;
+
+        Object * current_sender { nullptr };
 
     private:
     };
@@ -158,7 +162,7 @@ namespace nx
 
             size_t threadCount() const;
 
-            void exitAllThreads();
+            void exitAllThreads(int code = 0);
             void waitForAllThreadsExit();
         };
 

@@ -5,15 +5,12 @@
 #ifndef NXTBOT_MACRO_HPP
 #define NXTBOT_MACRO_HPP
 
-#include <string>
+# ifndef NX_MAX_NUMBER
+    # define NX_MAX_NUMBER NX_LIMITS_MAX_NUMBER
+# endif
 
-#include "macro/arg_count.hpp"
-#include "macro/argname.hpp"
-#include "macro/arithmetic.hpp"
-#include "macro/choose.hpp"
-#include "macro/logic.hpp"
-#include "macro/platform.hpp"
-#include "macro/repeat.hpp"
+#include <string>
+#include "macro/util/platform.hpp"
 
 namespace nx::macro
 {

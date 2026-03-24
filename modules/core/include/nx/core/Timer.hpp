@@ -5,8 +5,9 @@
 #ifndef TIMER_HPP
 #define TIMER_HPP
 
-#include <boost/asio/deadline_timer.hpp>
+// #include <boost/asio/deadline_timer.hpp>
 
+#include <nx/asio/steady_timer.hpp>
 #include <nx/core/Object.hpp>
 
 namespace nx
@@ -38,7 +39,8 @@ namespace nx
         NX_PROPERTY(TYPE Duration, NAME duration, READ duration, WRITE setDuration, NOTIFY durationChanged, DEFAULT Seconds(1))
 
     private:
-        using timer_type = boost::asio::deadline_timer;
+        // using timer_type = boost::asio::deadline_timer;
+        using timer_type = nx::asio::steady_timer;
         std::unique_ptr<timer_type> timer;
 
         TimePoint time_started;
@@ -48,7 +50,7 @@ namespace nx
 
         bool _set();
         void _unset();
-        static void _OnTimeout(Timer * obj, const boost::system::error_code& e);
+        static void _OnTimeout(Timer * obj/*, const boost::system::error_code& e*/);
     };
 }
 

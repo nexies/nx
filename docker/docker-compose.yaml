@@ -1,0 +1,21 @@
+version: "3"
+
+services:
+  tbot_base:
+    build:
+      dockerfile: docker/base/Dockerfile
+      context: ../
+    image: tbot_base
+    container_name: tbot_base_container
+
+  tbot_devel:
+    depends_on:
+      - tbot_base
+    build:
+      dockerfile: docker/devel/Dockerfile
+      context: ../
+    image: tbot_devel
+    ports:
+      - "2225:22"
+    container_name: tbot_devel_container
+

@@ -1,0 +1,8 @@
+//
+// Created by nexie on 03.03.2026.
+//
+
+#ifndef NX_PROGRAMARGUMENTS_HPP
+#define NX_PROGRAMARGUMENTS_HPP
+
+#endif //NX_PROGRAMARGUMENTS_HPP

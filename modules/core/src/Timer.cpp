@@ -2,8 +2,10 @@
 // Created by nexie on 25.11.2025.
 //
 
-#include "../include/nx/core/Timer.hpp"
-#include "../include/nx/core/Thread.hpp"
+#include <nx/core/detail/logger_defs.hpp>
+
+#include <nx/core/Timer.hpp>
+#include <nx/core/Thread.hpp>
 
 using namespace nx;
 
@@ -64,7 +66,7 @@ bool Timer::_set()
 {
     if (!thread())
     {
-        nxError("Try to set timer outside of nx::Thread");
+        nxError("Tried to to set timer outside of nx::Thread");
         return false;
     }
 
@@ -74,8 +76,8 @@ bool Timer::_set()
         return false;
     }
 
-    uint64_t microsecs = std::chrono::duration_cast<std::chrono::microseconds>(duration()).count();
-    timer = std::make_unique<timer_type>(thread()->context(), boost::posix_time::microseconds(microsecs));
+    // uint64_t microsecs = std::chrono::duration_cast<std::chrono::microseconds>(duration()).count();
+    timer = std::make_unique<timer_type>(thread()->context());
     if (!timer)
     {
         nxError("Failed to set a timer");
@@ -83,21 +85,21 @@ bool Timer::_set()
     }
 
     reps_left = reps;
-    timer->async_wait(boost::bind(&Timer::_OnTimeout, this, boost::placeholders::_1));
+    timer->asyncWait(duration(), std::bind(&Timer::_OnTimeout, this));
     return true;
 }
 
 void Timer::_unset()
 {
-    if (timer)
+    if (timer && timer->running())
     {
         timer->cancel();
-        timer.reset(nullptr);
     }
+    timer.reset(nullptr);
     reps_left = 0;
 }
 
-void Timer::_OnTimeout(Timer* timer, const boost::system::error_code& e)
+void Timer::_OnTimeout(Timer* timer/*, const boost::system::error_code& e*/)
 {
     NX_EMIT(timer->timeout)
     timer->_unset();
@@ -120,7 +122,7 @@ void Timer::_OnTimeout(Timer* timer, const boost::system::error_code& e)
     //         break;
     //     }
     case Timer::SingleShot:
-        // obj->_unset();
+        // timer->_unset();
         break;
     }
 }

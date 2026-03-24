@@ -8,7 +8,7 @@
 #include <boost/asio/executor_work_guard.hpp>
 #include <boost/asio/io_context.hpp>
 
-#include <nx/core/Signal.hpp>
+#include <nx/core/object/Signal.hpp>
 #include <nx/core/Object.hpp>
 
 namespace nx
@@ -18,7 +18,7 @@ namespace nx
         friend class Signal;
     public:
         Loop ();
-        ~Loop();
+        ~Loop() override;
 
         virtual Result exec ();
 
@@ -30,7 +30,7 @@ namespace nx
         Result quit ();
 
         bool isRunning () const;
-        bool isSleeping ();
+        bool isSleeping () const;
 
         void flush ();
 
@@ -45,9 +45,6 @@ namespace nx
         bool _waitForSignals ();
         bool _waitForSignalsFor (Duration);
 
-        // bool _processSingleEntry (SignalQueue::Entry & entry) const;
-        // bool _redirectEntry (SignalQueue::Entry & entry) const;
-
         void _quitImpl ();
         void _exitImpl (int code);
         void _interruptImpl ();
@@ -56,8 +53,6 @@ namespace nx
         void _uninstallLoopFromThread();
 
     private:
-        // SignalQueue * queue;
-        Loop * underlying_loop { nullptr };
         int exit_code { 0 };
         Duration wait_duration { 0 };
     };

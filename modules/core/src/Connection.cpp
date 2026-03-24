@@ -2,13 +2,14 @@
 // Created by nexie on 17.11.2025.
 //
 
-#include "../include/nx/core/Connection.hpp"
+#include "../include/nx/core/object/Connection.hpp"
 
-#include <boost/asio/execution/sender.hpp>
+// #include <boost/asio/execution/sender.hpp>
+
+#include <nx/core/detail/logger_defs.hpp>
 #include <sys/socket.h>
-
-#include "../include/nx/core/Object.hpp"
-#include "../include/nx/core/Thread.hpp"
+#include "nx/core/Object.hpp"
+#include "nx/core/Thread.hpp"
 
 using namespace nx;
 
@@ -17,13 +18,22 @@ size_t detail::hash(void* o, void* m)
     return std::hash<void *>{}(o) + (std::hash<void *>{}(m) << 1);
 }
 
-Connection::id Connection::MakeId(void* sender, void* signal, void* receiver, void* slot)
+size_t detail::hash(void *o, detail::function_id m) {
+    return std::hash<void *>{}(o) + std::hash<function_id>{}(m);
+}
+
+// Connection::id Connection::MakeId(void* sender, void* signal, void* receiver, void* slot)
+// {
+//     return detail::hash(sender, signal) + (detail::hash(receiver, slot) << 1);
+// }
+
+Connection::id Connection::MakeId(void *sender, detail::function_id signal, void *receiver, detail::function_id slot)
 {
     return detail::hash(sender, signal) + (detail::hash(receiver, slot) << 1);
 }
 
-Connection::Connection(FunctorPtr functor, void* sender, void* signal, void* receiver, void* slot, Type type,
-    uint8_t flags, bool object_receiver) :
+Connection::Connection(FunctorPtr functor, void* sender, detail::function_id signal, void* receiver, detail::function_id slot, Type type,
+                       uint8_t flags, bool object_receiver) :
         functor(functor),
         sender(sender),
         signal(signal),
@@ -63,7 +73,7 @@ void* Connection::getReceiver() const
 
 size_t Connection::getSenderId() const
 {
-    return Connection::MakeId(sender, signal, nullptr, nullptr);
+    return Connection::MakeId(sender, signal, NULL, NULL);
 }
 
 size_t Connection::getId() const
@@ -148,8 +158,7 @@ ConnectionInfo::ConnectionInfo(Object* obj) :
 
 nx::ConnectionInfo::~ConnectionInfo()
 {
-    for (auto & sender : senders)
-        sender->_getConnectionInfo()->receiverDestroyed(self);
+
 }
 
 void ConnectionInfo::addSender(Object* sender)
@@ -269,4 +278,13 @@ ConnectionInfo::List<std::shared_ptr<Connection>> ConnectionInfo::getConnections
     }
 
     return out;
+}
+
+void ConnectionInfo::cleaup()
+{
+    for (auto & sender : senders) {
+        auto senderConnInfo = sender->_getConnectionInfo();
+        if (senderConnInfo)
+            senderConnInfo->receiverDestroyed(self);
+    }
 }

@@ -1,4 +1,4 @@
-# Настраивает уже существующую библиотечную цель как компонент пакета nx.
+    # Настраивает уже существующую библиотечную цель как компонент пакета nx.
 # Треб.: CMake >= 3.20 (File Set — с 3.23, включаем по условию).
 #
 # Пример:
@@ -31,7 +31,7 @@ function(nx_make_module)
             PUBLIC_INCLUDE_DIRS
             PRIVATE_INCLUDE_DIRS
     )
-    message("=========================================================================================================")
+#    message("=========================================================================================================")
 
     cmake_parse_arguments(_NX "" "${_one}" "${_multi}" ${ARGN})
     set (DESC "nx_make_module()")
@@ -53,29 +53,28 @@ function(nx_make_module)
     set(_name   ${_NX_NAME})
     set(_t      ${_NX_TARGET})
     set(_alias  ${NX_NAMESPACE}::${_name})
+    set(_ver    ${_NX_VERSION})
     set(DESC "[${_alias}] -- ")
 
     if(NOT NX_BUILD_MODULE_${_name_up} AND NOT NX_BUILD_MODULE_${_name})
+#        message("${DESC} ignoring absence of NX_BUILD_MODULE_${_name_up} definition...")
         get_property(_all GLOBAL PROPERTY NX_AVAILABLE_COMPONENTS)
         list(APPEND _all "${_name}")
         list(REMOVE_DUPLICATES _all)
         set_property(GLOBAL PROPERTY NX_AVAILABLE_COMPONENTS "${_all}")
-        return()
     endif()
 
-    message(${DESC} "Configuring component...")
-    message(${DESC} "Ignoring NX_${_name_up}_BUILD_SHARED_LIBS parameter...")
     if(NOT TARGET ${_alias})
         add_library(${_alias} ALIAS ${_t})
     endif()
 
     target_compile_options(${_t} PUBLIC -std=c++${NX_CXX_STANDARD})
 
-    nx_make_module_version(NAME ${_name})
+    nx_make_module_version(NAME ${_name} VERSION ${_ver})
 
-    target_include_directories(${_t} PRIVATE
-            $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include/nx>
-            $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/generated/nx>
+    target_include_directories(${_t} PUBLIC
+            $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
+            $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/generated>
             $<INSTALL_INTERFACE:include>
     )
 
@@ -112,7 +111,7 @@ function(nx_make_module)
         endif()
 #        message(${DESC} "Headers base dir is set to ${_NX_HEADERS_BASE_DIRS}...")
         list(LENGTH _NX_PUBLIC_HEADERS _headers_count)
-        message(${DESC} "Found ${_headers_count} public headers")
+#        message(${DESC} "Found ${_headers_count} public headers")
         target_sources(${_t}
                 PUBLIC
                 FILE_SET public_headers
@@ -123,7 +122,7 @@ function(nx_make_module)
     endif()
 
     if(_do_fileset)
-        message(${DESC} "Installing using fileset...")
+#        message(${DESC} "Installing using fileset...")
         install(TARGETS ${_t}
                 EXPORT ${NX_EXPORT_SET}
                 FILE_SET public_headers DESTINATION ${NX_INSTALL_INCLUDEDIR}
@@ -142,16 +141,16 @@ function(nx_make_module)
                 INCLUDES DESTINATION ${NX_INSTALL_INCLUDEDIR}
         )
         if(_NX_PUBLIC_HEADERS)
-            message(${DESC} "Has public headers, installing...")
+#            message(${DESC} "Has public headers, installing...")
             install(FILES ${_NX_PUBLIC_HEADERS}
                     DESTINATION ${NX_INSTALL_INCLUDEDIR}
             )
         endif()
     endif()
 
-    message(${DESC}
-            "Installing public header interface: BUILD[${_NX_HEADERS_BASE_DIRS}],
-                                                 INSTALL[${NX_INSTALL_INCLUDEDIR}]")
+#    message(${DESC} "Path to headers [BUILD]:   ${_NX_HEADERS_BASE_DIRS}")
+#    message(${DESC} "Path to headers [INSTALL]: ${NX_INSTALL_INCLUDEDIR}")
+
     target_include_directories(${_t}
             PUBLIC
             $<BUILD_INTERFACE:${_NX_HEADERS_BASE_DIRS}>

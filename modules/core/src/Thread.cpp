@@ -2,9 +2,10 @@
 // Created by nexie on 12.11.2025.
 //
 
+#include <iostream>
 #include <nx/core/Thread.hpp>
 #include <mutex>
-#include <boost/asio.hpp>
+// #include <boost/asio.hpp>
 
 #include <nx/core.hpp>
 #include <nx/core/Loop.hpp>
@@ -111,25 +112,18 @@ namespace nx::detail
         return threads_by_id.size();
     }
 
-    void ThreadInfoInstance::exitAllThreads()
+    void ThreadInfoInstance::exitAllThreads(int code)
     {
-        auto local_id = Thread::CurrentId();
-        // nxTrace("exitAllThreads. Local ID: {}", local_id);
         for (auto [id, thread] : threads_by_id)
         {
-            // if (local_id != id)
-            // {
-                nxTrace("Closing thread [tid:{}]", id);
-                // thread->exit(0);
-                thread->exit(0);
-            // }
+            nxTrace("Closing thread [tid:{}]", id);
+            thread->exit(code);
         }
     }
 
     void ThreadInfoInstance::waitForAllThreadsExit()
     {
         auto local_id = Thread::CurrentId();
-        // nxTrace("waitForAllThreadsExit. Local ID: {}", local_id);
         for (auto [id, thread] : threads_by_id)
         {
             if (local_id != id)
@@ -156,7 +150,7 @@ Thread::~Thread()
 {
     if (thread and thread->joinable())
     {
-        exit( 0 );
+        // exit( 0 );
         waitForExit();
     }
 
@@ -190,7 +184,8 @@ NativeThreadId Thread::getNativeId() const
 
 bool Thread::schedule(Signal && signal)
 {
-    boost::asio::post(io_context, [signal] () { signal.activate(); });
+    // boost::asio::post(io_context, [signal] () { signal.activate(); });
+    io_context.post([signal] () { signal.activate(); });
     return true;
 }
 
@@ -206,7 +201,7 @@ bool Thread::isSleeping() const
 
 void Thread::sleep(Duration duration)
 {
-    this->schedule(Signal::Sleep(this, duration));
+    this->schedule(Signal::Sleep(this, this, duration));
 }
 
 void Thread::sleepUntil(TimePoint t)
@@ -218,11 +213,12 @@ void Thread::sleepUntil(TimePoint t)
 
 void Thread::exit(int code)
 {
-    // nxTrace("Thread[{}]::exit", getId());
+    nxTrace("Thread[{}]::exit", getId());
     if (running)
     {
         aboutToQuit();
-        schedule(Signal::Exit(loop(), code));
+        schedule(Signal::Exit(this, loop(), code));
+
     }
 }
 
@@ -232,7 +228,7 @@ void Thread::exitAndWait(int code)
     if (running)
     {
         aboutToQuit();
-        schedule(Signal::Exit(loop(), code));
+        schedule(Signal::Exit(this, loop(), code));
         thread->join();
         thread.reset(nullptr);
     }
@@ -287,6 +283,11 @@ Loop* Thread::CurrentLoop()
 Thread::Context& Thread::CurrentContext()
 {
     return Current()->context();
+}
+
+Object* Thread::CurrentSignalSender()
+{
+    return Current()->current_sender;
 }
 
 // SignalQueue* Thread::CurrentQueue()
