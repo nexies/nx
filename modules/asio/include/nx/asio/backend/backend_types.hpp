@@ -14,8 +14,8 @@
 namespace nx::asio {
 
 # ifdef NX_OS_WINDOWS
-    using NativeHandle = void *;
-    constexpr static NativeHandle g_nullHandle = NULL;
+    typedef void* native_handle_t;
+    constexpr static const native_handle_t g_null_handle = nullptr;
 # else
     using native_handle_t = int;
     constexpr static native_handle_t g_null_handle = -1;

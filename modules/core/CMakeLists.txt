@@ -66,7 +66,7 @@ if (NX_ENABLE_CXX_20_FEATURES)
 endif()
 
 #find_package(spdlog)
-find_package(spdlog)
+#find_package(spdlog)
 
 target_link_libraries(nx_core PUBLIC
         nx::common
@@ -77,7 +77,12 @@ target_link_libraries(nx_core PUBLIC
 
 
 target_compile_definitions(nx_core PUBLIC NX_DEVEL_LOGGING=1 NX_TRACE_SIGNALS=0)
-target_compile_options(nx_core PUBLIC "-Wno-pmf-conversions")
+
+if (MSVC)
+    target_compile_options(nx_core PRIVATE /utf-8)
+else()
+    target_compile_options(nx_core PRIVATE -Wno-pmf-conversions)
+endif()
 
 include(nxMakeModule)
 nx_make_module(

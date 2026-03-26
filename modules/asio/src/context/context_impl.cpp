@@ -121,10 +121,10 @@ namespace nx::asio
         }
     }
 
-    timer_id io_context::impl::create_timer(time_point expiry, task_t task)
+    timer_id io_context::impl::create_timer(time_point expiry, task_t && task)
     {
         auto id = next_timer_id_++;
-        auto timer_op = std::make_shared<TimerOp>(expiry, task, false, id);
+        auto timer_op = std::make_shared<TimerOp>(expiry, std::forward<task_t>(task), false, id);
 
         if (!timer_op)
             return -1;
@@ -227,12 +227,34 @@ namespace nx::asio
         {
             if (events[i].events == io_event::Wakeup)
             {
-                char buf [128];
-                read(events[i].identity, buf, sizeof(buf));
+                auto n = _consume_wakeup_event(&(events[i]));
                 continue;
             }
 
-            reinterpret_cast<reactor_handle*>(events[i].token)->react(events[i].events);
+            static_cast<reactor_handle*>(events[i].token)->react(events[i].events);
         }
     }
+
+
+#if defined(NX_OS_WINDOWS)
+#include <windows.h>
+std::size_t io_context::impl::_consume_wakeup_event(backend_event* event)
+    {
+        const auto handle = event->identity;
+        char buf [128];
+        DWORD bytesRead = 0;
+        BOOL ok = ReadFile(handle, buf, sizeof(buf), &bytesRead, nullptr);
+        if (ok) return static_cast<std::size_t>(bytesRead);
+        return 0;
+    }
+#elif defined(NX_POSIX)
+    std::size_t io_context::impl::_consume_wakeup_event(backend_event* event)
+    {
+        char buf [128];
+        auto n = ::std::read(events[i].identity, buf, sizeof(buf));
+        return n;
+    }
+#else
+# error "Not supported platform"
+#endif
 }

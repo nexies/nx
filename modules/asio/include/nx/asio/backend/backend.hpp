@@ -7,6 +7,8 @@
 
 #include "backend_types.hpp"
 
+#include <memory>
+
 namespace nx::asio {
 
     class backend {

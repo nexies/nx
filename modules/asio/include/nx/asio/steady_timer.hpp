@@ -7,6 +7,8 @@
 
 #include <nx/asio/context/io_context.hpp>
 
+#include "nx/common/helpers.hpp"
+
 namespace nx::asio
 {
     class steady_timer
@@ -32,11 +34,13 @@ namespace nx::asio
 
         void cancel();
 
-        Duration timeLeft() const;
+        NX_NODISCARD Duration
+        timeLeft() const;
 
-        timer_id timerId() const;
+        NX_NODISCARD timer_id
+        timerId() const;
 
-        bool
+        NX_NODISCARD bool
         running () const;
     };
 }

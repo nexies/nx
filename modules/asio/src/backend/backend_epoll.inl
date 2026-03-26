@@ -1,4 +1,4 @@
-#if(!defined(NX_CORE_ASIO_BACKEND_EPOLL_INL))&&(defined(__unix__))
+#if (!defined(NX_CORE_ASIO_BACKEND_EPOLL_INL)) && (defined(NX_OS_LINUX))
 #define NX_CORE_ASIO_BACKEND_EPOLL_INL
 
 #include <iostream>

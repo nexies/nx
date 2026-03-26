@@ -14,6 +14,7 @@ add_library(nx_tui
         src/screen.cpp
         src/graphics/painter.cpp
         src/graphics/display_buffer.cpp
+#        src/terminal/raw_mode_guard.hpp
 )
 
 target_link_libraries(nx_tui PUBLIC

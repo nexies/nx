@@ -14,6 +14,8 @@
 #include <thread>
 #include <queue>
 
+#include "nx/common/helpers.hpp"
+
 namespace nx::asio {
 
 
@@ -52,7 +54,7 @@ namespace nx::asio {
         is_running_in_this_thread () const noexcept;
 
         [[nodiscard]] timer_id
-        create_timer(time_point expiry, task_t task);
+        create_timer(time_point expiry, task_t && task);
         void
         cancel_timer(timer_id id);
 
@@ -79,6 +81,10 @@ namespace nx::asio {
         void
         processBackendEvents (backend_event * events, std::size_t count);
 
+
+        NX_NODISCARD std::size_t
+        _consume_wakeup_event (backend_event * event);
+
     private:
         std::unique_ptr<backend> backend_;
         mutable std::mutex incoming_mutex_;
@@ -96,6 +102,13 @@ namespace nx::asio {
             task_t task;
             bool canceled;
             timer_id id;
+
+            TimerOp(time_point expiry, task_t && task, bool canceled, timer_id id)
+                : expiry(expiry)
+                , task(std::move(task))
+                , canceled(canceled)
+                , id(id)
+            { }
         };
 
         // struct TimerOpCmp {

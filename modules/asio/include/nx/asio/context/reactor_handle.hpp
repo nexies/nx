@@ -8,6 +8,8 @@
 #include <nx/asio/backend/backend_types.hpp>
 #include <nx/asio/context/io_context.hpp>
 
+#include "nx/common/helpers.hpp"
+
 namespace nx::asio
 {
     class reactor_handle
@@ -31,16 +33,16 @@ namespace nx::asio
         void
         uninstall();
 
-        [[nodiscard]] io_interest
+        NX_NODISCARD io_interest
         interest () const;
 
-        [[nodiscard]] native_handle_t
+        NX_NODISCARD native_handle_t
         handle () const;
 
-        [[nodiscard]] bool
+        NX_NODISCARD bool
         installed () const;
 
-        [[nodiscard]] io_context &
+        NX_NODISCARD io_context &
         ctx() const;
 
     private:

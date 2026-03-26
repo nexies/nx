@@ -1,5 +1,3 @@
-#include <nx/common/platform.hpp>
-
 #if !defined(NX_CORE_ASIO_BACKEND_KEVENT_INL) && defined(NX_OS_MACOS)
 #define NX_CORE_ASIO_BACKEND_KEVENT_INL
 

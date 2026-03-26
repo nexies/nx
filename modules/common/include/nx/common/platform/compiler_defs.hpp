@@ -40,6 +40,7 @@
 
 #elif defined(_MSC_VER)
 #  define NX_CXX_MSC
+#  define NX_CXX_MSVC
 #  define NX_CXX "MS VisualC"
 #  define NX_CXX_MSC_VER (_MSC_VER)
 

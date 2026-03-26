@@ -89,7 +89,6 @@ FILE* Terminal::GetOutputStream()
     return ostream_;
 }
 
-
 void Terminal::MoveCursorHome()
 {
     fmt::print(ostream_, ansi::g_cursor_home_cmd);
@@ -345,6 +344,22 @@ void Terminal::EnableAltBuffer()
 void Terminal::DisableAltBuffer()
 {
     fmt::print(ostream_, ansi::g_disable_alt_buffer_cmd);
+}
+
+void Terminal::EnableRawMode()
+{
+}
+
+void Terminal::DisableRawMode()
+{
+}
+
+void Terminal::EnableMouseTracking()
+{
+}
+
+void Terminal::DisableMouseTracking()
+{
 }
 
 
