@@ -1,0 +1,6 @@
+include(nxCMakeLogScope)
+include(nxMakeExample)
+include(nxMakeModule)
+include(nxMakeModuleVersion)
+include(nxParseOptions)
+include(nxVersionInfo)

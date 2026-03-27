@@ -51,7 +51,7 @@ function(nx_make_module_version)
     string(TIMESTAMP _MODULE_BUILD_TIME_STR "%Y-%m-%d %H:%M:%S" UTC)
 
     configure_file(
-            "${NX_SOURCE_DIR}/include/nx/module_version.hpp.in"
+            "${NX_PROJECT_SOURCE_DIR}/include/nx/module_version.hpp.in"
             "${CMAKE_BINARY_DIR}/generated/nx/${_name}/version.hpp"
             @ONLY
     )
