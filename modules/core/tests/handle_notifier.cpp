@@ -224,7 +224,7 @@ class debug_notifier : public nx::asio::reactor_handle
     {
         switch (event)
         {
-        case nx::asio::io_event::Read:
+        case nx::asio::io_event::read:
             {
                 char buf [128] { 0 };
                 auto n = ::read(handle(), buf, sizeof(buf));

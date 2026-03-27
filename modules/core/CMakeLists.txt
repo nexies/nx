@@ -84,11 +84,15 @@ else()
     target_compile_options(nx_core PRIVATE -Wno-pmf-conversions)
 endif()
 
-include(nxMakeModule)
-nx_make_module(
-        TARGET nx_core
+#include(nxMakeModule)
+#nx_make_module(
+#        TARGET nx_core
+#        NAME core
+#        HEADERS_BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include
+#)
+
+nx_configure_component(nx_core
         NAME core
-        HEADERS_BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
 add_subdirectory(tests)

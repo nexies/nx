@@ -1,4 +1,4 @@
-#if !defined(NX_CORE_ASIO_BACKEND_KEVENT_INL) && defined(NX_OS_MACOS)
+#if !defined(NX_CORE_ASIO_BACKEND_KEVENT_INL) && defined(NX_OS_APPLE)
 #define NX_CORE_ASIO_BACKEND_KEVENT_INL
 
 #include <iostream>
@@ -12,30 +12,31 @@
 #include <optional>
 #include <deque>
 
+#include <nx/asio/backend/backend_types.hpp>
+
 namespace nx::asio {
 
-class KEventBackend : public Backend {
+class kevent_backend : public backend {
 public:
-    KEventBackend() {
-        // Создаём kqueue
+    kevent_backend() {
         kqueue_fd_ = kqueue();
         if (kqueue_fd_ == -1) {
             throw std::runtime_error("kqueue failed");
         }
     }
 
-    ~KEventBackend() override {
+    ~kevent_backend() override {
         if (kqueue_fd_ != -1)
             close(kqueue_fd_);
     }
 
-    void add(NativeHandle handle, void* token, IOInterest interests) override {
+    void add(native_handle_t handle, void* token, io_interest interests) override {
         struct kevent ev;
         int filter = 0;
-        if ((interests & IOInterest::Read) != IOInterest::None) {
+        if ((interests & io_interest::read) != io_interest::none) {
             filter |= EVFILT_READ;
         }
-        if ((interests & IOInterest::Write) != IOInterest::None) {
+        if ((interests & io_interest::write) != io_interest::none) {
             filter |= EVFILT_WRITE;
         }
 
@@ -45,13 +46,13 @@ public:
         }
     }
 
-    void modify(NativeHandle handle, void* token, IOInterest interests) override {
+    void modify(native_handle_t handle, void* token, io_interest interests) override {
         struct kevent ev;
         int filter = 0;
-        if ((interests & IOInterest::Read) != IOInterest::None) {
+        if ((interests & io_interest::read) != io_interest::none) {
             filter |= EVFILT_READ;
         }
-        if ((interests & IOInterest::Write) != IOInterest::None) {
+        if ((interests & io_interest::write) != io_interest::read) {
             filter |= EVFILT_WRITE;
         }
 
@@ -61,7 +62,7 @@ public:
         }
     }
 
-    void remove(NativeHandle handle) override {
+    void remove(native_handle_t handle) override {
         struct kevent ev;
         EV_SET(&ev, handle, EVFILT_READ, EV_DELETE, 0, 0, nullptr);
         if (kevent(kqueue_fd_, &ev, 1, nullptr, 0, nullptr) == -1) {
@@ -76,7 +77,7 @@ public:
         // }
     }
 
-    std::size_t wait(BackendEvent* out, std::size_t capacity, std::optional<std::chrono::steady_clock::duration> timeout) override {
+    std::size_t wait(backend_event * out, std::size_t capacity, std::optional<std::chrono::steady_clock::duration> timeout) override {
         struct kevent events[capacity];
         struct timespec timeout_ts = { 0, 0 };
 
@@ -93,25 +94,23 @@ public:
 
         //TODO:
         for (int i = 0; i < event_count; ++i) {
-            // out[i].events. = events[i].ident;
             out[i].token = events[i].udata;
-            // out[i].events = (events[i].filter == EVFILT_READ) ? IOEvent::Read : IOInterest::Write;
             if (events[i].filter == EVFILT_READ)
-                out[i].events = IOEvent::Read;
+                out[i].events = io_event::read;
             else if (events[i].filter == EVFILT_WRITE)
-                out[i].events = IOEvent::Write;
+                out[i].events = io_event::write;
             else if (events[i].filter == EVFILT_EXCEPT)
-                out[i].events = IOEvent::Error;
+                out[i].events = io_event::error;
             // if (events[i].filter == EVFILT_)
             // if (events[i].)
             else
-                out[i].events = IOEvent::Wakeup;
+                out[i].events = io_event::wakeup;
         }
         return event_count;
     }
 
 private:
-    NativeHandle kqueue_fd_;
+    native_handle_t kqueue_fd_;
 };
 
 } // namespace my_async

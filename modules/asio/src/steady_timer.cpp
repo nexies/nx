@@ -20,7 +20,7 @@ namespace nx::asio
             throw std::runtime_error("SteadyTimer::asyncWait - timer is already running");
 
         expiry_ = clock::now() + duration;
-        id_ = ctx_.impl_->create_timer(expiry_, task);
+        id_ = ctx_.impl_->create_timer(expiry_, std::move(task));
     }
 
     void steady_timer::asyncWait(TimePoint expiry, Task task)
@@ -29,7 +29,7 @@ namespace nx::asio
             throw std::runtime_error("SteadyTimer::asyncWait - timer is already running");
 
         expiry_ = expiry;
-        id_ = ctx_.impl_->create_timer(expiry_, task);
+        id_ = ctx_.impl_->create_timer(expiry_, std::move(task));
     }
 
     void steady_timer::cancel()

@@ -21,15 +21,20 @@ add_library (nx_asio
         src/context/reactor_handle.cpp
 )
 
-include(nxMakeModule)
+#include(nxMakeModule)
 
-nx_make_module(
-        TARGET nx_asio
-        NAME asio
-        HEADERS_BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include
-        VERSION 0.0.2
-)
+#nx_make_module(
+#        TARGET nx_asio
+#        NAME asio
+#        HEADERS_BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include
+#        VERSION 0.0.2
+#)
 
 target_link_libraries(nx_asio PUBLIC
         nx::common
+)
+
+nx_configure_component(nx_asio
+        NAME asio
+        VERSION 0.0.3
 )

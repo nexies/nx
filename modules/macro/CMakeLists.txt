@@ -40,12 +40,9 @@ add_library(nx_macro
         include/nx/macro/util/put_at_fast.hpp
 )
 
-include(nxMakeModule)
-
-nx_make_module(
-        TARGET nx_macro
+nx_configure_component(nx_macro
         NAME macro
-        HEADERS_BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include
+        VERSION 0.3.0
 )
 
 ## Generate NX_MACRO limits

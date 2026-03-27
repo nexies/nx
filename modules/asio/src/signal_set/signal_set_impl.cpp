@@ -5,12 +5,12 @@
 #include <nx/common/platform.hpp>
 
 #include "signal_set_impl.hpp"
-#include <sys/signalfd.h>
 #include <signal.h>
+
 #include "../context/context_impl.hpp"
 
-
 #if defined (NX_OS_LINUX)
+#include <sys/signalfd.h>
 namespace nx::asio
 {
     signal_set::impl::impl(io_context& ctx)
@@ -124,6 +124,8 @@ namespace nx::asio
 
     }
 }
+
+#elif defined(NX_OS_APPLE)
 
 #else
 # error "SignalSet::Impl is only defined on Linux"

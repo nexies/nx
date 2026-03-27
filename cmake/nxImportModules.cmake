@@ -1,3 +1,4 @@
+include(nxConfigureComponent)
 include(nxCMakeLogScope)
 include(nxMakeExample)
 include(nxMakeModule)

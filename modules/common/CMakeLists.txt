@@ -18,11 +18,14 @@ add_library(nx_common
         include/nx/common/types/timing.hpp
 )
 
-include(nxMakeModule)
+#nx_make_module(
+#        TARGET nx_common
+#        NAME common
+#        HEADERS_BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include
+#        VERSION 0.0.1
+#)
 
-nx_make_module(
-        TARGET nx_common
+nx_configure_component(nx_common
         NAME common
-        HEADERS_BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include
         VERSION 0.0.1
 )

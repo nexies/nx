@@ -47,7 +47,7 @@ function(nx_log)
     endif()
 
     list(LENGTH __NX_LOG_SCOPE_STACK _depth)
-    string(REPEAT "-" "${_depth}" _indent)
+    string(REPEAT "  " "${_depth}" _indent)
 
     # Формируем сообщение
     if(DEFINED __NX_LOG_SCOPE_CURRENT)

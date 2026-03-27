@@ -14,7 +14,7 @@ function(nx_configure_component _target)
             PUBLIC_INCLUDES
     )
 
-    cmake_parse_arguments(P_ "" "${_one}" "${_multi}" ${ARGN})
+    cmake_parse_arguments(P "" "${_one}" "${_multi}" ${ARGN})
 
     set(_name ${P_NAME})
     set(_ver ${P_VERSION})
@@ -44,11 +44,41 @@ function(nx_configure_component _target)
 
     set(_alias ${_nmsp}::${_name})
 
+    nx_push_log_scope(${_alias})
+
     if(NOT TARGET "${_alias}")
         add_library("${_alias}" ALIAS "${_target}")
     endif()
 
-    #TODO: nx_make_component_version( "${_name}" "${_ver}" )
+    nx_make_module_version( NAME "${_name}" VERSION "${_ver}" )
 
+    if(NOT _pub_inc_d)
+        set(_pub_inc_d ${CMAKE_CURRENT_SOURCE_DIR}/include)
+    endif()
 
+    target_include_directories("${_target}" PUBLIC
+            $<BUILD_INTERFACE:${_pub_inc_d}>
+            $<INSTALL_INTERFACE:${NX_INSTALL_INCLUDEDIR}>
+    )
+
+    if(_pub_inc AND CMAKE_VERSION VERSION_GREATER_EQUAL "3.23")
+        target_sources("${_target}"
+                PUBLIC
+                FILE_SET public_headers
+                TYPE HEADERS
+                BASE_DIRS "${_pub_inc_d}"
+                FILES ${_pub_inc}
+        )
+    endif()
+
+    string(TOUPPER ${_name} _name_up)
+
+    get_property(_ver GLOBAL PROPERTY NX_${_name_up}_VERSION_STR)
+    if(_ver)
+        nx_log("(v${_ver})")
+    else()
+        nx_log("configured")
+    endif()
+
+    nx_pop_log_scope()
 endfunction()

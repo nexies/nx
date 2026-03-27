@@ -28,7 +28,7 @@ namespace nx::asio
 
     void handle_notifier::impl::react(io_event event)
     {
-        if (event != io_event::None)
+        if (event != io_event::none)
             handle_event(event);
     }
 

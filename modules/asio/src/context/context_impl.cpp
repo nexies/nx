@@ -225,7 +225,7 @@ namespace nx::asio
     {
         for (auto i = 0; i < count; i++)
         {
-            if (events[i].events == io_event::Wakeup)
+            if (events[i].events == io_event::wakeup)
             {
                 auto n = _consume_wakeup_event(&(events[i]));
                 continue;
@@ -248,10 +248,11 @@ std::size_t io_context::impl::_consume_wakeup_event(backend_event* event)
         return 0;
     }
 #elif defined(NX_POSIX)
+#include <unistd.h>
     std::size_t io_context::impl::_consume_wakeup_event(backend_event* event)
     {
         char buf [128];
-        auto n = ::std::read(events[i].identity, buf, sizeof(buf));
+        auto n = read(event->identity, buf, sizeof(buf));
         return n;
     }
 #else

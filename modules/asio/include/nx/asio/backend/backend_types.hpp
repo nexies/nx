@@ -46,12 +46,12 @@ namespace nx::asio {
     }
 
     enum class io_event : std::uint32_t {
-        None    = 0x00,
-        Read    = 0x01,
-        Write   = 0x02,
-        Error   = 0x03,
-        Hangup  = 0x04,
-        Wakeup  = 0x05,
+        none    = 0x00,
+        read    = 0x01,
+        write   = 0x02,
+        error   = 0x03,
+        hangup  = 0x04,
+        wakeup  = 0x05,
     };
 
     inline io_event
@@ -76,7 +76,7 @@ namespace nx::asio {
     struct backend_event {
         void * token = nullptr;
         native_handle_t identity { 0 };
-        io_event events = io_event::None;
+        io_event events = io_event::none;
         uint64_t u64 { 0 };
         uint32_t u32 { 0 };
     };
