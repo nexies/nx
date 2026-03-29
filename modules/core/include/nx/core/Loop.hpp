@@ -5,8 +5,8 @@
 #ifndef LOOP_HPP
 #define LOOP_HPP
 
-#include <boost/asio/executor_work_guard.hpp>
-#include <boost/asio/io_context.hpp>
+// #include <boost/asio/executor_work_guard.hpp>
+// #include <boost/asio/io_context.hpp>
 
 #include <nx/core/object/Signal.hpp>
 #include <nx/core/Object.hpp>

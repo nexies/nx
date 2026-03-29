@@ -66,7 +66,7 @@ if (NX_ENABLE_CXX_20_FEATURES)
 endif()
 
 #find_package(spdlog)
-#find_package(spdlog)
+find_package(spdlog)
 
 target_link_libraries(nx_core PUBLIC
         nx::common

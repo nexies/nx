@@ -8,6 +8,10 @@
 #include <nx/asio/handle_notifier.hpp>
 #include <termios.h>
 
+#if defined(NX_OS_APPLE)
+#include <unistd.h>
+#endif
+
 namespace detail
 {
     inline char hex_digit(unsigned v) {

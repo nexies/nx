@@ -158,9 +158,9 @@ namespace nx::asio
         backend_->wake();
     }
 
-    void io_context::impl::unregister_reactor_handle(native_handle_t handle)
+    void io_context::impl::unregister_reactor_handle(native_handle_t handle, void * token, io_interest interest)
     {
-        backend_->remove(handle);
+        backend_->remove(handle, this, interest);
         backend_->wake();
     }
 
@@ -231,7 +231,7 @@ namespace nx::asio
                 continue;
             }
 
-            static_cast<reactor_handle*>(events[i].token)->react(events[i].events);
+            static_cast<reactor_handle *>(events[i].token)->on_event(events[i]);
         }
     }
 
@@ -247,7 +247,7 @@ std::size_t io_context::impl::_consume_wakeup_event(backend_event* event)
         if (ok) return static_cast<std::size_t>(bytesRead);
         return 0;
     }
-#elif defined(NX_POSIX)
+#elif defined(NX_LINUX)
 #include <unistd.h>
     std::size_t io_context::impl::_consume_wakeup_event(backend_event* event)
     {
@@ -255,6 +255,12 @@ std::size_t io_context::impl::_consume_wakeup_event(backend_event* event)
         auto n = read(event->identity, buf, sizeof(buf));
         return n;
     }
+#elif defined(NX_OS_APPLE)
+#include <sys/event.h>
+    std::size_t io_context::impl::_consume_wakeup_event(backend_event *event) {
+        return 1;
+    }
+
 #else
 # error "Not supported platform"
 #endif

@@ -3,14 +3,15 @@
 //
 
 #include <nx/asio/signal_set.hpp>
-
 #include "signal_set_impl.hpp"
 
 namespace nx::asio
 {
     signal_set::signal_set(io_context& ctx) :
-        impl_ {std::make_shared<impl>(ctx)}
+        impl_ {impl::create_impl(ctx)}
     {
+        if (!impl_)
+            throw std::runtime_error("signal set not initialized");
     }
 
     signal_set::~signal_set()
@@ -38,8 +39,8 @@ namespace nx::asio
         return impl_->cancel();
     }
 
-    void signal_set::_asyncWaitImpl(HandlerType handler)
+    void signal_set::_async_wait_impl(handler_type handler)
     {
-        impl_->asyncWait(handler);
+        impl_->async_wait(handler);
     }
 }

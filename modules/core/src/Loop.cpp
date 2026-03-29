@@ -48,9 +48,11 @@ Result Loop::processEvents()
     try
     {
         count = thread()->context().poll();
-    } catch ( boost::system::error_code & e ) {
-        return Result::Err(fmt::format ("Process events error: {}", e.what()));
-    } catch ( std::exception & e ) {
+    }
+    // catch ( boost::system::error_code & e ) {
+        // return Result::Err(fmt::format ("Process events error: {}", e.what()));
+    // }
+    catch ( std::exception & e ) {
         return Result::Err(fmt::format ("Process events error: {}", e.what()));;
     } catch ( ... ) {
         return Result::Err("Process events error");
@@ -61,20 +63,22 @@ Result Loop::processEvents()
 
 Result Loop::processEventsFor(Duration dur)
 {
-    nxTrace("Loop::processEventsFor()");
-    size_t count = 0;
-    try
-    {
-        count = thread()->context().run_for(dur);
-    } catch ( boost::system::error_code & e ) {
-        return Result::Err(fmt::format ("Process events error: {}", e.what()));
-    } catch ( std::exception & e ) {
-        return Result::Err(fmt::format ("Process events error: {}", e.what()));;
-    } catch ( ... ) {
-        return Result::Err("Process events error");
-    }
-
-    return Result::Ok(fmt::format("Processed events: {}", count));
+    // nxTrace("Loop::processEventsFor()");
+    // size_t count = 0;
+    // try
+    // {
+    //     count = thread()->context().run_for(dur);
+    // }
+    // // catch ( boost::system::error_code & e ) {
+    //     // return Result::Err(fmt::format ("Process events error: {}", e.what()));
+    // // }
+    // catch ( std::exception & e ) {
+    //     return Result::Err(fmt::format ("Process events error: {}", e.what()));;
+    // } catch ( ... ) {
+    //     return Result::Err("Process events error");
+    // }
+    //
+    // return Result::Ok(fmt::format("Processed events: {}", count));
 }
 
 Result Loop::processEventsUntil(TimePoint t)

@@ -7,14 +7,19 @@
 
 #include <chrono>
 #include <thread>
+#include <nx/asio/backend/backend_types.hpp>
 
 namespace nx
 {
-    using Clock         = std::chrono::high_resolution_clock;
-    using Duration      = Clock::duration;
-    using TimePoint     = Clock::time_point;
+    // using Clock         = std::chrono::high_resolution_clock;
+    // using Duration      = Clock::duration;
+    // using TimePoint     = Clock::time_point;
 
-    using Days          = std::chrono::days;
+    using Clock             = nx::asio::clock;
+    using Duration          = nx::asio::duration;
+    using TimePoint         = nx::asio::time_point;
+
+    // using Days          = std::chrono::days;
     using Hours         = std::chrono::hours;
     using Minutes       = std::chrono::minutes;
     using Seconds       = std::chrono::seconds;

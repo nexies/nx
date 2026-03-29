@@ -63,7 +63,7 @@ namespace nx::asio {
         void
         modify_reactor_handle(native_handle_t handle, void * token, io_interest interest);
         void
-        unregister_reactor_handle(native_handle_t handle);
+        unregister_reactor_handle(native_handle_t handle, void * token, io_interest interest);
 
     private:
         void

@@ -23,6 +23,10 @@ public:
         if (kqueue_fd_ == -1) {
             throw std::runtime_error("kqueue failed");
         }
+
+        struct kevent wakeup;
+        EV_SET(&wakeup, 1, EVFILT_USER, EV_ADD | EV_CLEAR, 0, 0, NULL);
+        kevent(kqueue_fd_, &wakeup, 1, nullptr, 0, nullptr);
     }
 
     ~kevent_backend() override {
@@ -33,12 +37,12 @@ public:
     void add(native_handle_t handle, void* token, io_interest interests) override {
         struct kevent ev;
         int filter = 0;
-        if ((interests & io_interest::read) != io_interest::none) {
-            filter |= EVFILT_READ;
-        }
-        if ((interests & io_interest::write) != io_interest::none) {
-            filter |= EVFILT_WRITE;
-        }
+        if (interests == io_interest::read)
+            filter = EVFILT_READ;
+        else if (interests == io_interest::write)
+            filter = EVFILT_WRITE;
+        else if (interests == io_interest::signal)
+            filter = EVFILT_SIGNAL;
 
         EV_SET(&ev, handle, filter, EV_ADD | EV_ENABLE, 0, 0, token);
         if (kevent(kqueue_fd_, &ev, 1, nullptr, 0, nullptr) == -1) {
@@ -50,10 +54,10 @@ public:
         struct kevent ev;
         int filter = 0;
         if ((interests & io_interest::read) != io_interest::none) {
-            filter |= EVFILT_READ;
+            filter = EVFILT_READ;
         }
         if ((interests & io_interest::write) != io_interest::read) {
-            filter |= EVFILT_WRITE;
+            filter = EVFILT_WRITE;
         }
 
         EV_SET(&ev, handle, filter, EV_ADD | EV_ENABLE, 0, 0, token);
@@ -62,19 +66,26 @@ public:
         }
     }
 
-    void remove(native_handle_t handle) override {
+    void remove(native_handle_t handle, void * token, io_interest interest) override {
         struct kevent ev;
-        EV_SET(&ev, handle, EVFILT_READ, EV_DELETE, 0, 0, nullptr);
+        int filter = 0;
+        if (interest == io_interest::read)
+            filter = EVFILT_READ;
+        else if (interest == io_interest::write)
+            filter = EVFILT_WRITE;
+        else if (interest == io_interest::signal)
+            filter = EVFILT_SIGNAL;
+
+        EV_SET(&ev, handle, filter, EV_DELETE, 0, 0, token);
         if (kevent(kqueue_fd_, &ev, 1, nullptr, 0, nullptr) == -1) {
             throw std::runtime_error("kevent failed for remove");
         }
     }
 
     void wake() override {
-        // uint64_t one = 1;
-        // if (write(event_fd_, &one, sizeof(one)) != sizeof(one)) {
-            // throw std::runtime_error("Failed to wakeup eventfd");
-        // }
+        struct kevent ev;
+        EV_SET(&ev, 1, EVFILT_USER, 0, NOTE_TRIGGER, 0, NULL);
+        kevent(kqueue_fd_, &ev, 1, NULL, 0, NULL);
     }
 
     std::size_t wait(backend_event * out, std::size_t capacity, std::optional<std::chrono::steady_clock::duration> timeout) override {
@@ -89,7 +100,13 @@ public:
 
         int event_count = kevent(kqueue_fd_, nullptr, 0, events, capacity, timeout ? &timeout_ts : nullptr);
         if (event_count == -1) {
-            throw std::runtime_error("Failed to wait for events");
+            if (errno == EINTR) {
+                // сигнал прервал ожидание — это ожидаемо
+                // либо continue, либо graceful shutdown
+            } else {
+                perror("kevent");
+            }
+
         }
 
         //TODO:
@@ -101,8 +118,13 @@ public:
                 out[i].events = io_event::write;
             else if (events[i].filter == EVFILT_EXCEPT)
                 out[i].events = io_event::error;
-            // if (events[i].filter == EVFILT_)
-            // if (events[i].)
+            else if (events[i].filter == EVFILT_USER)
+                out[i].events = io_event::wakeup;
+            else if (events[i].filter == EVFILT_SIGNAL) {
+                out[i].events = io_event::read;
+                out[i].data.signal.signum = events[i].ident;
+                out[i].data.signal.reps = events[i].data;
+            }
             else
                 out[i].events = io_event::wakeup;
         }

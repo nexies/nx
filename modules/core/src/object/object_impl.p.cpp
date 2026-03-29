@@ -4,7 +4,7 @@
 
 #include "object_impl.p.hpp"
 
-#include <boost/asio/local/basic_endpoint.hpp>
+// #include <boost/asio/local/basic_endpoint.hpp>
 #include <nx/core/Thread.hpp>
 
 Object::Impl::Impl(Object* obj) noexcept :

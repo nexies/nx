@@ -58,6 +58,7 @@ function(nx_configure_component _target)
 
     target_include_directories("${_target}" PUBLIC
             $<BUILD_INTERFACE:${_pub_inc_d}>
+            $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/generated>
             $<INSTALL_INTERFACE:${NX_INSTALL_INCLUDEDIR}>
     )
 

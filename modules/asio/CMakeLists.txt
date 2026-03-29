@@ -19,6 +19,7 @@ add_library (nx_asio
 
         src/steady_timer.cpp
         src/context/reactor_handle.cpp
+#        tests/backend_test.cpp
 )
 
 #include(nxMakeModule)
@@ -38,3 +39,5 @@ nx_configure_component(nx_asio
         NAME asio
         VERSION 0.0.3
 )
+
+add_subdirectory(tests)

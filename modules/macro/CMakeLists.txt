@@ -45,6 +45,12 @@ nx_configure_component(nx_macro
         VERSION 0.3.0
 )
 
+#nx_make_module(
+#        TARGET nx_macro
+#        NAME macro
+#        VERSION 0.3.0
+#)
+
 ## Generate NX_MACRO limits
 
 # NX_MACRO_MAX_NUMBER

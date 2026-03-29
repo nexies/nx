@@ -24,7 +24,10 @@ namespace nx::asio {
     enum class io_interest : std::uint32_t {
         none    = 0x00,
         read    = 0x01,
-        write   = 0x02
+        write   = 0x02,
+#if defined(NX_OS_APPLE)
+        signal  = 0x04
+#endif
     };
 
     inline io_interest
@@ -79,6 +82,14 @@ namespace nx::asio {
         io_event events = io_event::none;
         uint64_t u64 { 0 };
         uint32_t u32 { 0 };
+
+        union {
+            struct {
+                int signum;
+                int reps;
+            }signal;
+            uint32_t bytes;
+        } data {};
     };
 
     using clock = std::chrono::system_clock;

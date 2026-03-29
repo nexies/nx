@@ -36,7 +36,7 @@ include(nxImportModules)
 
 include(nxVersionInfo)
 
-add_subdirectory(third-party/spdlog)
+#add_subdirectory(third-party/spdlog)
 
 #if(NX_BUILD_EXAMPLES)
 #    add_subdirectory(examples)

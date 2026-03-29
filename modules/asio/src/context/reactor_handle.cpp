@@ -21,6 +21,10 @@ namespace nx::asio
         uninstall();
     }
 
+    void reactor_handle::on_event(backend_event &event) {
+        react(event.events);
+    }
+
     void reactor_handle::install(native_handle_t handle, io_interest interest)
     {
         if (installed_)
@@ -46,7 +50,7 @@ namespace nx::asio
     {
         if (!installed_)
             return;
-        ctx_.impl_->unregister_reactor_handle(handle_);
+        ctx_.impl_->unregister_reactor_handle(handle_, this, interest_);
         handle_ = g_null_handle;
         interest_ = io_interest::none;
         installed_ = false;

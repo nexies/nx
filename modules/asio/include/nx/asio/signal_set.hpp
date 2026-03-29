@@ -14,7 +14,7 @@ namespace nx::asio
     class signal_set
     {
     public:
-        using HandlerType = std::function<void(int)>;
+        using handler_type = std::function<void(int)>;
 
         explicit
         signal_set(io_context & ctx);
@@ -31,14 +31,16 @@ namespace nx::asio
         template <typename Handler>
         void async_wait(Handler && handler)
         {
-            _asyncWaitImpl(HandlerType(std::forward<Handler>(handler)));
+            _async_wait_impl(handler_type(std::forward<Handler>(handler)));
         }
 
         std::size_t cancel();
 
     private:
-        void _asyncWaitImpl(HandlerType handler);
+        void _async_wait_impl(handler_type handler);
 
+        friend class signal_set_posix;
+        friend class signal_set_kevent;
         class impl;
         std::shared_ptr<impl> impl_;
     };

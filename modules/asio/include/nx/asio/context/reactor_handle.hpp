@@ -22,6 +22,9 @@ namespace nx::asio
         ~reactor_handle();
 
         virtual void
+        on_event(backend_event & event);
+
+        virtual void
         react(io_event event) = 0;
 
         void
