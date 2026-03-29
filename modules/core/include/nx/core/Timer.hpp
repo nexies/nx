@@ -10,8 +10,9 @@
 #include <nx/asio/steady_timer.hpp>
 #include <nx/core/Object.hpp>
 
-namespace nx
-{
+#include "nx/common/namespace.hpp"
+
+namespace nx {
     class Timer : public Object
     {
     public:
@@ -45,7 +46,6 @@ namespace nx
 
         TimePoint time_started;
         int reps;
-        // Type type;
         int reps_left;
 
         bool _set();

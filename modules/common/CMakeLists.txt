@@ -16,6 +16,10 @@ add_library(nx_common
         include/nx/common/platform/standard_defs.hpp
         include/nx/common.hpp
         include/nx/common/types/timing.hpp
+        include/nx/common/namespace.hpp
+        include/nx/common/types/errors/basic_error.hpp
+        include/nx/common/types/source_location.hpp
+        tests/nx_common_test_source_location.cpp
 )
 
 #nx_make_module(
@@ -29,3 +33,5 @@ nx_configure_component(nx_common
         NAME common
         VERSION 0.0.1
 )
+
+add_subdirectory(tests)

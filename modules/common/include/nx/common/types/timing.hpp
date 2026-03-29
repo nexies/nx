@@ -15,7 +15,6 @@ namespace nx::common_types::time
     // using milliseconds = std::chrono::milliseconds;
     // using microseconds = std::chrono::microseconds;
     // using nanoseconds = std::chrono::nanoseconds;
-
 }
 
 #endif //NX_COMMON_TIMING_HPP

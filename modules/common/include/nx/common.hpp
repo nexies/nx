@@ -9,5 +9,6 @@
 #include <nx/common/helpers.hpp>
 #include <nx/common/features.hpp>
 #include <nx/common/types.hpp>
+#include <nx/common/namespace.hpp>
 
 #endif //NX_COMMON_HPP

@@ -6,6 +6,7 @@
 #define THREAD_HPP
 
 #include <stack>
+#include <nx/common.hpp>
 
 #include <nx/core/Object.hpp>
 #include <nx/core/object/Signal.hpp>
@@ -16,8 +17,8 @@
 
 #include <nx/asio/context/io_context.hpp>
 
-namespace nx
-{
+namespace nx {
+
     namespace detail
     {
         class ThreadInfoInstance;
@@ -44,16 +45,10 @@ namespace nx
             explicit ContextLocker(Context & context) : context(context) {};
             void lock ()
             {
-                // if (!guard)
-                    // guard = std::make_unique<Guard>(boost::asio::make_work_guard(context));
+
             }
             void unlock ()
             {
-                // if (guard)
-                // {
-                    // guard->reset();
-                    // guard.reset(nullptr);
-                // }
                 context.stop();
             }
         };
@@ -168,6 +163,7 @@ namespace nx
 
         typedef ::nx::Singleton<ThreadInfoInstance> ThreadInfo;
     }
+
 }
 
 #endif //THREAD_HPP

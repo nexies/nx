@@ -43,6 +43,7 @@ function(nx_configure_component _target)
     endif()
 
     set(_alias ${_nmsp}::${_name})
+    string(TOUPPER ${_name} _name_up)
 
     nx_push_log_scope(${_alias})
 
@@ -72,7 +73,7 @@ function(nx_configure_component _target)
         )
     endif()
 
-    string(TOUPPER ${_name} _name_up)
+
 
     get_property(_ver GLOBAL PROPERTY NX_${_name_up}_VERSION_STR)
     if(_ver)
