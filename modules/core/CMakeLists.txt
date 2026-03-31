@@ -72,7 +72,7 @@ target_link_libraries(nx_core PUBLIC
         nx::common
         nx::asio
         nx::macro
-        spdlog::spdlog
+        spdlog
 )
 
 

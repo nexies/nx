@@ -4,9 +4,12 @@
 
 #ifndef NX_COMMON_BASIC_ERROR_HPP
 #define NX_COMMON_BASIC_ERROR_HPP
+#include <string>
 #include <type_traits>
+#include <boost/system/error_code.hpp>
 
 #include "nx/common/helpers.hpp"
+
 
 namespace nx {
 
@@ -51,9 +54,14 @@ namespace nx {
     ///
     ///
 
+    struct basic_error_payload
+    {
+        basic_error_payload();
+    };
+
     struct error_payload {
-        int code_ {};
-        const char * str_ {""};
+        int code {};
+        const char * str {""};
     };
 
     template<typename Payload>
@@ -68,6 +76,9 @@ namespace nx {
     template<typename Payload>
     class basic_error {
         static_assert(is_error_payload_v<Payload>, "type is not error_payload");
+
+    public:
+
     };
 
 }
