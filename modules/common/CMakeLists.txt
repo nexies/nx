@@ -20,6 +20,8 @@ add_library(nx_common
         include/nx/common/types/errors/basic_error.hpp
         include/nx/common/types/source_location.hpp
         tests/nx_common_test_source_location.cpp
+        include/nx/common/types/errors/error_descriptor.hpp
+        src/types/errors/error_descriptor.cpp
 )
 
 #nx_make_module(

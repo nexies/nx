@@ -133,6 +133,9 @@ namespace nx {
     {
         return os << src.description();
     }
+
+    static constexpr inline source_location
+    g_undefined_location { 0, 0, "undefined, undefined"};
 }
 
 #endif //NX_COMMON_SOURCE_LOCATION_HPP
