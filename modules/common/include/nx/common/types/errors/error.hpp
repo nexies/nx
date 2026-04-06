@@ -117,7 +117,7 @@ namespace nx
         clear () noexcept;
     };
 
-    void explain (error const & err) noexcept;
+    void explain (error const & err, FILE * out = stderr) noexcept;
 }
 
 #endif //NX_COMMON_ERROR_HPP

@@ -16,3 +16,17 @@ target_link_libraries(nx_common_test_error
         nx::common
 )
 
+add_executable(nx_common_test_result
+        nx_common_test_result.cpp
+)
+
+target_link_libraries(nx_common_test_result
+        PRIVATE
+        nx::common
+)
+
+
+# nx_configure_test(result
+#       COMPONENT common core
+#       SOURCES nx_common_test_result.cpp
+#)

@@ -8,7 +8,7 @@
 #include <atomic>
 #include <shared_mutex>
 #include <string>
-#include <boost/asio/error.hpp>
+// #include <boost/asio/error.hpp>
 #include <nx/common/types/source_location.hpp>
 
 namespace nx {

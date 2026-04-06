@@ -143,14 +143,28 @@ namespace nx
         : code_ {}
         , d_ { nullptr }
     {
-        *this = other;
+        code_ = other.code_;
+        if (other.flag_ == by_desc)
+        {
+            d_.desc = make_error_descriptor(*other.d_.desc);
+        }
+        else
+        {
+            d_.cat = other.d_.cat;
+        }
     }
 
     error::error(error&& other) noexcept
         : code_ {}
         , d_ { nullptr }
     {
-        *this = other;
+        code_ = other.code_;
+        d_ = other.d_;
+        flag_ = other.flag_;
+
+        other.flag_ = by_cat;
+        other.d_.cat = d_.cat;
+        other.clear();
     }
 
     error& error::operator=(const error& other)
@@ -227,7 +241,7 @@ namespace nx
         s_what_cache.clear();
 
         std::stringstream ss;
-        ss << "" << category().name() << " error " << code_ << ": ";
+        ss << "[" << category().name() << " error " << code_ << "] - ";
         ss << description();
 
         if (commented())
@@ -285,8 +299,9 @@ namespace nx
         code_ = 0;
     }
 
-    void explain(error const& err) noexcept
+    void explain(error const& err, FILE * out) noexcept
     {
-        std::cerr << err.what() << std::endl;
+        // std::cerr << err.what() << std::endl;
+        fprintf(out, "%s\n", err.what());
     }
 }
