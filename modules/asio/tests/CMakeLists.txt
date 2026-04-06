@@ -1,7 +1,6 @@
-add_executable(nx_asio_test_backend
-        backend_test.cpp
-)
+include(nxConfigureTest)
 
-target_link_libraries(nx_asio_test_backend PUBLIC
-        nx::asio
+nx_configure_test(backend
+        COMPONENT asio
+        SOURCES backend_test.cpp
 )

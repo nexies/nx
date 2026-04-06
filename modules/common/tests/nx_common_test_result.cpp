@@ -5,22 +5,19 @@
 #include <iostream>
 #include <nx/common/types/result.hpp>
 
-
-nx::result<int>
+nx::result<const char *>
 foo (int input) {
     if (input <= 10)
         return nx::err::invalid_argument("Input should be more than 10");
-    return input - 10;
+    return "HAHA HAHA";
 }
 
 int main() {
-    auto res = foo(5)
-        .expect([](auto er) {
-            nx::explain(er); return -1;
-        });
+    auto res = foo(9);
+    if (!res)
+        nx::explain(res.error());
 
-    std::cerr << res << std::endl;
-    auto res2 = foo (15);
-    std::cerr << "Result: " << res2 << std::endl;
+    res = foo (15);
+    std::cerr << "Result: " << res.value() << std::endl;
     return 0;
 }

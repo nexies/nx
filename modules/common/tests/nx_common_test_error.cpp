@@ -35,9 +35,6 @@ namespace test
 
 int main (int, char * [])
 {
-    // test::bool_operator();
-    // test::error_description();
-
     auto err = nx::error(std::make_error_code(std::errc::address_family_not_supported));
     err = err("Address family not supported HAHAHAHAHAHA");
     std::cerr << err.what();
