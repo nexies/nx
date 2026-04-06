@@ -27,20 +27,19 @@ namespace test
     void error_description ()
     {
         nx::error err(std::make_error_code(std::errc::address_family_not_supported),
-            "Fix this dumbass", nx::g_undefined_location);
+            "Fix this dumbass", nx::source_location::current());
 
-        // std::cerr << "Value: " << err.value() << std::endl;
-        // std::cerr << "Category: " << err.category().name() << std::endl;
-        // std::cerr << "Comment: " << err.comment() << std::endl;
-        // std::cerr << "Description: " << err.description() << std::endl;
-        std::cerr << "What: " << err.what() << std::endl;
-
-
+        std::cerr << err.what() << std::endl;
     }
 }
 
 int main (int, char * [])
 {
-    test::bool_operator();
-    test::error_description();
+    // test::bool_operator();
+    // test::error_description();
+
+    auto err = nx::error(std::make_error_code(std::errc::address_family_not_supported));
+    err = err("Address family not supported HAHAHAHAHAHA");
+    std::cerr << err.what();
+    return 0;
 }

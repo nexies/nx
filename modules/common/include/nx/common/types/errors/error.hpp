@@ -29,8 +29,8 @@ namespace nx
         NX_NODISCARD error
         get_copy () const;
 
-        void
-        set_descriptor (const error_descriptor & desc);
+        // void
+        // set_descriptor (const error_descriptor & desc);
 
         error_descriptor *
         try_alloc_desc () noexcept;
@@ -38,22 +38,23 @@ namespace nx
         void
         try_free_desc () noexcept;
 
+        void
+        promote_desc() noexcept;
+
     public:
         error() noexcept;
 
-        // explicit
-        // error (std::errc errc) noexcept;
-
-        // explicit
-        // error (const std::error_code & code) noexcept;
-
-        // error (int code, const std::error_category & cat) noexcept;
-
-        // error (const std::error_code & code, std::string_view comment) noexcept;
+        explicit
+        error (std::errc errc) noexcept;
 
         error (int code, std::error_category * cat);
 
-        error (int code, std::error_category * cat, std::string_view message, const nx::source_location & loc) noexcept;
+        explicit
+        error (const std::error_code & code) noexcept;
+
+        error (int code, std::error_category * cat, std::string_view message, const nx::source_location & loc = nx::source_location::current()) noexcept;
+
+        error (const std::error_code & code, std::string_view comment, const nx::source_location & loc = nx::source_location::current()) noexcept;
 
         error (const error & other);
         error (error && other) noexcept;
@@ -110,12 +111,7 @@ namespace nx
         /// Create another error object, with the same code_,
         /// but containing a comment `comment`
         NX_NODISCARD error
-        operator () (std::string_view comment) const noexcept;
-
-        /// Create another error object with the same code_
-        /// but containing a comment `comment` and source_location `loc`
-        NX_NODISCARD error
-        operator () (const nx::source_location & loc, std::string_view comment) const noexcept;
+        operator () (std::string_view comment, const nx::source_location & loc = nx::source_location::current()) const noexcept;
 
         void
         clear () noexcept;

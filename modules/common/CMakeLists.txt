@@ -24,6 +24,8 @@ add_library(nx_common
         src/types/errors/error_descriptor.cpp
         include/nx/common/types/errors/error.hpp
         src/types/errors/error.cpp
+        include/nx/common/types/errors/codes.hpp
+        include/nx/common/types/errors.hpp
 )
 
 #nx_make_module(
