@@ -26,6 +26,7 @@ add_library(nx_common
         src/types/errors/error.cpp
         include/nx/common/types/errors/codes.hpp
         include/nx/common/types/errors.hpp
+        include/nx/common/types/result.hpp
 )
 
 #nx_make_module(

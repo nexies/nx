@@ -2,6 +2,7 @@
 // Created by nexie on 4/1/2026.
 //
 
+#include <iostream>
 #include <nx/common/types/errors/error.hpp>
 
 namespace nx
@@ -282,5 +283,10 @@ namespace nx
         try_free_desc();
         d_.cat = const_cast<std::error_category *>(&std::system_category());
         code_ = 0;
+    }
+
+    void explain(error const& err) noexcept
+    {
+        std::cerr << err.what() << std::endl;
     }
 }
