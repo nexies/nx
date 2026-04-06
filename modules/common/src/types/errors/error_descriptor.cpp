@@ -5,7 +5,7 @@
 #include <nx/common/types/errors/error_descriptor.hpp>
 
 namespace {
-    constexpr size_t g_pool_size = 128;
+    constexpr size_t g_pool_size = 512;
 
     using data_t = nx::error_descriptor;
     using ptr_t = nx::error_descriptor *;
@@ -93,7 +93,10 @@ namespace nx {
     }
 
     void free_error_descriptor(error_descriptor * ptr) {
-        delete ptr;
+        ptr->what_cache.clear();
+        ptr->comment.clear();
+        ptr->location = nx::g_undefined_location;
+
         pool_free(ptr);
     }
 }

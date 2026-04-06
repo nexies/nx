@@ -11,6 +11,7 @@
 #include <filesystem>
 #include <nx/common/platform/compiler_defs.hpp>
 #include <nx/common/helpers.hpp>
+#include <cstring>
 
 #if defined(NX_CXX_MSVC) && NX_CXX_MSVC_VER >= 1926
 #   define NX_BUILTIN_FILE          __builtin_FILE()
@@ -126,6 +127,22 @@ namespace nx {
 
             return ss.str();
         }
+
+        bool
+        operator == (const source_location& other) const
+        {
+            return
+                this->line_ == other.line_
+                && this->column_ == other.column_
+                && std::strcmp(this->file_, other.file_) == 0
+                && std::strcmp(this->function_, other.function_) == 0;
+        }
+
+        bool operator != (const source_location& other) const
+        {
+            return !(*this == other);
+        }
+
     };
 
     inline
@@ -135,7 +152,7 @@ namespace nx {
     }
 
     static constexpr inline source_location
-    g_undefined_location { 0, 0, "undefined, undefined"};
+    g_undefined_location { 0, 0, "undefined", "undefined"};
 }
 
 #endif //NX_COMMON_SOURCE_LOCATION_HPP

@@ -27,8 +27,10 @@ namespace nx {
     public:
         error_descriptor();
 
+        std::error_category * category;
         nx::source_location location;
         std::string comment;
+        std::string what_cache;
 
         friend error_descriptor *
         make_error_descriptor(const nx::source_location & location,

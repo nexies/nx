@@ -22,6 +22,8 @@ add_library(nx_common
         tests/nx_common_test_source_location.cpp
         include/nx/common/types/errors/error_descriptor.hpp
         src/types/errors/error_descriptor.cpp
+        include/nx/common/types/errors/error.hpp
+        src/types/errors/error.cpp
 )
 
 #nx_make_module(
