@@ -66,13 +66,13 @@ if (NX_ENABLE_CXX_20_FEATURES)
 endif()
 
 #find_package(spdlog)
-find_package(spdlog)
+find_package(spdlog REQUIRED)
 
 target_link_libraries(nx_core PUBLIC
         nx::common
         nx::asio
         nx::macro
-        spdlog
+        spdlog::spdlog
 )
 
 
