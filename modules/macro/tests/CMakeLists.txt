@@ -7,11 +7,11 @@ find_package(Catch2 3 CONFIG QUIET)
 if(NOT Catch2_FOUND)
     include(FetchContent)
     FetchContent_Declare(
-            catch2
+            Catch2
             GIT_REPOSITORY https://github.com/catchorg/Catch2.git
             GIT_TAG v3.6.0 # зафиксируй нужную версию
     )
-    FetchContent_MakeAvailable(catch2)
+    FetchContent_MakeAvailable(Catch2)
 endif()
 
 # Тест для core

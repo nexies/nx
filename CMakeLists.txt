@@ -43,14 +43,12 @@ include(nxVersionInfo)
 #    add_subdirectory(examples)
 #endif()
 
-
 get_property(components GLOBAL PROPERTY NX_ENABLED_COMPONENTS)
 string(JOIN ", " _comp_str ${components})
 message("[nx::nx] -- enabled components: ${_comp_str}")
 foreach (comp IN LISTS components)
     target_link_libraries (nx INTERFACE nx::${comp})
 endforeach ()
-
 
 include (CMakePackageConfigHelpers)
 #install (

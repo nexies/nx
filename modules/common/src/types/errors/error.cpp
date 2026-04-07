@@ -72,10 +72,10 @@ namespace nx
 
     }
 
-    error::error(int code, std::error_category* cat)
+    error::error(int code, const std::error_category* cat)
         : code_ { code }
         , flag_ { by_cat }
-        , d_ { cat }
+        , d_ { const_cast<std::error_category*> (cat) }
     {
 
     }
@@ -86,7 +86,7 @@ namespace nx
 
     }
 
-    error::error(int code, std::error_category* cat, std::string_view comment, const nx::source_location& loc) noexcept
+    error::error(int code, const std::error_category* cat, std::string_view comment, const nx::source_location& loc) noexcept
         : code_ { code }
         , flag_ { by_cat }
         , d_ { nullptr }
@@ -95,12 +95,12 @@ namespace nx
         if (!d_.desc)
         {
             flag_ = by_cat;
-            d_.cat = cat;
+            d_.cat = const_cast<std::error_category*> (cat);
             return;
         }
 
         flag_ = by_desc;
-        d_.desc->category = cat;
+        d_.desc->category = const_cast<std::error_category*> (cat);
         d_.desc->location = loc;
         d_.desc->comment = comment;
     }
@@ -141,11 +141,13 @@ namespace nx
 
     error::error(const error& other)
         : code_ {}
+        , flag_ { by_cat }
         , d_ { nullptr }
     {
         code_ = other.code_;
         if (other.flag_ == by_desc)
         {
+            flag_ = by_desc;
             d_.desc = make_error_descriptor(*other.d_.desc);
         }
         else
@@ -156,6 +158,7 @@ namespace nx
 
     error::error(error&& other) noexcept
         : code_ {}
+        , flag_ { by_cat }
         , d_ { nullptr }
     {
         code_ = other.code_;
@@ -171,6 +174,7 @@ namespace nx
     {
         clear();
         code_ = other.code_;
+        flag_ = other.flag_;
         if (other.flag_ == by_desc)
         {
             d_.desc = make_error_descriptor(*other.d_.desc);
@@ -290,6 +294,28 @@ namespace nx
         copy.d_.desc->comment = comment;
         copy.d_.desc->location = loc;
         return copy;
+    }
+
+    bool error::equivalent(const error& other) const noexcept
+    {
+        return value() == other.value() && category() == other.category();
+    }
+
+    bool error::identical(const error& other) const noexcept
+    {
+        return equivalent(other)
+            && comment() == other.comment()
+            && where() == other.where();
+    }
+
+    bool error::operator==(const error& other) const noexcept
+    {
+        return equivalent(other);
+    }
+
+    bool error::operator!=(const error& other) const noexcept
+    {
+        return !equivalent(other);
     }
 
     void error::clear() noexcept

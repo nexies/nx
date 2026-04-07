@@ -29,9 +29,6 @@ namespace nx
         NX_NODISCARD error
         get_copy () const;
 
-        // void
-        // set_descriptor (const error_descriptor & desc);
-
         error_descriptor *
         try_alloc_desc () noexcept;
 
@@ -47,12 +44,12 @@ namespace nx
         explicit
         error (std::errc errc) noexcept;
 
-        error (int code, std::error_category * cat);
+        error (int code, const std::error_category * cat);
 
         explicit
         error (const std::error_code & code) noexcept;
 
-        error (int code, std::error_category * cat, std::string_view message, const nx::source_location & loc = nx::source_location::current()) noexcept;
+        error (int code, const std::error_category * cat, std::string_view message, const nx::source_location & loc = nx::source_location::current()) noexcept;
 
         error (const std::error_code & code, std::string_view comment, const nx::source_location & loc = nx::source_location::current()) noexcept;
 
@@ -105,13 +102,27 @@ namespace nx
         located () const noexcept;
 
         /// operator bool
-        explicit
+        NX_NODISCARD explicit
         operator bool () const noexcept;
 
         /// Create another error object, with the same code_,
         /// but containing a comment `comment`
         NX_NODISCARD error
         operator () (std::string_view comment, const nx::source_location & loc = nx::source_location::current()) const noexcept;
+
+
+        NX_NODISCARD bool
+        equivalent (const error & other) const noexcept;
+
+
+        NX_NODISCARD bool
+        identical (const error & other) const noexcept;
+
+        NX_NODISCARD bool
+        operator == (const error & other) const noexcept;
+
+        NX_NODISCARD bool
+        operator != (const error & other) const noexcept;
 
         void
         clear () noexcept;

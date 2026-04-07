@@ -4,6 +4,10 @@
 #if defined(NX_OS_APPLE)
 #include "unistd.h"
 #endif
+#if defined(NX_OS_LINUX)
+#include <sys/signalfd.h>
+#endif
+
 
 #include "signal.h"
 #include "signal_set_impl.hpp"
@@ -97,7 +101,7 @@ namespace nx::asio
             sigset_t nulset;
             sigemptyset(&nulset);
 
-            if (mask_ == nulset)
+            if (std::memcmp(&mask_, &nulset, sizeof(mask_)) == 0)
                 return;
 
             // TODO: save old mask and restore it later
@@ -107,7 +111,7 @@ namespace nx::asio
 
 #if defined(NX_OS_LINUX)
             fd_ = ::signalfd(-1, &mask_, SFD_NONBLOCK | SFD_CLOEXEC);
-            install(fd_, io_interest::read)
+            install(fd_, io_interest::read);
 #elif defined(NX_OS_APPLE)
             fd_ = mask_;
             install(fd_, io_interest::signal);

@@ -78,7 +78,7 @@ namespace nx::asio {
             }
         }
 
-        void remove(native_handle_t handle) override {
+        void remove(native_handle_t handle, void * token, io_interest interest) override {
             if (epoll_ctl(epoll_fd_, EPOLL_CTL_DEL, handle, nullptr) == -1) {
                 throw std::runtime_error("remove: epoll_ctl failed");
             }
@@ -111,17 +111,17 @@ namespace nx::asio {
                 ev.u64 = events[i].data.u64;
 
                 if (events[i].events & EPOLLIN)
-                    ev.events = io_event::Read;
+                    ev.events = io_event::read;
                 if (events[i].events & EPOLLOUT)
-                    ev.events = io_event::Write;
+                    ev.events = io_event::write;
                 if (events[i].events & EPOLLERR)
-                    ev.events = io_event::Error;
+                    ev.events = io_event::error;
                 if (events[i].events & EPOLLHUP)
-                    ev.events = io_event::Hangup;
+                    ev.events = io_event::hangup;
                 if (events[i].events & EPOLLWAKEUP)
-                    ev.events = io_event::Wakeup;
+                    ev.events = io_event::wakeup;
                 if (events[i].data.fd == event_fd_)
-                    ev.events = io_event::Wakeup;
+                    ev.events = io_event::wakeup;
             }
 
             free(events);

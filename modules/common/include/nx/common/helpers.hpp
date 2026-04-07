@@ -37,7 +37,7 @@
 // ====================================================
 
 #if defined(NX_CXX_MSVC)
-    #define NX_THREAD_LOCAL __declspec(thread)
+    #define NX_THREAD_LOCAL static __declspec(thread)
 #else
     #define NX_THREAD_LOCAL thread_local
 #endif

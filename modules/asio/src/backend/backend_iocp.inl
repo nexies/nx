@@ -8,6 +8,9 @@
 #include <stdexcept>
 #include <memory>
 
+static constexpr ULONG_PTR kWakeKey = 1;
+static constexpr ULONG_PTR kStopKey = 2;
+
 namespace nx::asio {
 
 class iocp_backend : public backend {
@@ -34,7 +37,7 @@ public:
         // На Windows не требуется модификация IOCP (в отличие от epoll)
     }
 
-    void remove(native_handle_t handle) override {
+    void remove(native_handle_t handle, void* token, io_interest interests) override {
         // Для IOCP нельзя "удалить" дескриптор, как с epoll, но можно закрыть handle
         CloseHandle(handle);
     }
@@ -42,6 +45,9 @@ public:
     void wake() override {
         // В Windows IOCP не использует eventfd, но можно просто создать Wakeup дескриптор
         // Для демонстрации можно использовать сигнализацию через объект событий или манипулировать завершением работы.
+        int a = 1;
+        ::PostQueuedCompletionStatus(iocp_handle_, 0, kWakeKey, nullptr);
+
     }
 
     std::size_t wait(backend_event* out, std::size_t capacity, std::optional<std::chrono::steady_clock::duration> timeout) override {
@@ -58,6 +64,10 @@ public:
 
         backend_event ev;
         ev.token = reinterpret_cast<void*>(completionKey);
+        if (completionKey == kWakeKey && overlapped == nullptr)
+        {
+            ev.events = io_event::wakeup;
+        }
 
         // Заполняем события в зависимости от типа операции
         // Предполагаем, что в completionKey храним данные о событии (например, чтение/запись)

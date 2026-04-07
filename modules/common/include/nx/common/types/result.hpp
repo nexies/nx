@@ -4,9 +4,12 @@
 
 #ifndef NX_COMMON_RESULT_HPP
 #define NX_COMMON_RESULT_HPP
-#include "../../../../../../third-party/spdlog/include/spdlog/fmt/bundled/base.h"
-#include "errors/codes.hpp"
-#include "nx/common/helpers.hpp"
+
+#include <nx/common/types/errors/codes.hpp>
+#include <nx/common/helpers.hpp>
+
+#include <functional>
+#include <variant>
 
 namespace nx
 {
@@ -31,13 +34,18 @@ namespace nx
         }
 
         void
-        remove_value() {
-            // reinterpret_cast<value_type *>(&data_)->~value_type();
+        make_value (const value_type & val) {
+            data_.template emplace<value_type>(val);
         }
 
         void
         make_error(error_type && err) {
             data_.template emplace<error_type>(std::forward<error_type>(err));
+        }
+
+        void
+        make_error(const error_type & err) {
+            data_.template emplace<error_type>(err);
         }
 
 
@@ -67,6 +75,7 @@ namespace nx
             if (is_error_)
                 return std::get<error_type>(data_);
             throw nx::err::invalid_argument("nx::basic_result is not an error");
+            // throw std::invalid_argument("nx::basic_result is not a value");
         }
 
         NX_NODISCARD constexpr bool
@@ -75,20 +84,20 @@ namespace nx
         }
 
         NX_NODISCARD value_type
-        expect (const expect_handler & handler) {
+        expect (expect_handler && handler) {
             if (is_error_)
                 return handler(error());
             return value();
         }
 
-        NX_NODISCARD constexpr
+        // NX_NODISCARD
+        // operator Type () noexcept {
+        //     return this->value_or({});
+        // }
+
+        NX_NODISCARD constexpr explicit
         operator bool () const {
             return this->has_value();
-        }
-
-        NX_NODISCARD
-        operator Type () noexcept {
-            return this->value_or({});
         }
 
     public:

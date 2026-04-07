@@ -258,15 +258,30 @@ namespace nx::core
         return res;
     }
 
-    void Application::_asyncWaitSIGNAL(/*const boost::system::error_code & er,*/ int signal_code)
+    void Application::_asyncWaitSIGNAL(result<int> signal_result)
     {
-        if (s_instance)
-            s_instance->_onSIGNAL(signal_code);
-        else
-            nxCritical("Error in asyncWaitSIGNAL: Application is not initialized");
-
-        g_signal_set->async_wait(_asyncWaitSIGNAL);
+        if (!signal_result)
+        {
+            nxError("Error in _asyncWaitSignal: {}", signal_result.error().description());
+            return;
+        }
+        if (!s_instance)
+        {
+            nxCritical("Error in _asyncWaitSignal: Application is not initialized");
+            return;
+        }
+        s_instance->_onSIGNAL(signal_result.value());
     }
+
+    // void Application::_asyncWaitSIGNAL(/*const boost::system::error_code & er,*/ int signal_code)
+    // {
+    //     if (s_instance)
+    //         s_instance->_onSIGNAL(signal_code);
+    //     else
+    //         nxCritical("Error in asyncWaitSIGNAL: Application is not initialized");
+    //
+    //     g_signal_set->async_wait(_asyncWaitSIGNAL);
+    // }
 
     void Application::_closeThreads(int exit_code) {
         // std::cerr << "_closeThreads" << std::endl;

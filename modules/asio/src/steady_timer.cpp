@@ -5,6 +5,7 @@
 #include <nx/asio/steady_timer.hpp>
 
 #include "context/context_impl.hpp"
+#include "nx/common/types/errors/codes.hpp"
 
 namespace nx::asio
 {
@@ -17,7 +18,7 @@ namespace nx::asio
     void steady_timer::asyncWait(Duration duration, Task task)
     {
         if (running())
-            throw std::runtime_error("SteadyTimer::asyncWait - timer is already running");
+            throw nx::err::inappropriate_io_control_operation("SteadyTimer::asyncWait - timer is already running");
 
         expiry_ = clock::now() + duration;
         id_ = ctx_.impl_->create_timer(expiry_, std::move(task));
@@ -26,7 +27,7 @@ namespace nx::asio
     void steady_timer::asyncWait(TimePoint expiry, Task task)
     {
         if (running())
-            throw std::runtime_error("SteadyTimer::asyncWait - timer is already running");
+            throw nx::err::inappropriate_io_control_operation("SteadyTimer::asyncWait - timer is already running");
 
         expiry_ = expiry;
         id_ = ctx_.impl_->create_timer(expiry_, std::move(task));

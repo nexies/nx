@@ -29,7 +29,12 @@ void Object::Impl::addChildObject(Object* child)
 
 void Object::Impl::removeChildObject(Object* child)
 {
-    auto it = std::remove(children_.begin(), children_.end(), child);
+    // auto it = std::remove(children_.begin(), children_.end(), child);
+    for (auto it = children_.begin(); it != children_.end(); ++it)
+        if (*it == child)
+        {
+            children_.erase(it);
+        }
 }
 
 bool Object::Impl::isTopLevelObject() const

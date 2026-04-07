@@ -13,6 +13,7 @@
 #include <functional>
 #include <thread>
 #include <queue>
+#include <memory>
 
 #include "nx/common/helpers.hpp"
 
@@ -77,6 +78,9 @@ namespace nx::asio {
 
         std::size_t
         executeReady ();
+
+        std::size_t
+        execute_one_ready ();
 
         void
         processBackendEvents (backend_event * events, std::size_t count);

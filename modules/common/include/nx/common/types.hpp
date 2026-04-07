@@ -7,5 +7,6 @@
 
 #include <nx/common/types/errors.hpp>
 #include <nx/common/types/source_location.hpp>
+#include <nx/common/types/result.hpp>
 
 #endif //NX_TYPES_HPP

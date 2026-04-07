@@ -2,13 +2,15 @@ include(nxConfigureTest)
 
 nx_configure_test(source_location
         COMPONENT common
+        SOURCE test_source_location.cpp
 )
 
 nx_configure_test(error
         COMPONENT common
-        BINARY_NAME nx_common_test_error_2
+        SOURCE test_error.cpp
 )
 
 nx_configure_test(result
         COMPONENT common
+        SOURCE test_result.cpp
 )

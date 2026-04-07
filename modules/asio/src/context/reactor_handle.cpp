@@ -4,6 +4,7 @@
 
 #include <nx/asio/context/reactor_handle.hpp>
 #include "context_impl.hpp"
+#include "nx/common/types/errors/codes.hpp"
 
 namespace nx::asio
 {
@@ -28,7 +29,7 @@ namespace nx::asio
     void reactor_handle::install(native_handle_t handle, io_interest interest)
     {
         if (installed_)
-            throw std::logic_error ("reactor_handle::install(): already installed");
+            throw nx::err::inappropriate_io_control_operation("reactor_handle::install(): already installed");
 
         ctx_.impl_->register_reactor_handle(handle, this, interest);
         handle_ = handle;
@@ -39,7 +40,7 @@ namespace nx::asio
     void reactor_handle::modify(native_handle_t handle, io_interest interest)
     {
         if (!installed_)
-            throw std::logic_error ("reactor_handle::modify(): not installed");
+            throw nx::err::inappropriate_io_control_operation("reactor_handle::modify(): not installed");
 
         ctx_.impl_->modify_reactor_handle(handle, this, interest);
         handle_ = handle;

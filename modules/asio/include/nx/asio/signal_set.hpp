@@ -4,8 +4,12 @@
 
 #ifndef NX_CORE_ASIO_SIGNAL_SET_HPP
 #define NX_CORE_ASIO_SIGNAL_SET_HPP
+
+#include <nx/common/types.hpp>
+
 #include <functional>
 #include <memory>
+#include <csignal>
 
 namespace nx::asio
 {
@@ -14,7 +18,7 @@ namespace nx::asio
     class signal_set
     {
     public:
-        using handler_type = std::function<void(int)>;
+        using handler_type = std::function<void(nx::result<int>)>;
 
         explicit
         signal_set(io_context & ctx);

@@ -47,7 +47,7 @@ namespace {
         if (g_current_pos == 0)
             return;
 
-        g_ptrs[g_current_pos--] = p;
+        g_ptrs[--g_current_pos] = p;
     }
 
 }
@@ -89,7 +89,12 @@ namespace nx {
         if (!ptr)
             return nullptr;
 
-        return new (ptr) error_descriptor(other);
+        // return new (ptr) error_descriptor(other);
+        ptr->category = other.category;
+        ptr->comment = other.comment;
+        ptr->location = other.location;
+        ptr->what_cache = other.what_cache;
+        return ptr;
     }
 
     void free_error_descriptor(error_descriptor * ptr) {

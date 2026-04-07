@@ -8,7 +8,15 @@
 #include <nx/common/types/errors/error.hpp>
 
 #define nx_error_code(name) \
-    static inline auto name = nx::error(std::errc::name);
+    struct name : public nx::error { \
+        explicit \
+        name (std::string_view comment, const nx::source_location & loc = nx::source_location::current()) \
+            : nx::error(std::make_error_code(std::errc::name), comment, loc) \
+            { } \
+        }; \
+
+// #define nx_error_code(name) \
+//     static inline auto name = nx::error(std::errc::name);
 
 namespace nx::err
 {
@@ -91,5 +99,7 @@ namespace nx::err
     nx_error_code(value_too_large)
     nx_error_code(wrong_protocol_type)
 }
+
+#undef nx_error_code
 
 #endif //NX_COMMON_ERROR_CODES_HPP

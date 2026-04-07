@@ -6,6 +6,7 @@
 #define NX_ASIO_CONTEXT_HPP
 
 #include <functional>
+#include <memory>
 #include <nx/asio/backend/backend_types.hpp>
 
 namespace nx::asio {

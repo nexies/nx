@@ -5,3 +5,7 @@
 [submodule "third-party/spdlog"]
 	path = third-party/spdlog
 	url = git@github.com:gabime/spdlog.git
+
+[submodule "third-party/Catch2"]
+	path = third-party/Catch2
+	url = https://github.com/catchorg/Catch2.git

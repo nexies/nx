@@ -77,8 +77,8 @@ namespace nx {
     template <typename Sender, typename Signal, typename Receiver, typename Slot>
     bool connect(Sender* sender, Signal&& signal, Receiver* receiver, Slot&& slot, uint8_t flags)
     {
-        using SenderBaseType = nx::detail::FunctionDescriptor<Signal>::MemberOf;
-        using ReceiverBaseType = nx::detail::FunctionDescriptor<Slot>::MemberOf;
+        using SenderBaseType = typename nx::detail::FunctionDescriptor<Signal>::MemberOf;
+        using ReceiverBaseType = typename nx::detail::FunctionDescriptor<Slot>::MemberOf;
 
         Functor sig_func (static_cast<SenderBaseType*>(sender), signal);
         Functor slot_func (static_cast<ReceiverBaseType*>(receiver), slot);
@@ -115,8 +115,8 @@ namespace nx {
     template <typename Sender, typename Signal, typename Receiver, typename Slot>
     bool disconnect(Sender* sender, Signal&& signal, Receiver* receiver, Slot&& slot, bool disconnect_all)
     {
-        using SenderBaseType = nx::detail::FunctionDescriptor<Signal>::MemberOf;
-        using ReceiverBaseType = nx::detail::FunctionDescriptor<Slot>::MemberOf;
+        using SenderBaseType = typename nx::detail::FunctionDescriptor<Signal>::MemberOf;
+        using ReceiverBaseType = typename nx::detail::FunctionDescriptor<Slot>::MemberOf;
 
         Functor sig_func (static_cast<SenderBaseType*>(sender), signal);
         Functor slot_func (static_cast<ReceiverBaseType*>(receiver), slot);

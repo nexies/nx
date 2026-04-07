@@ -6,6 +6,8 @@
 
 // #include <bits/valarray_array.h>
 
+// #include <ppltasks.h>
+
 #include "nx/asio/backend/backend.hpp"
 #include "../../include/nx/asio/context/reactor_handle.hpp"
 
@@ -21,7 +23,8 @@ namespace nx::asio
 
     io_context::impl::~impl()
     {
-        stop();
+        if (running_.load(std::memory_order_acquire))
+            stop();
     }
 
     void io_context::impl::post(task_t task)
@@ -60,6 +63,8 @@ namespace nx::asio
             tasks_processed += executeReady();
 
             auto timeout = computeWaitTimeout(duration);
+            if (stopped_.load(std::memory_order_acquire))
+                timeout = std::chrono::milliseconds(0);
 
             backend_event events[64];
             auto event_count = backend_->wait(events, 64, timeout);
@@ -92,6 +97,22 @@ namespace nx::asio
 
     std::size_t io_context::impl::poll_once()
     {
+        running_.store(true, std::memory_order_release);
+
+        {
+            std::lock_guard lg{state_mutex_};
+            owner_thread_id = std::this_thread::get_id();
+        }
+
+        std::size_t tasks_processed{0};
+        drainExpiredTimers();
+        tasks_processed += execute_one_ready();
+
+        backend_event events[64];
+        auto event_count = backend_->wait(events, 64, duration::zero());
+        processBackendEvents(events, event_count);
+        running_.store(false);
+        return tasks_processed;
     }
 
     void io_context::impl::stop()
@@ -204,7 +225,7 @@ namespace nx::asio
     std::size_t io_context::impl::executeReady()
     {
         std::deque<task_t> tasks_to_execute;
-        std::size_t tasks_processed{0};
+        std::size_t tasks_processed { 0 };
 
         {
             std::lock_guard lg(incoming_mutex_);
@@ -217,6 +238,29 @@ namespace nx::asio
             tasks_processed++;
         }
         tasks_to_execute.clear();
+
+        return tasks_processed;
+    }
+
+    std::size_t io_context::impl::execute_one_ready()
+    {
+        task_t task_to_execute { nullptr };
+        std::size_t tasks_processed { 0 };
+        {
+            std::lock_guard lg(incoming_mutex_);
+            // std::swap(tasks_to_execute, ready_);
+            if (!ready_.empty())
+            {
+                task_to_execute = ready_.front();
+                ready_.pop_front();
+            }
+        }
+
+        if (task_to_execute)
+        {
+            task_to_execute();
+            tasks_processed++;
+        }
 
         return tasks_processed;
     }
@@ -247,7 +291,7 @@ std::size_t io_context::impl::_consume_wakeup_event(backend_event* event)
         if (ok) return static_cast<std::size_t>(bytesRead);
         return 0;
     }
-#elif defined(NX_LINUX)
+#elif defined(NX_OS_LINUX)
 #include <unistd.h>
     std::size_t io_context::impl::_consume_wakeup_event(backend_event* event)
     {
