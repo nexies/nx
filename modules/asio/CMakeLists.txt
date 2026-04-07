@@ -23,6 +23,7 @@ set(nx_asio_sources
 
         src/steady_timer.cpp
         src/context/reactor_handle.cpp
+        tests/test_steady_timer.cpp
 )
 
 

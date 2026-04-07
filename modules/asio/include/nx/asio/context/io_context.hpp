@@ -34,20 +34,25 @@ namespace nx::asio {
 
         std::size_t
         run ();
+
         std::size_t
         run_once ();
+
         std::size_t
         run_for (duration duration);
+
         std::size_t
         run_until (time_point time_point);
 
         std::size_t
         poll ();
+
         std::size_t
         poll_once ();
 
         void
         stop ();
+
         void
         restart ();
 

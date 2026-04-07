@@ -14,34 +14,38 @@ namespace nx::asio
     class steady_timer
     {
     public:
-        using Task = io_context::task_t;
-        using Duration = duration;
-        using TimePoint = time_point;
+        using task_t = io_context::task_t;
+        using duration = duration;
+        using time_point = time_point;
+        using clock_t = clock;
 
     private:
         io_context & ctx_;
         timer_id id_;
-        TimePoint expiry_;
+        time_point expiry_;
 
     public:
+        NX_DISABLE_COPY(steady_timer)
+
         explicit
         steady_timer(io_context & ctx);
 
         void
-        asyncWait(Duration duration, Task task);
+        async_wait(duration duration, task_t task);
         void
-        asyncWait(TimePoint expiry, Task task);
+        async_wait(time_point expiry, task_t task);
 
         void cancel();
 
-        NX_NODISCARD Duration
-        timeLeft() const;
+        NX_NODISCARD duration
+        time_left() const;
 
         NX_NODISCARD timer_id
-        timerId() const;
+        id() const;
 
         NX_NODISCARD bool
         running () const;
+
     };
 }
 

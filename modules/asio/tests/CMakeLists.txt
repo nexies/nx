@@ -10,3 +10,8 @@ nx_configure_test(io_context
         COMPONENT asio
         SOURCE test_io_context.cpp
 )
+
+nx_configure_test(steady_timer
+        COMPONENT asio
+        SOURCE test_steady_timer.cpp
+)

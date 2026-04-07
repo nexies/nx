@@ -57,19 +57,22 @@ namespace nx::asio
         }
 
         std::size_t tasks_processed{0};
+        auto timeout = computeWaitTimeout(duration);
+        auto time_start = clock::now();
         while (!stopped_.load(std::memory_order_acquire))
         {
             drainExpiredTimers();
             tasks_processed += executeReady();
-
-            auto timeout = computeWaitTimeout(duration);
-            if (stopped_.load(std::memory_order_acquire))
-                timeout = std::chrono::milliseconds(0);
+            // if (stopped_.load(std::memory_order_acquire))
+            //     timeout = std::chrono::milliseconds(0);
 
             backend_event events[64];
             auto event_count = backend_->wait(events, 64, timeout);
 
             processBackendEvents(events, event_count);
+
+            if (timeout.has_value() && (clock::now() > time_start + timeout.value()))
+                break;
         }
         running_.store(false);
         return tasks_processed;
