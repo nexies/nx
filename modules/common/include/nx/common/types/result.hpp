@@ -75,7 +75,6 @@ namespace nx
             if (is_error_)
                 return std::get<error_type>(data_);
             throw nx::err::invalid_argument("nx::basic_result is not an error");
-            // throw std::invalid_argument("nx::basic_result is not a value");
         }
 
         NX_NODISCARD constexpr bool
@@ -89,11 +88,6 @@ namespace nx
                 return handler(error());
             return value();
         }
-
-        // NX_NODISCARD
-        // operator Type () noexcept {
-        //     return this->value_or({});
-        // }
 
         NX_NODISCARD constexpr explicit
         operator bool () const {
