@@ -25,16 +25,17 @@ set(nx_common_includes
         include/nx/common/types/errors/basic_error.hpp
 
         include/nx/common.hpp
-        include/nx/common/types/expected.hpp
+
+        include/nx/common/format/fmt/format.h
+        include/nx/common/format/format
+#        include/nx/common/types/size.hpp
+        include/nx/common/tweaks.hpp
 )
 
 set(nx_common_sources
         src/common.cpp
         src/types/errors/error_descriptor.cpp
         src/types/errors/error.cpp
-        include/nx/common/fmt/fmt.hpp
-        include/nx/common/format.hpp
-        include/nx/common/types/size.hpp
 )
 
 
@@ -42,6 +43,11 @@ add_library(nx_common
         ${nx_common_includes}
         ${nx_common_sources}
 )
+
+target_include_directories(nx_common PUBLIC
+        include/nx/common/format
+)
+
 
 nx_configure_component(nx_common
         NAME common

@@ -18,6 +18,8 @@
 // #define nx_error_code(name) \
 //     static inline auto name = nx::error(std::errc::name);
 
+# define nx_error_code(...)
+
 namespace nx::err
 {
     nx_error_code(address_family_not_supported)
