@@ -13,7 +13,6 @@ set(nx_logging_headers
         include/nx/logging/sinks/basic_file_sink.hpp
         include/nx/logging/sinks/dist_sink.hpp
         include/nx/logger.hpp
-        include/nx/logging/formatters/flag_formatters.hpp
 )
 
 set(nx_logging_sources
@@ -34,3 +33,5 @@ nx_configure_component(nx_logging
 target_link_libraries(nx_logging PUBLIC
         nx::common
 )
+
+add_subdirectory(tests)
