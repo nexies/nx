@@ -227,20 +227,20 @@ nx::Result nx::App::_createLogger() {
         return Result::Err("Failed to create file sink");
 
     combined->set_level(m_preferences.log_level);
-    auto logger = std::make_shared<spdlog::logger>(MAIN_LOGGER_NAME, combined);
-    logger->set_level(m_preferences.log_level);
+    auto logging = std::make_shared<spdlog::logging>(MAIN_LOGGER_NAME, combined);
+    logging->set_level(m_preferences.log_level);
     auto formatter = std::make_unique<spdlog::pattern_formatter>();
     formatter->add_flag<ThreadFormaterFlag>('T').set_pattern("[%Y-%m-%d %H:%M:%S.%f] [%n] ["%t|#1#"tid:%T] [%^%l%$] %v (%s:%#)");
 
-    logger->set_formatter(std::move(formatter));
-    spdlog::set_default_logger(logger);
+    logging->set_formatter(std::move(formatter));
+    spdlog::set_default_logger(logging);
 
 #if NX_TRACE_SIGNALS
     {
         auto const console_sink = std::make_shared<stdout_color_sink_mt>();
         console_sink->set_color_mode(spdlog::color_mode::always);
         console_sink->set_level(spdlog::level::trace);
-        auto signal_logger = std::make_shared<spdlog::logger>(NX_TRACE_SIGNALS_LOGGER_NAME, console_sink);
+        auto signal_logger = std::make_shared<spdlog::logging>(NX_TRACE_SIGNALS_LOGGER_NAME, console_sink);
         signal_logger->set_level(spdlog::level::trace);
 
         formatter = std::make_unique<spdlog::pattern_formatter>();
@@ -256,7 +256,7 @@ nx::Result nx::App::_createLogger() {
         auto const console_sink = std::make_shared<stdout_color_sink_mt>();
         console_sink->set_color_mode(spdlog::color_mode::always);
         console_sink->set_level(spdlog::level::trace);
-        auto devel_logger = std::make_shared<spdlog::logger>(NX_DEVEL_LOGGER_NAME, console_sink);
+        auto devel_logger = std::make_shared<spdlog::logging>(NX_DEVEL_LOGGER_NAME, console_sink);
         devel_logger->set_level(spdlog::level::trace);
 
         formatter = std::make_unique<spdlog::pattern_formatter>();

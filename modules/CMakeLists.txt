@@ -3,6 +3,7 @@ if(NOT DEFINED NX_BUILD_SHARED_LIBS)
 endif()
 
 add_subdirectory(common)
+add_subdirectory(logging)
 add_subdirectory(macro)
 add_subdirectory(asio)
 add_subdirectory(core)
@@ -10,7 +11,6 @@ add_subdirectory(tui)
 add_subdirectory(network)
 
 #    add_subdirectory(memory)
-#    add_subdirectory(logger)
 
 
 

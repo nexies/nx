@@ -7,7 +7,7 @@
 
 #include <nx/common/types/errors/error.hpp>
 
-#define nx_error_code(name) \
+#define nx_error_code_1(name) \
     struct name : public nx::error { \
         explicit \
         name (std::string_view comment, const nx::source_location & loc = nx::source_location::current()) \
@@ -15,8 +15,40 @@
             { } \
         }; \
 
-// #define nx_error_code(name) \
-//     static inline auto name = nx::error(std::errc::name);
+// // #define nx_error_code(name) \
+// //     static inline auto name = nx::error(std::errc::name);
+
+/// What do I want:
+///
+///     nx::error
+///
+///     nx::runtime_error
+///         - nx::access_error
+///
+///     nx::logic_error
+///         - nx::invalid_argument
+///         - nx::invalid_instruction
+///         - nx::invalid_order
+///         - nx::function_not_supported
+///
+///     nx::access_error
+///         - nx::
+///
+///     nx::memory_error
+///
+///     nx::user_error
+///
+///     nx::system_error ?
+///
+///
+///     nx::json_error
+///         - nx::invalid_json_key
+///
+///     nx::sql_error
+///         - nx::invalid_query
+///         -
+///
+
 
 # define nx_error_code(...)
 
@@ -48,9 +80,9 @@ namespace nx::err
     nx_error_code(host_unreachable)
     nx_error_code(identifier_removed)
     nx_error_code(illegal_byte_sequence)
-    nx_error_code(inappropriate_io_control_operation)
+    nx_error_code_1(inappropriate_io_control_operation)
     nx_error_code(interrupted)
-    nx_error_code(invalid_argument)
+    nx_error_code_1(invalid_argument)
     nx_error_code(invalid_seek)
     nx_error_code(io_error)
     nx_error_code(is_a_directory)
