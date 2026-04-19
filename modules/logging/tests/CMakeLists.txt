@@ -19,3 +19,9 @@ nx_configure_test(sinks
         COMPONENT logging
         SOURCE test_sinks.cpp
 )
+
+nx_configure_test(logger_manual
+        COMPONENT logging
+        SOURCE logger_manual.cpp
+        NO_CATCH
+)
