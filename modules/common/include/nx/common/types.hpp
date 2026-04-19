@@ -10,5 +10,6 @@
 #include <nx/common/types/result.hpp>
 // #include <nx/common/types/expected.hpp>
 #include <nx/common/types/singleton.hpp>
+#include <nx/common/types/enum_flags.hpp>
 
 #endif //NX_TYPES_HPP

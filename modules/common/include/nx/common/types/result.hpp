@@ -9,6 +9,7 @@
 #include <nx/common/helpers.hpp>
 
 #include <functional>
+#include <optional>
 #include <variant>
 
 namespace nx
@@ -125,10 +126,77 @@ namespace nx
             make_value(value_type());
         }
 
+        ~basic_result() {
+        }
+
         basic_result(const basic_result & other) = default;
         basic_result(basic_result && other) = default;
         basic_result & operator=(const basic_result & other) = default;
         basic_result & operator=(basic_result && other) = default;
+    };
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // basic_result<void, Error> — specialization for operations that return no
+    // value on success (only succeed or fail with an error).
+    // ──────────────────────────────────────────────────────────────────────────
+
+    template<typename Error>
+    class basic_result<void, Error> {
+    public:
+        using error_type = Error;
+        using value_type = void;
+
+    private:
+        std::optional<Error> error_;
+
+    public:
+        // ── Observers ─────────────────────────────────────────────────────────
+
+        NX_NODISCARD constexpr bool
+        has_value() const noexcept { return !error_.has_value(); }
+
+        NX_NODISCARD constexpr bool
+        is_error() const noexcept { return error_.has_value(); }
+
+        NX_NODISCARD constexpr explicit
+        operator bool() const noexcept { return has_value(); }
+
+        // Returns void — useful in generic code; throws if this is an error.
+        constexpr void
+        value() const {
+            if (is_error())
+                throw nx::err::invalid_argument("nx::basic_result<void> is not a value");
+        }
+
+        NX_NODISCARD constexpr const error_type &
+        error() const {
+            if (is_error())
+                return *error_;
+            throw nx::err::invalid_argument("nx::basic_result<void> is not an error");
+        }
+
+        // Calls handler(error) if this is an error, otherwise does nothing.
+        template<typename Handler>
+        void expect(Handler && handler) const {
+            if (is_error())
+                std::forward<Handler>(handler)(error());
+        }
+
+        // ── Constructors ──────────────────────────────────────────────────────
+
+        // Success — default-construct with {}
+        basic_result() noexcept : error_(std::nullopt) {}
+
+        basic_result(Error && e)       : error_(std::move(e)) {}
+        basic_result(const Error & e)  : error_(e) {}
+
+        basic_result(const basic_result &) = default;
+        basic_result(basic_result &&)      = default;
+
+        basic_result & operator=(const basic_result &) = default;
+        basic_result & operator=(basic_result &&)      = default;
+
+        ~basic_result() = default;
     };
 
     template<typename Value>

@@ -202,3 +202,68 @@ TEST_CASE("basic_result: move assignment preserves error state", "[basic_result]
     REQUIRE(dst.is_error());
     REQUIRE(dst.error() == "moved assigned error");
 }
+// ── basic_result<void> ────────────────────────────────────────────────────────
+
+using void_result = nx::basic_result<void, std::string>;
+
+TEST_CASE("basic_result<void>: default constructor is success", "[basic_result_void]")
+{
+    void_result r;
+
+    REQUIRE(r.has_value());
+    REQUIRE_FALSE(r.is_error());
+    REQUIRE(static_cast<bool>(r));
+}
+
+TEST_CASE("basic_result<void>: construct from error", "[basic_result_void]")
+{
+    void_result r(std::string("oops"));
+
+    REQUIRE_FALSE(r.has_value());
+    REQUIRE(r.is_error());
+    REQUIRE_FALSE(static_cast<bool>(r));
+    REQUIRE(r.error() == "oops");
+}
+
+TEST_CASE("basic_result<void>: value() does not throw on success", "[basic_result_void]")
+{
+    void_result r;
+    REQUIRE_NOTHROW(r.value());
+}
+
+TEST_CASE("basic_result<void>: value() throws on error", "[basic_result_void]")
+{
+    void_result r(std::string("fail"));
+    REQUIRE_THROWS_AS(r.value(), nx::err::invalid_argument);
+}
+
+TEST_CASE("basic_result<void>: error() throws on success", "[basic_result_void]")
+{
+    void_result r;
+    REQUIRE_THROWS_AS(r.error(), nx::err::invalid_argument);
+}
+
+TEST_CASE("basic_result<void>: expect calls handler only on error", "[basic_result_void]")
+{
+    bool called = false;
+
+    void_result ok;
+    ok.expect([&](const std::string &) { called = true; });
+    REQUIRE_FALSE(called);
+
+    void_result fail(std::string("bad"));
+    fail.expect([&](const std::string & msg) {
+        called = true;
+        REQUIRE(msg == "bad");
+    });
+    REQUIRE(called);
+}
+
+TEST_CASE("basic_result<void>: nx::result<void> alias works", "[basic_result_void]")
+{
+    nx::result<void> ok;
+    REQUIRE(ok.has_value());
+
+    nx::result<void> fail(nx::error { std::errc::invalid_argument });
+    REQUIRE(fail.is_error());
+}

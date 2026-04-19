@@ -1,0 +1,90 @@
+//
+// connection_info — per-object storage for all outgoing and incoming connections.
+//
+
+#pragma once
+
+#include <nx/common/helpers.hpp>
+#include <nx/core2/object/connection.hpp>
+
+#include <mutex>
+#include <set>
+#include <unordered_map>
+#include <vector>
+
+namespace nx::core {
+
+class object;
+
+// ──────────────────────────────────────────────────────────────────────────────
+// connection_info
+//
+// Owned by each object through object::impl.
+// Thread-safe: all public methods lock mutex_.
+//
+// Layout:
+//   by_sender_  — connections indexed by sender_key (sender ptr + signal id).
+//                 Used by emit() to quickly find all slots for a signal.
+//   by_receiver_ — connection IDs indexed by receiver ptr.
+//                  Used on receiver destruction to clean up connections.
+//   senders_     — objects whose signals this object is listening to.
+//                  Used on this object's destruction to notify senders.
+// ──────────────────────────────────────────────────────────────────────────────
+
+class connection_info {
+public:
+    explicit connection_info(object * owner);
+    ~connection_info();
+
+    NX_DISABLE_COPY(connection_info)
+
+    // ── outgoing (sender side) ────────────────────────────────────────────────
+
+    // Returns false if a unique connection already exists.
+    bool
+    add_connection(detail::connection_entry entry);
+
+    // Returns false if connection was not found.
+    bool
+    remove_connection(detail::connection_id_t id);
+
+    // Remove all connections to a specific receiver pointer.
+    void
+    remove_connections_to(void * receiver);
+
+    NX_NODISCARD bool
+    has_connection(detail::connection_id_t id) const;
+
+    // Returns a snapshot copy (safe to iterate while connections may change).
+    NX_NODISCARD std::vector<detail::connection_entry>
+    connections_for(detail::sender_key_t sender_key) const;
+
+    // ── incoming (receiver side) ──────────────────────────────────────────────
+
+    void
+    add_sender(object * sender);
+
+    void
+    remove_sender(object * sender);
+
+    // Called when this object is being destroyed.
+    // Notifies all senders that this receiver is gone.
+    void
+    notify_senders_of_destruction();
+
+private:
+    object *  owner_;
+    mutable std::mutex mutex_;
+
+    // sender_key → list of entries
+    std::unordered_map<detail::sender_key_t,
+                       std::vector<detail::connection_entry>> by_sender_;
+
+    // receiver ptr → set of connection IDs (for fast lookup on receiver death)
+    std::unordered_map<void *, std::set<detail::connection_id_t>> by_receiver_;
+
+    // objects whose signals we're listening to
+    std::set<object *> senders_;
+};
+
+} // namespace nx::core
