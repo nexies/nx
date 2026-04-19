@@ -20,14 +20,14 @@ nx_configure_test(sinks
         SOURCE test_sinks.cpp
 )
 
-nx_configure_test(logger_manual
+nx_configure_test(manual
         COMPONENT logging
-        SOURCE logger_manual.cpp
+        SOURCE test_logger_manual.cpp
         NO_CATCH
 )
 
-nx_configure_test(logger_manual_macros
+nx_configure_test(manual_macros
         COMPONENT logging
-        SOURCE logger_manual_macros.cpp
+        SOURCE test_logger_manual_macros.cpp
         NO_CATCH
 )

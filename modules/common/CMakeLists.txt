@@ -30,13 +30,13 @@ set(nx_common_includes
         include/nx/common/format/format
 #        include/nx/common/types/size.hpp
         include/nx/common/tweaks.hpp
+        include/nx/common/types/size.hpp
 )
 
 set(nx_common_sources
         src/common.cpp
         src/types/errors/error_descriptor.cpp
         src/types/errors/error.cpp
-        include/nx/common/types/size.hpp
 )
 
 

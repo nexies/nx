@@ -12,12 +12,14 @@ set(nx_logging_headers
         include/nx/logging/sinks/stdout_sink.hpp
         include/nx/logging/sinks/basic_file_sink.hpp
         include/nx/logging/sinks/dist_sink.hpp
-        include/nx/logger.hpp
+        include/nx/logging.hpp
 )
 
 set(nx_logging_sources
         src/pattern_formatter.cpp
         src/registry.cpp
+        tests/test_logger_manual_macros.cpp
+        tests/test_logger_manual.cpp
 )
 
 add_library(nx_logging
@@ -27,7 +29,7 @@ add_library(nx_logging
 
 nx_configure_component(nx_logging
         NAME logging
-        VERSION 0.0.1
+        VERSION 0.1.0
 )
 
 target_link_libraries(nx_logging PUBLIC
