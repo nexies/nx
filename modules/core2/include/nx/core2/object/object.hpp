@@ -143,3 +143,6 @@ private:
 
 
 } // namespace nx::core
+
+
+#include <nx/core2/object/signal_functions.hpp>

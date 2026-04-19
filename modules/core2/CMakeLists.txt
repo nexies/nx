@@ -13,6 +13,8 @@ set(nx_core2_headers
     include/nx/core2/io_device.hpp
     include/nx/core2/app/application.hpp
     include/nx/core2/core2.hpp
+    include/nx/core2/object/signal_functions.hpp
+    include/nx/core2/object.hpp
 )
 
 set(nx_core2_sources
@@ -22,8 +24,7 @@ set(nx_core2_sources
     src/loop/loop.cpp
     src/timer/timer.cpp
     src/app/application.cpp
-        include/nx/core2/object/signal_functions.hpp
-        include/nx/core2/object.hpp
+
 )
 
 add_library(nx_core2
