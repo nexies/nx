@@ -25,3 +25,9 @@ nx_configure_test(logger_manual
         SOURCE logger_manual.cpp
         NO_CATCH
 )
+
+nx_configure_test(logger_manual_macros
+        COMPONENT logging
+        SOURCE logger_manual_macros.cpp
+        NO_CATCH
+)

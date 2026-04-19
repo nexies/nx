@@ -68,7 +68,7 @@ file_contains(fs::path const& path, std::string_view needle)
 void
 thread_id_flag(log_message const&, memory_buffer_t& buf)
 {
-    static constexpr char k[] = "tid";
+    static constexpr char k[] = "TID";
     buf.append(k, k + sizeof(k) - 1);
 }
 
