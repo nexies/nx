@@ -37,6 +37,7 @@ set(nx_common_sources
         src/common.cpp
         src/types/errors/error_descriptor.cpp
         src/types/errors/error.cpp
+        include/nx/common/types/static_string.hpp
 )
 
 

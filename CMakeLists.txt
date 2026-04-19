@@ -33,15 +33,7 @@ add_library (nx::nx ALIAS nx)
 
 list (APPEND CMAKE_MODULE_PATH "${NX_CMAKE_MODULE_PATH}")
 include(nxImportModules)
-
-include(nxVersionInfo)
-
-#add_subdirectory(third-party/spdlog)
-#add_subdirectory(third-party/FTXUI)
-
-#if(NX_BUILD_EXAMPLES)
-#    add_subdirectory(examples)
-#endif()
+#include(nxVersionInfo)
 
 get_property(components GLOBAL PROPERTY NX_ENABLED_COMPONENTS)
 string(JOIN ", " _comp_str ${components})

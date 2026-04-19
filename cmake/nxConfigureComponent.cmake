@@ -73,8 +73,6 @@ function(nx_configure_component _target)
         )
     endif()
 
-
-
     get_property(_ver GLOBAL PROPERTY NX_${_name_up}_VERSION_STR)
     if(_ver)
         nx_log("(v${_ver})")
