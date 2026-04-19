@@ -77,11 +77,13 @@ void signalName (__NX_SIGNAL_MAKE_ARGUMENTS(__VA_ARGS__)) \
 #endif
 
 #if NX_TRACE_SIGNALS
+#   include <nx/logging/macros.hpp>
+#   include <nx/logging/registry.hpp>
 #   define __NX_SIGNAL_LOGGER_CALL_0(signalName, ...) \
-        SPDLOG_LOGGER_TRACE(::spdlog::get(NX_TRACE_SIGNALS_LOGGER_NAME), "emmiting " #signalName "()");
+        NX_LOG_LOGGER_TRACE(::nx::logging::get(NX_TRACE_SIGNALS_LOGGER_NAME), "emmiting " #signalName "()");
 
 #   define __NX_SIGNAL_LOGGER_CALL_1(signalName, ...) \
-        SPDLOG_LOGGER_TRACE(::spdlog::get(NX_TRACE_SIGNALS_LOGGER_NAME), "emmiting " #signalName "(" #__VA_ARGS__")");
+        NX_LOG_LOGGER_TRACE(::nx::logging::get(NX_TRACE_SIGNALS_LOGGER_NAME), "emmiting " #signalName "(" #__VA_ARGS__")");
 
 #   define __NX_SIGNAL_LOGGER_CALL(signalName, ...) \
         NX_CONCAT(__NX_SIGNAL_LOGGER_CALL_, NX_HAS_ARGS(__VA_ARGS__))(signalName, __VA_ARGS__)

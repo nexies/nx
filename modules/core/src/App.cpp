@@ -8,12 +8,6 @@
 #include <iostream>
 #include <signal.h>
 
-#include <spdlog/sinks/basic_file_sink.h>
-#include <spdlog/sinks/ringbuffer_sink.h>
-#include <spdlog/sinks/stdout_color_sinks.h>
-#include <spdlog/sinks/dist_sink.h>
-#include <spdlog/common-inl.h>
-
 #define MAIN_LOGGER_NAME "main"
 
 #include <nx/core/Thread.hpp>

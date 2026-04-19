@@ -1,23 +1,24 @@
 
 set(nx_logging_headers
-        include/nx/logging/sinks/basic_sink.hpp
         include/nx/logging/levels.hpp
-        include/nx/logging/message.hpp
         include/nx/logging/types.hpp
+        include/nx/logging/message.hpp
         include/nx/logging/logger.hpp
+        include/nx/logging/registry.hpp
+        include/nx/logging/macros.hpp
+        include/nx/logging/pattern_formatter.hpp
+        include/nx/logging/logging.hpp
+        include/nx/logging/sinks/sink.hpp
+        include/nx/logging/sinks/stdout_sink.hpp
+        include/nx/logging/sinks/basic_file_sink.hpp
+        include/nx/logging/sinks/dist_sink.hpp
         include/nx/logger.hpp
-
-        include/nx/logging/formatters/formatter.hpp
-        include/nx/logging/sinks/formatted_sink.hpp
-        include/nx/logging/sinks/ansi_console_sink.hpp
-        include/nx/logging/formatters/colored_ansi_formatter.hpp
+        include/nx/logging/formatters/flag_formatters.hpp
 )
 
 set(nx_logging_sources
-        src/logger.cpp
-        src/message.cpp
-        src/formatter.cpp
-        include/nx/logging/formatters/flag_formatters.hpp
+        src/pattern_formatter.cpp
+        src/registry.cpp
 )
 
 add_library(nx_logging

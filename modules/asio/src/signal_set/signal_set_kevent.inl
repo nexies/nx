@@ -8,8 +8,6 @@
 
 #include <nx/asio/context/reactor_handle.hpp>
 
-#include "../../../../third-party/spdlog/include/spdlog/fmt/bundled/chrono.h"
-
 namespace nx::asio
 {
     class signal_set_kevent : public signal_set::impl

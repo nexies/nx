@@ -1,41 +1,42 @@
 //
-// Created by nexie on 18.04.2026.
+// One log line payload and metadata (before pattern formatting).
 //
 
 #ifndef NX_LOGGER_MESSAGE_HPP
 #define NX_LOGGER_MESSAGE_HPP
+
+#include <chrono>
+#include <string>
 #include <string_view>
 
-#include <nx/logging/levels.hpp>
 #include <nx/logging/types.hpp>
 
 namespace nx::logging {
-    struct log_message {
-        string_view_t logger_name;
-        string_view_t payload;
-        level_t log_level;
-        source_location_t location;
-        time_point_t time_point;
-        tid_t tid;
 
-        log_message();
+struct log_message {
+    std::string_view logger_name {};
+    std::string payload {};
+    level log_level { level::trace };
+    nx::source_location location { nx::g_undefined_location };
+    time_point_t time_point {};
 
-        log_message(
-            string_view_t logger_name,
-            string_view_t payload,
-            level_t log_level,
-            source_location_t location,
-            time_point_t time_point,
-            tid_t tid
-        );
+    log_message() = default;
 
-        log_message(
-            string_view_t logger_name,
-            string_view_t payload,
-            level_t log_level,
-            source_location_t location
-        );
-    };
-}
+    log_message(
+        std::string_view logger_name_,
+        std::string payload_,
+        level log_level_,
+        nx::source_location location_,
+        time_point_t time_point_
+    )
+        : logger_name { logger_name_ }
+        , payload { std::move(payload_) }
+        , log_level { log_level_ }
+        , location { location_ }
+        , time_point { time_point_ }
+    {}
+};
 
-#endif //NX_LOGGER_MESSAGE_HPP
+} // namespace nx::logging
+
+#endif // NX_LOGGER_MESSAGE_HPP

@@ -65,14 +65,11 @@ if (NX_ENABLE_CXX_20_FEATURES)
     target_compile_definitions(nx_core PUBLIC -D__nx_cxx_20_enum)
 endif()
 
-#find_package(spdlog)
-find_package(spdlog REQUIRED)
-
 target_link_libraries(nx_core PUBLIC
         nx::common
         nx::asio
         nx::macro
-        spdlog::spdlog
+        nx::logging
 )
 
 

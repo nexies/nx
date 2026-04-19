@@ -9,13 +9,12 @@
 #include <nx/core/Loop.hpp>
 #include <nx/core/detail/logger_defs.hpp>
 
-#include "spdlog/pattern_formatter.h"
-#include <spdlog/sinks/basic_file_sink.h>
-#include <spdlog/sinks/ringbuffer_sink.h>
-#include <spdlog/sinks/stdout_color_sinks.h>
-#include <spdlog/sinks/dist_sink.h>
-#include <spdlog/details/log_msg.h>
-#include <spdlog/common-inl.h>
+#include <nx/logging/logging.hpp>
+#include <nx/logging/message.hpp>
+#include <nx/logging/pattern_formatter.hpp>
+#include <nx/logging/types.hpp>
+
+#include <string>
 
 // #include <boost/asio/signal_set.hpp>
 #include <nx/asio/signal_set.hpp>
@@ -25,25 +24,17 @@ nx::asio::signal_set * g_signal_set;
 
 namespace
 {
-    class ThreadFormaterFlag : public spdlog::custom_flag_formatter
+    void
+    thread_id_flag(nx::logging::log_message const&, nx::logging::memory_buffer_t& dest)
     {
-    public:
-        void format(const spdlog::details::log_msg &, const std::tm &, spdlog::memory_buf_t &dest) override
+        std::string txt = "n/a";
+        auto const id = ::nx::Thread::CurrentId();
+        if (id != ::nx::detail::g_invalidThreadId)
         {
-            std::string txt = "n/a";
-            auto id = ::nx::Thread::CurrentId();
-            if (id != ::nx::detail::g_invalidThreadId)
-            {
-                txt = std::to_string(id);
-            }
-            dest.append(txt.data(), txt.data() + txt.size());
+            txt = std::to_string(id);
         }
-
-        std::unique_ptr<custom_flag_formatter> clone() const override
-        {
-            return spdlog::details::make_unique<ThreadFormaterFlag>();
-        }
-    };
+        dest.append(txt.data(), txt.data() + txt.size());
+    }
 }
 
 namespace nx::core
@@ -143,72 +134,58 @@ namespace nx::core
     }
 
     Result Application::_createLogger() {
-        using namespace spdlog::sinks;
-    auto combined = std::make_shared<spdlog::sinks::dist_sink_mt>();
+        auto combined = std::make_shared<nx::logging::dist_sink>();
 
-    if (auto const console_sink = std::make_shared<stdout_color_sink_mt>(); console_sink)
-    {
-        console_sink->set_color_mode(spdlog::color_mode::always);
-        console_sink->set_level(spdlog::level::trace);
+        auto const console_sink = std::make_shared<nx::logging::stdout_sink>();
+        console_sink->set_color_mode(nx::logging::color_mode::always);
+        console_sink->set_level(nx::logging::level::trace);
         combined->add_sink(console_sink);
-    }
-    else
-        return Result::Err("Failed to create console log sink");
 
-    if (auto const trace_sink = std::make_shared<stdout_color_sink_mt>(); trace_sink)
-    {
-        trace_sink->set_color_mode(spdlog::color_mode::always);
-    }
+        combined->set_level(nx::logging::level::trace);
+        auto main_logger = std::make_shared<nx::logging::logger>("nx", combined);
+        main_logger->set_level(nx::logging::level::trace);
 
-    // if (auto const file_sink = std::make_shared<basic_file_sink_mt>(m_preferences.log_file); file_sink)
-    // {
-    //     combined->add_sink(file_sink);
-    //     combined->set_level(spdlog::level::debug);
-    // }
-    // else
-    //     return Result::Err("Failed to create file sink");
+        auto formatter = std::make_unique<nx::logging::pattern_formatter>();
+        formatter->add_custom_flag('T', thread_id_flag);
+        formatter->set_pattern("[%Y-%m-%d %H:%M:%S.%f] [%n] [tid:%T] [%^%l%$] %v (%s:%#)");
 
-    combined->set_level(spdlog::level::trace);
-    auto logger = std::make_shared<spdlog::logger>("nx", combined);
-    logger->set_level(spdlog::level::trace);
-    auto formatter = std::make_unique<spdlog::pattern_formatter>();
-    formatter->add_flag<ThreadFormaterFlag>('T').set_pattern("[%Y-%m-%d %H:%M:%S.%f] [%n] ["/*%t|#1#*/"tid:%T] [%^%l%$] %v (%s:%#)");
-
-    logger->set_formatter(std::move(formatter));
-    spdlog::set_default_logger(logger);
+        main_logger->set_formatter(std::move(formatter));
+        nx::logging::set_default_logger(main_logger);
 
 #if NX_TRACE_SIGNALS
-    {
-        auto const console_sink = std::make_shared<stdout_color_sink_mt>();
-        console_sink->set_color_mode(spdlog::color_mode::always);
-        console_sink->set_level(spdlog::level::trace);
-        auto signal_logger = std::make_shared<spdlog::logger>(NX_TRACE_SIGNALS_LOGGER_NAME, console_sink);
-        signal_logger->set_level(spdlog::level::trace);
+        {
+            auto const signal_console = std::make_shared<nx::logging::stdout_sink>();
+            signal_console->set_color_mode(nx::logging::color_mode::always);
+            signal_console->set_level(nx::logging::level::trace);
+            auto signal_logger = std::make_shared<nx::logging::logger>(NX_TRACE_SIGNALS_LOGGER_NAME, signal_console);
+            signal_logger->set_level(nx::logging::level::trace);
 
-        formatter = std::make_unique<spdlog::pattern_formatter>();
-        formatter->add_flag<ThreadFormaterFlag>('T').set_pattern("%^[%Y-%m-%d %H:%M:%S:%f] [%n] ["/*%t|#1#*/"tid:%T] [%l] %v %$(%s:%#)");
-        signal_logger->set_formatter(std::move(formatter));
+            auto fmt2 = std::make_unique<nx::logging::pattern_formatter>();
+            fmt2->add_custom_flag('T', thread_id_flag);
+            fmt2->set_pattern("%^[%Y-%m-%d %H:%M:%S:%f] [%n] [tid:%T] [%l] %v %$(%s:%#)");
+            signal_logger->set_formatter(std::move(fmt2));
 
-        spdlog::register_logger(signal_logger);
-    }
+            nx::logging::register_logger(signal_logger);
+        }
 #endif
 
 #if NX_DEVEL_LOGGING
-    {
-        auto const console_sink = std::make_shared<stdout_color_sink_mt>();
-        console_sink->set_color_mode(spdlog::color_mode::always);
-        console_sink->set_level(spdlog::level::trace);
-        auto devel_logger = std::make_shared<spdlog::logger>(NX_DEVEL_LOGGER_NAME, console_sink);
-        devel_logger->set_level(spdlog::level::trace);
+        {
+            auto const devel_console = std::make_shared<nx::logging::stdout_sink>();
+            devel_console->set_color_mode(nx::logging::color_mode::always);
+            devel_console->set_level(nx::logging::level::trace);
+            auto devel_logger = std::make_shared<nx::logging::logger>(NX_DEVEL_LOGGER_NAME, devel_console);
+            devel_logger->set_level(nx::logging::level::trace);
 
-        formatter = std::make_unique<spdlog::pattern_formatter>();
-        formatter->add_flag<ThreadFormaterFlag>('T').set_pattern("[%Y-%m-%d %H:%M:%S:%f] [%n] ["/*%t|#1#*/"tid:%T] [%^%l%$] %v (%s:%#)");
-        devel_logger->set_formatter(std::move(formatter));
+            auto fmt3 = std::make_unique<nx::logging::pattern_formatter>();
+            fmt3->add_custom_flag('T', thread_id_flag);
+            fmt3->set_pattern("[%Y-%m-%d %H:%M:%S.%f] [%n] [tid:%T] [%^%l%$] %v (%s:%#)");
+            devel_logger->set_formatter(std::move(fmt3));
 
-        spdlog::register_logger(devel_logger);
-    }
+            nx::logging::register_logger(devel_logger);
+        }
 #endif
-    return Result::Ok();
+        return Result::Ok();
     }
 
     Result Application::_makeMainThread() {
