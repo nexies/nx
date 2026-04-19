@@ -11,11 +11,9 @@
 
 #pragma once
 
-#include <nx/common.hpp>
 #include <nx/common/helpers.hpp>
 #include <nx/common/types/result.hpp>
 
-#include <nx/core2/detail/function_id.hpp>
 #include <nx/core2/detail/signal_defs.hpp>
 #include <nx/core2/detail/property_defs.hpp>
 #include <nx/core2/detail/object_defs.hpp>
@@ -23,7 +21,6 @@
 #include <nx/core2/object/connection_info.hpp>
 
 #include <string>
-#include <tuple>
 #include <type_traits>
 #include <vector>
 

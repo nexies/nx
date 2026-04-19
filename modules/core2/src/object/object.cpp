@@ -25,14 +25,26 @@ public:
 
     ~impl()
     {
-        // Disconnect from all senders before destroying children so that
-        // no signal fires on a half-destroyed tree.
+        // Unlink from parent first so the parent won't attempt to delete us
+        // when its own destructor runs (handles stack-allocated children that
+        // are destroyed before their parent).
+        if (parent_)
+            parent_->impl_->remove_child(owner_);
+
+        // Receiver side: tell senders to drop connections pointing at us.
         conn_info_.notify_senders_of_destruction();
 
-        // Destroy children in reverse construction order.
+        // Sender side: remove ourselves from each receiver's senders_ set so
+        // receivers won't attempt to access us after our memory is freed.
+        conn_info_.notify_receivers_of_destruction();
+
+        // Destroy owned (heap) children in reverse construction order.
+        // Null out child's parent_ pointer before deleting so the child's own
+        // ~impl() does not try to call back into us while we are mid-destruction.
         while (!children_.empty()) {
             auto * child = children_.back();
             children_.pop_back();
+            child->impl_->parent_ = nullptr;
             delete child;
         }
     }

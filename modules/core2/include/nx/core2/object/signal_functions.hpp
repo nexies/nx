@@ -62,7 +62,7 @@ connect(Sender *         sender,
 
     const auto sig_id  = detail::get_function_id(signal);
     const auto slot_id = detail::get_function_id(slot);
-    const auto conn_id = detail::make_connection_id(sender, sig_id, receiver, slot_id);
+    const auto conn_id = detail::make_connection_id();
     const auto sk      = detail::make_sender_key(sender, sig_id);
 
     detail::connection_handler_t handler =
@@ -132,10 +132,12 @@ disconnect(Sender * sender, SigFn signal, Receiver * receiver, SlotFn slot)
 {
     const auto sig_id  = detail::get_function_id(signal);
     const auto slot_id = detail::get_function_id(slot);
-    const auto conn_id = detail::make_connection_id(sender, sig_id, receiver, slot_id);
+    const auto sk      = detail::make_sender_key(sender, sig_id);
 
+    // Connection IDs are now unique counters — find first match by (receiver, slot_id).
     auto * sender_info = static_cast<object *>(sender)->_nx_connection_info();
-    if (!sender_info->remove_connection(conn_id))
+    if (!sender_info->remove_connection_by_key(
+            sk, static_cast<void *>(receiver), slot_id))
         return false;
 
     if constexpr (std::is_base_of_v<object, Receiver>)

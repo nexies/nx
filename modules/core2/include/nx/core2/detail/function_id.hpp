@@ -7,6 +7,7 @@
 
 #include <nx/common/helpers.hpp>
 
+#include <atomic>
 #include <cstdint>
 #include <cstring>
 #include <type_traits>
@@ -124,13 +125,14 @@ make_sender_key(const void * sender, function_id_t signal_id) noexcept
     return s ^ (signal_id * 2654435761ULL);
 }
 
+// Returns a globally unique connection ID (monotonic counter).
+// Using a counter instead of a content hash lets multiple identical
+// (sender, signal, receiver, slot) connections coexist with distinct IDs.
 NX_NODISCARD inline connection_id_t
-make_connection_id(const void * sender, function_id_t signal_id,
-                   const void * receiver, function_id_t slot_id) noexcept
+make_connection_id() noexcept
 {
-    const sender_key_t sk = make_sender_key(sender, signal_id);
-    const sender_key_t rk = make_sender_key(receiver, slot_id);
-    return sk ^ (rk << 32u) ^ (rk >> 32u);
+    static std::atomic<connection_id_t> counter { 1 };
+    return counter.fetch_add(1, std::memory_order_relaxed);
 }
 
 // ──────────────────────────────────────────────────────────────────────────────

@@ -26,12 +26,12 @@ connection_info::add_connection(detail::connection_entry entry)
 {
     std::lock_guard lock { mutex_ };
 
-    // Unique check
+    // Unique check: compare by (receiver, slot_id) since IDs are now counters
     if (entry.is_unique()) {
         auto it = by_sender_.find(entry.sender_key);
         if (it != by_sender_.end()) {
             for (const auto & e : it->second)
-                if (e.id == entry.id)
+                if (e.receiver == entry.receiver && e.slot_id == entry.slot_id)
                     return false;
         }
     }
@@ -45,6 +45,40 @@ connection_info::add_connection(detail::connection_entry entry)
     if (recv_ptr)
         by_receiver_[recv_ptr].insert(id);
 
+    return true;
+}
+
+bool
+connection_info::remove_connection_by_key(detail::sender_key_t sender_key,
+                                           void * receiver,
+                                           detail::function_id_t slot_id)
+{
+    std::lock_guard lock { mutex_ };
+
+    auto it = by_sender_.find(sender_key);
+    if (it == by_sender_.end())
+        return false;
+
+    auto & list = it->second;
+    auto entry_it = std::find_if(list.begin(), list.end(),
+                                 [receiver, slot_id](const auto & e) {
+                                     return e.receiver == receiver &&
+                                            e.slot_id  == slot_id;
+                                 });
+    if (entry_it == list.end())
+        return false;
+
+    const auto id = entry_it->id;
+    list.erase(entry_it);
+
+    if (receiver) {
+        auto rit = by_receiver_.find(receiver);
+        if (rit != by_receiver_.end()) {
+            rit->second.erase(id);
+            if (rit->second.empty())
+                by_receiver_.erase(rit);
+        }
+    }
     return true;
 }
 
@@ -135,6 +169,27 @@ connection_info::remove_sender(object * sender)
 {
     std::lock_guard lock { mutex_ };
     senders_.erase(sender);
+}
+
+void
+connection_info::notify_receivers_of_destruction()
+{
+    // Snapshot receiver pointers while holding our lock, then release before
+    // touching receiver objects to avoid lock-ordering issues.
+    std::vector<object *> receivers;
+    {
+        std::lock_guard lock { mutex_ };
+        for (auto & [sk, list] : by_sender_) {
+            for (auto & entry : list) {
+                if (entry.receiver)
+                    receivers.push_back(static_cast<object *>(entry.receiver));
+            }
+        }
+    }
+
+    for (auto * recv : receivers)
+        if (recv && recv->_nx_connection_info())
+            recv->_nx_connection_info()->remove_sender(owner_);
 }
 
 void

@@ -5,6 +5,7 @@
 #pragma once
 
 #include <nx/common/helpers.hpp>
+#include <nx/core2/detail/function_id.hpp>
 #include <nx/core2/object/connection.hpp>
 
 #include <mutex>
@@ -48,6 +49,13 @@ public:
     bool
     remove_connection(detail::connection_id_t id);
 
+    // Removes the first connection matching sender_key + receiver ptr + slot_id.
+    // Used by disconnect() since IDs are now unique counters, not content hashes.
+    bool
+    remove_connection_by_key(detail::sender_key_t sender_key,
+                             void * receiver,
+                             detail::function_id_t slot_id);
+
     // Remove all connections to a specific receiver pointer.
     void
     remove_connections_to(void * receiver);
@@ -67,10 +75,16 @@ public:
     void
     remove_sender(object * sender);
 
-    // Called when this object is being destroyed.
-    // Notifies all senders that this receiver is gone.
+    // Called when this object (as receiver) is being destroyed.
+    // Walks the senders_ set and asks each sender to drop connections to us.
     void
     notify_senders_of_destruction();
+
+    // Called when this object (as sender) is being destroyed.
+    // Walks outgoing connections and removes this object from each receiver's
+    // senders_ set, so receivers won't try to access us after we're gone.
+    void
+    notify_receivers_of_destruction();
 
 private:
     object *  owner_;
