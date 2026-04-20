@@ -169,7 +169,7 @@ namespace nx
         }
 
         NX_NODISCARD constexpr const error_type &
-        error() const {
+            error() const {
             if (is_error())
                 return *error_;
             throw nx::err::invalid_argument("nx::basic_result<void> is not an error");

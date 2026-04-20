@@ -8,20 +8,23 @@
 
 struct obj : public nx::core::object
 {
+    NX_OBJECT(obj)
+
     int value = 0;
 
     int get_value() const { return value; }
 
-    void set_value (int value) { this->value = value; }
+    void set_value (const int & value) { this->value = value; }
 };
 
 int main ()
 {
-    nx::core::detail::meta_property_registry<obj> reg;
+    auto & reg = obj::static_meta_object().property_registry();
     auto desc = reg.register_object_property<int>("value", &obj::value, &obj::get_value, &obj::set_value);
 
     obj o;
-    auto set_res = reg.static_set("value", &o, 100.0);
+
+    auto set_res = reg.static_set("value", &o, 100);
 
     if (!set_res)
     {

@@ -38,6 +38,7 @@ set(nx_macro_headers
         include/nx/macro/args/parse-2.hpp
         include/nx/macro/args/argset.hpp
         include/nx/macro/util/put_at_fast.hpp
+        include/nx/macro/args/rules.hpp
 )
 
 # ---------------- Configuration -------------------

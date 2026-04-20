@@ -47,7 +47,7 @@ namespace nx::err
         explicit
         property_error(std::string_view msg,
             const nx::source_location& loc = nx::source_location::current()) noexcept
-        : meta_error(msg, loc) {}
+        : meta_error(s_category(), 1, msg, loc) {}
 
 
         property_error(int code, std::string_view msg,
