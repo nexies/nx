@@ -2,18 +2,26 @@
 // Created by nexie on 4/1/2026.
 //
 
-#include <iostream>
 #include <nx/common/types/errors/error.hpp>
+#include <sstream>
 
-namespace nx
-{
+namespace {
+    const nx::named_error_category g_nx_error_category { "nx" };
+}
+
+namespace nx {
+
+    const std::error_category& error_category() noexcept {
+        return g_nx_error_category;
+    }
+
+    // ── private helpers ──────────────────────────────────────────────────────
+
     error error::get_copy() const
     {
         if (flag_ == by_cat)
-        {
-            return error(code_, d_.cat);
-        }
-        return error(code_, d_.desc->category, d_.desc->comment, d_.desc->location);
+            return error(*d_.cat, code_, {}, g_undefined_location);
+        return error(*d_.desc->category, code_, d_.desc->comment, d_.desc->location);
     }
 
     error_descriptor* error::try_alloc_desc() noexcept
@@ -21,189 +29,130 @@ namespace nx
         if (flag_ == by_desc)
             return d_.desc;
 
-        auto tmp = make_error_descriptor(g_undefined_location, "");
-        if (tmp)
-        {
+        auto* tmp = make_error_descriptor(g_undefined_location, {});
+        if (tmp) {
             tmp->category = d_.cat;
             d_.desc = tmp;
             flag_ = by_desc;
-            return d_.desc;
         }
-        return nullptr;
+        return tmp;
     }
 
     void error::try_free_desc() noexcept
     {
         if (flag_ == by_cat)
             return;
-        auto tmp = d_.desc->category;
+        auto* cat = d_.desc->category;
         free_error_descriptor(d_.desc);
-        d_.cat = tmp;
+        d_.cat = cat;
         flag_ = by_cat;
     }
 
     void error::promote_desc() noexcept
     {
-        if (flag_ == by_cat)
-        {
-            auto tmp_cat = d_.cat;
-            d_.desc = try_alloc_desc();
-
-            if (!d_.desc)
-            {
-                d_.cat = tmp_cat;
-                return;
-            }
-            d_.desc->category = tmp_cat;
-        }
+        if (flag_ == by_desc)
+            return;
+        auto* cat = d_.cat;
+        if (!try_alloc_desc())
+            d_.cat = cat;  // restore on alloc failure
+        else
+            d_.desc->category = cat;
     }
+
+    // ── protected constructor for subclasses ─────────────────────────────────
+
+    error::error(const std::error_category& cat, int code, std::string_view message,
+                 const nx::source_location& loc) noexcept
+        : code_(code), flag_(by_cat), d_ {}
+    {
+        d_.cat = const_cast<std::error_category*>(&cat);
+        auto* desc = try_alloc_desc();
+        if (!desc)
+            return;
+        flag_ = by_desc;
+        d_.desc->category = const_cast<std::error_category*>(&cat);
+        d_.desc->location = loc;
+        d_.desc->comment  = message;
+    }
+
+    // ── public constructors ──────────────────────────────────────────────────
 
     error::error() noexcept
-        : code_ { 0 }
-        , flag_ {by_cat}
-        , d_ { nullptr }
+        : code_(0), flag_(by_cat), d_ {}
     {
-        d_.cat = const_cast<std::error_category*>(&(std::system_category()));
+        d_.cat = const_cast<std::error_category*>(&error_category());
     }
 
-    error::error(std::errc errc) noexcept :
-        error(std::make_error_code(errc))
-    {
+    error::error(std::string_view message, const nx::source_location& loc) noexcept
+        : error(error_category(), 1, message, loc)
+    {}
 
-    }
-
-    error::error(int code, const std::error_category* cat)
-        : code_ { code }
-        , flag_ { by_cat }
-        , d_ { const_cast<std::error_category*> (cat) }
-    {
-
-    }
+    error::error(int code, std::string_view message, const nx::source_location& loc) noexcept
+        : error(error_category(), code, message, loc)
+    {}
 
     error::error(const std::error_code& code) noexcept
-        : error(code.value(), const_cast<std::error_category *>(&code.category()))
+        : code_(code.value()), flag_(by_cat), d_ {}
     {
-
+        d_.cat = const_cast<std::error_category*>(&code.category());
     }
 
-    error::error(int code, const std::error_category* cat, std::string_view comment, const nx::source_location& loc) noexcept
-        : code_ { code }
-        , flag_ { by_cat }
-        , d_ { nullptr }
-    {
-        d_.desc = try_alloc_desc();
-        if (!d_.desc)
-        {
-            flag_ = by_cat;
-            d_.cat = const_cast<std::error_category*> (cat);
-            return;
-        }
-
-        flag_ = by_desc;
-        d_.desc->category = const_cast<std::error_category*> (cat);
-        d_.desc->location = loc;
-        d_.desc->comment = comment;
-    }
-
-    // error::error(std::errc errc) noexcept
-    //     : code_ { std::make_error_code(errc).value() }
-    //     , desc_ { std::make_error_code(errc).category() }
-    // {
-    //
-    // }
-    //
-    // error::error(const std::error_code& code) noexcept
-    //     : code_ { code }
-    //     , desc_ { nullptr }
-    // {
-    //
-    // }
-    //
-    // error::error(int code, const std::error_category& cat) noexcept
-    //     : code_ (code, cat)
-    //     , desc_ { nullptr }
-    // {
-    // }
-    //
-    // error::error(const std::error_code& code, std::string_view comment) noexcept
-    //     : code_ { code }
-    //     , desc_ { try_alloc_desc() }
-    // {
-    //     if (desc_)
-    //         desc_->comment = comment;
-    // }
-    //
-    error::error(const std::error_code& code, std::string_view message, const nx::source_location& loc) noexcept
-        : error( code.value(), const_cast<std::error_category *>(&(code.category())), message, loc )
-    {
-
-    }
+    error::error(const std::error_code& code, std::string_view comment,
+                 const nx::source_location& loc) noexcept
+        : error(code.category(), code.value(), comment, loc)
+    {}
 
     error::error(const error& other)
-        : code_ {}
-        , flag_ { by_cat }
-        , d_ { nullptr }
+        : code_(other.code_), flag_(by_cat), d_ {}
     {
-        code_ = other.code_;
-        if (other.flag_ == by_desc)
-        {
-            flag_ = by_desc;
-            d_.desc = make_error_descriptor(*other.d_.desc);
+        if (other.flag_ == by_desc) {
+            auto* desc = make_error_descriptor(*other.d_.desc);
+            if (desc) {
+                flag_ = by_desc;
+                d_.desc = desc;
+                return;
+            }
         }
-        else
-        {
-            d_.cat = other.d_.cat;
-        }
+        d_.cat = other.flag_ == by_desc ? other.d_.desc->category : other.d_.cat;
     }
 
     error::error(error&& other) noexcept
-        : code_ {}
-        , flag_ { by_cat }
-        , d_ { nullptr }
+        : code_(other.code_), flag_(other.flag_), d_(other.d_)
     {
-        code_ = other.code_;
-        d_ = other.d_;
-        flag_ = other.flag_;
-
-        other.flag_ = by_cat;
-        other.d_.cat = d_.cat;
-        other.clear();
+        other.code_  = 0;
+        other.flag_  = by_cat;
+        other.d_.cat = const_cast<std::error_category*>(&error_category());
     }
 
     error& error::operator=(const error& other)
     {
-        clear();
-        code_ = other.code_;
-        flag_ = other.flag_;
-        if (other.flag_ == by_desc)
-        {
-            d_.desc = make_error_descriptor(*other.d_.desc);
-        }
-        else
-        {
-            d_.cat = other.d_.cat;
-        }
+        if (this == &other)
+            return *this;
+        error tmp(other);
+        *this = std::move(tmp);
         return *this;
     }
 
     error& error::operator=(error&& other) noexcept
     {
-        code_ = other.code_;
-        d_ = other.d_;
-        flag_ = other.flag_;
-
-        other.flag_ = by_cat;
-        other.d_.cat = d_.cat;
-        other.clear();
-
+        if (this == &other)
+            return *this;
+        try_free_desc();
+        code_  = other.code_;
+        flag_  = other.flag_;
+        d_     = other.d_;
+        other.code_  = 0;
+        other.flag_  = by_cat;
+        other.d_.cat = const_cast<std::error_category*>(&error_category());
         return *this;
     }
 
     error::~error() noexcept
     {
-        if (flag_ == by_desc)
-            try_free_desc();
+        try_free_desc();
     }
+
+    // ── observers ────────────────────────────────────────────────────────────
 
     int error::value() const noexcept
     {
@@ -212,9 +161,7 @@ namespace nx
 
     std::error_category const& error::category() const noexcept
     {
-        if (flag_ == by_desc)
-            return *d_.desc->category;
-        return *d_.cat;
+        return flag_ == by_desc ? *d_.desc->category : *d_.cat;
     }
 
     std::error_condition error::default_error_condition() const noexcept
@@ -229,14 +176,12 @@ namespace nx
 
     std::string error::comment() const noexcept
     {
-        if (flag_ == by_desc)
-            return d_.desc->comment;
-        return {};
+        return flag_ == by_desc ? d_.desc->comment : std::string{};
     }
 
     bool error::commented() const noexcept
     {
-        return (flag_ == by_desc) && (!d_.desc->comment.empty());
+        return flag_ == by_desc && !d_.desc->comment.empty();
     }
 
     const char* error::what() const noexcept
@@ -245,89 +190,85 @@ namespace nx
         s_what_cache.clear();
 
         std::stringstream ss;
-        ss << "[" << category().name() << " error " << code_ << "] - ";
-        ss << description();
+        ss << "[" << category().name() << " " << code_ << "]";
 
-        if (commented())
-        {
-            ss << std::endl << "Comment: " << comment();
+        auto desc = description();
+        auto cmt  = comment();
+
+        if (!desc.empty() && !cmt.empty())
+            ss << " " << desc << ": " << cmt;
+        else if (!desc.empty())
+            ss << " " << desc;
+        else if (!cmt.empty())
+            ss << " " << cmt;
+
+        if (located()) {
+            auto loc = d_.desc->location;
+            ss << "\n  at " << loc.short_link();
+            ss << " in " << loc.function();
         }
 
-        if (located())
-        {
-            auto location = d_.desc->location;
-
-            ss << std::endl << "Location: " << location.short_link();
-            ss << std::endl << "\tFunction: " << location.function();
-            ss << std::endl << "\tFile: " << location.file();
-            ss << std::endl << "\tLine: " << location.line();
-            if constexpr(nx::source_location::has_builtin_column)
-            {
-                ss << std::endl << "\tColumn: " << location.column();
-            }
-        }
         s_what_cache = ss.str();
         return s_what_cache.c_str();
     }
 
     nx::source_location error::where() const noexcept
     {
-        if (flag_ == by_desc)
-            return d_.desc->location;
-        return g_undefined_location;
+        return flag_ == by_desc ? d_.desc->location : g_undefined_location;
     }
 
     bool error::located() const noexcept
     {
-        return (flag_ == by_desc) && (d_.desc->location != g_undefined_location);
+        return flag_ == by_desc && d_.desc->location != g_undefined_location;
     }
 
     error::operator bool() const noexcept
     {
-        return static_cast<bool>(code_);
+        return code_ != 0;
     }
 
-    error error::operator()(std::string_view comment, const nx::source_location& loc) const noexcept
+    // ── mutations ────────────────────────────────────────────────────────────
+
+    error error::operator()(std::string_view cmt, const nx::source_location& loc) const noexcept
     {
         auto copy = get_copy();
         copy.promote_desc();
-        copy.d_.desc->comment = comment;
-        copy.d_.desc->location = loc;
+        if (copy.flag_ == by_desc) {
+            copy.d_.desc->comment  = cmt;
+            copy.d_.desc->location = loc;
+        }
         return copy;
     }
 
+    void error::clear() noexcept
+    {
+        try_free_desc();
+        d_.cat = const_cast<std::error_category*>(&error_category());
+        code_ = 0;
+    }
+
+    // ── comparisons ─────────────────────────────────────────────────────────
+
     bool error::equivalent(const error& other) const noexcept
     {
-        return value() == other.value() && category() == other.category();
+        return code_ == other.code_ && &category() == &other.category();
     }
 
     bool error::identical(const error& other) const noexcept
     {
         return equivalent(other)
             && comment() == other.comment()
-            && where() == other.where();
+            && where()   == other.where();
     }
 
-    bool error::operator==(const error& other) const noexcept
-    {
-        return equivalent(other);
-    }
+    bool error::operator==(const error& other) const noexcept { return equivalent(other); }
+    bool error::operator!=(const error& other) const noexcept { return !equivalent(other); }
 
-    bool error::operator!=(const error& other) const noexcept
-    {
-        return !equivalent(other);
-    }
+    // ── utilities ────────────────────────────────────────────────────────────
 
-    void error::clear() noexcept
+    void explain(error const& err, FILE* out) noexcept
     {
-        try_free_desc();
-        d_.cat = const_cast<std::error_category *>(&std::system_category());
-        code_ = 0;
-    }
-
-    void explain(error const& err, FILE * out) noexcept
-    {
-        // std::cerr << err.what() << std::endl;
         fprintf(out, "%s\n", err.what());
     }
-}
+
+} // namespace nx

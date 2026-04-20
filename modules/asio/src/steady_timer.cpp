@@ -18,7 +18,7 @@ namespace nx::asio
     void steady_timer::async_wait(duration duration, task_t task)
     {
         if (running())
-            throw nx::err::inappropriate_io_control_operation("SteadyTimer::asyncWait - timer is already running");
+            throw nx::err::invalid_state("SteadyTimer::asyncWait - timer is already running");
 
         expiry_ = clock::now() + duration;
         id_ = ctx_.impl_->create_timer(expiry_, std::move(task));
@@ -27,7 +27,7 @@ namespace nx::asio
     void steady_timer::async_wait(time_point expiry, task_t task)
     {
         if (running())
-            throw nx::err::inappropriate_io_control_operation("SteadyTimer::asyncWait - timer is already running");
+            throw nx::err::invalid_state("SteadyTimer::asyncWait - timer is already running");
 
         expiry_ = expiry;
         id_ = ctx_.impl_->create_timer(expiry_, std::move(task));

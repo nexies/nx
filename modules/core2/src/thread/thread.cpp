@@ -152,7 +152,8 @@ nx::result<void>
 thread::start()
 {
     if (running_.load(std::memory_order_acquire))
-        return nx::error { std::make_error_code(std::errc::operation_in_progress), "thread already running" };
+        // return nx::error { std::make_error_code(std::errc::operation_in_progress), "thread already running" };
+        return nx::err::invalid_state("thread is already running");
 
     running_.store(true, std::memory_order_release);
     context_.restart();
@@ -244,7 +245,7 @@ thread::current_context()
 {
     auto * t = tl_current_thread;
     if (!t)
-        throw std::runtime_error("thread::current_context(): no thread on this OS thread");
+        throw err::runtime_error("thread::current_context(): no thread on this OS thread");
     return t->context();
 }
 
@@ -301,8 +302,7 @@ local_thread::~local_thread()
 nx::result<void>
 local_thread::start()
 {
-    return nx::error { std::make_error_code(std::errc::operation_not_supported),
-                       "local_thread cannot be started — it represents the calling thread" };
+    return nx::err::not_supported {"local_thread cannot be started — it represents the calling thread" };
 }
 
 } // namespace nx::core

@@ -122,9 +122,9 @@ application::_setup_os_signals()
 
     signal_set_->add(SIGINT);
     signal_set_->add(SIGTERM);
-    signal_set_->add(SIGHUP);
-    signal_set_->add(SIGQUIT);
-    signal_set_->add(SIGPIPE);
+    // signal_set_->add(SIGHUP);
+    // signal_set_->add(SIGQUIT);
+    // signal_set_->add(SIGPIPE);
 
     signal_set_->async_wait(&application::_os_signal_handler);
     return {};
@@ -198,8 +198,8 @@ application::_on_os_signal(int signum)
     switch (signum) {
     case SIGINT:
     case SIGTERM:
-    case SIGQUIT:
-    case SIGHUP:
+    // case SIGQUIT:
+    // case SIGHUP:
         quit();
         break;
     default:

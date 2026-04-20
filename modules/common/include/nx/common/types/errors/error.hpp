@@ -6,129 +6,130 @@
 #define NX_COMMON_ERROR_HPP
 
 #include <nx/common/types/errors/error_descriptor.hpp>
+#include <nx/common/types/errors/named_category.hpp>
 #include <system_error>
 
-namespace nx
-{
+namespace nx {
+
+    // Default category for nx::error base class.
+    const std::error_category& error_category() noexcept;
+
     class error : public std::exception
     {
-        enum flag : uint8_t
-        {
-            by_cat = 0,
-            by_desc = 1
-        };
+        enum flag : uint8_t { by_cat = 0, by_desc = 1 };
 
-        int code_;
+        int  code_;
         flag flag_;
-        union
-        {
-            std::error_category * cat;
-            nx::error_descriptor * desc;
-        }d_;
+        union {
+            std::error_category*  cat;
+            nx::error_descriptor* desc;
+        } d_;
 
         NX_NODISCARD error
-        get_copy () const;
+        get_copy() const;
 
-        error_descriptor *
-        try_alloc_desc () noexcept;
+        error_descriptor*
+        try_alloc_desc() noexcept;
 
         void
-        try_free_desc () noexcept;
+        try_free_desc() noexcept;
 
         void
         promote_desc() noexcept;
 
+    protected:
+        // For subclasses: construct with a custom category, code, and message.
+        error(const std::error_category& cat, int code, std::string_view message,
+              const nx::source_location& loc = nx::source_location::current()) noexcept;
+
     public:
+        // Neutral (no error, operator bool() == false)
         error() noexcept;
 
-        explicit
-        error (std::errc errc) noexcept;
+        // Generic nx error from message only (code = 1)
+        explicit error(std::string_view message,
+                      const nx::source_location& loc = nx::source_location::current()) noexcept;
 
-        error (int code, const std::error_category * cat);
+        // Generic nx error with explicit code
+        error(int code, std::string_view message,
+              const nx::source_location& loc = nx::source_location::current()) noexcept;
 
-        explicit
-        error (const std::error_code & code) noexcept;
+        // std::error_code compatibility — lightweight, no descriptor
+        explicit error(const std::error_code& code) noexcept;
 
-        error (int code, const std::error_category * cat, std::string_view message, const nx::source_location & loc = nx::source_location::current()) noexcept;
+        // std::error_code compatibility — with context comment
+        error(const std::error_code& code, std::string_view comment,
+              const nx::source_location& loc = nx::source_location::current()) noexcept;
 
-        error (const std::error_code & code, std::string_view comment, const nx::source_location & loc = nx::source_location::current()) noexcept;
+        error(const error& other);
+        error(error&& other) noexcept;
 
-        error (const error & other);
-        error (error && other) noexcept;
+        error& operator=(const error& other);
+        error& operator=(error&& other) noexcept;
 
-        error & operator=(const error & other);
-        error & operator=(error && other) noexcept;
+        ~error() noexcept override;
 
-        ~error () noexcept override;
-
-        /// Error value
-        /// @return
+        // Numeric error code (0 means no error)
         NX_NODISCARD int
-        value () const noexcept;
+        value() const noexcept;
 
-        /// Error category
-        /// @return
-        NX_NODISCARD std::error_category const &
-        category () const noexcept;
+        // Error category (identity distinguishes error types)
+        NX_NODISCARD std::error_category const&
+        category() const noexcept;
 
-        /// Error condition (unified error code)
-        /// @return
+        // Standard error condition (for std::error_code interop)
         NX_NODISCARD std::error_condition
-        default_error_condition () const noexcept;
+        default_error_condition() const noexcept;
 
-        /// Default error value description
+        // Category-provided description (empty for nx-native errors)
         NX_NODISCARD std::string
-        description () const noexcept;
+        description() const noexcept;
 
-        /// User-defined unique message value
+        // User-defined context message
         NX_NODISCARD std::string
-        comment () const noexcept;
+        comment() const noexcept;
 
-        /// Does comment() return non-empty string?
+        // Does comment() return non-empty string?
         NX_NODISCARD bool
-        commented () const noexcept;
+        commented() const noexcept;
 
-        /// Short description of the error
-        /// (used for explaining the error when in `catch` expressions)
+        // Formatted error string (std::exception::what())
         NX_NODISCARD const char*
-        what () const noexcept override;
+        what() const noexcept override;
 
-        /// Source location of the creation point
+        // Source location of the error creation point
         NX_NODISCARD nx::source_location
-        where () const noexcept;
+        where() const noexcept;
 
-        /// Is source location specified ?
+        // Is source location captured?
         NX_NODISCARD bool
-        located () const noexcept;
+        located() const noexcept;
 
-        /// operator bool
+        // True when code != 0
         NX_NODISCARD explicit
-        operator bool () const noexcept;
+        operator bool() const noexcept;
 
-        /// Create another error object, with the same code_,
-        /// but containing a comment `comment`
+        // Copy with same code/category but new comment and location
         NX_NODISCARD error
-        operator () (std::string_view comment, const nx::source_location & loc = nx::source_location::current()) const noexcept;
+        operator()(std::string_view comment,
+                  const nx::source_location& loc = nx::source_location::current()) const noexcept;
 
-
+        // Same code and category (ignores comment/location)
         NX_NODISCARD bool
-        equivalent (const error & other) const noexcept;
+        equivalent(const error& other) const noexcept;
 
-
+        // Same code, category, comment, and location
         NX_NODISCARD bool
-        identical (const error & other) const noexcept;
+        identical(const error& other) const noexcept;
 
-        NX_NODISCARD bool
-        operator == (const error & other) const noexcept;
+        NX_NODISCARD bool operator==(const error& other) const noexcept;
+        NX_NODISCARD bool operator!=(const error& other) const noexcept;
 
-        NX_NODISCARD bool
-        operator != (const error & other) const noexcept;
-
-        void
-        clear () noexcept;
+        void clear() noexcept;
     };
 
-    void explain (error const & err, FILE * out = stderr) noexcept;
-}
+    void explain(error const& err, FILE* out = stderr) noexcept;
+
+} // namespace nx
 
 #endif //NX_COMMON_ERROR_HPP

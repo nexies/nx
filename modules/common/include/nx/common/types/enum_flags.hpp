@@ -17,7 +17,7 @@
 
 namespace nx::detail
 {
-    template <class Enum, std::underlying_type<Enum>::type AllMask = std::numeric_limits<typename std::underlying_type<Enum>::type>::max()>
+    template <class Enum, typename std::underlying_type<Enum>::type AllMask = std::numeric_limits<typename std::underlying_type<Enum>::type>::max()>
     class make_flags_from_enum {
         static_assert(std::is_enum_v<Enum>, "make_flags_from_enum<T>: T must be an enum type.");
 

@@ -45,7 +45,7 @@ TEST_CASE("signal: no-arg signal reaches connected slot", "[signals]")
     receiver dst;
 
     nx::core::connect(&src, &emitter::triggered, &dst, &receiver::on_trigger);
-    src.triggered();
+    NX_EMIT(src.triggered);
 
     REQUIRE(dst.trigger_count == 1);
 }
@@ -56,9 +56,9 @@ TEST_CASE("signal: slot is called once per emission", "[signals]")
     receiver dst;
 
     nx::core::connect(&src, &emitter::triggered, &dst, &receiver::on_trigger);
-    src.triggered();
-    src.triggered();
-    src.triggered();
+    NX_EMIT(src.triggered);
+    NX_EMIT(src.triggered);
+    NX_EMIT(src.triggered);
 
     REQUIRE(dst.trigger_count == 3);
 }
@@ -69,7 +69,7 @@ TEST_CASE("signal: int argument is forwarded correctly", "[signals]")
     receiver dst;
 
     nx::core::connect(&src, &emitter::value_changed, &dst, &receiver::on_value);
-    src.value_changed(42);
+    NX_EMIT(src.value_changed, 42);
 
     REQUIRE(dst.last_value == 42);
 }
@@ -80,7 +80,7 @@ TEST_CASE("signal: multiple arguments are forwarded correctly", "[signals]")
     receiver dst;
 
     nx::core::connect(&src, &emitter::pair_changed, &dst, &receiver::on_pair);
-    src.pair_changed(7, "hello");
+    NX_EMIT(src.pair_changed, 7, "hello");
 
     REQUIRE(dst.last_pair_int == 7);
     REQUIRE(dst.last_pair_str == "hello");
@@ -95,7 +95,7 @@ TEST_CASE("signal: multiple receivers all receive the emission", "[signals]")
     nx::core::connect(&src, &emitter::triggered, &r2, &receiver::on_trigger);
     nx::core::connect(&src, &emitter::triggered, &r3, &receiver::on_trigger);
 
-    src.triggered();
+    NX_EMIT(src.triggered);
 
     REQUIRE(r1.trigger_count == 1);
     REQUIRE(r2.trigger_count == 1);

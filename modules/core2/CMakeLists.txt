@@ -13,7 +13,7 @@ set(nx_core2_headers
     include/nx/core2/io_device.hpp
     include/nx/core2/app/application.hpp
     include/nx/core2/core2.hpp
-    include/nx/core2/object/signal_functions.hpp
+        include/nx/core2/object/signal_functions.inl
     include/nx/core2/object.hpp
 )
 
@@ -24,6 +24,10 @@ set(nx_core2_sources
     src/loop/loop.cpp
     src/timer/timer.cpp
     src/app/application.cpp
+        include/nx/core2/object/meta_object.hpp
+        include/nx/core2/object/meta_property.hpp
+        include/nx/core2/object/meta_error.hpp
+
 
 )
 
@@ -41,7 +45,7 @@ target_link_libraries(nx_core2 PUBLIC
 
 target_compile_definitions(nx_core2 PUBLIC
     NX_DEVEL_LOGGING=1
-    NX_TRACE_SIGNALS=0
+    NX_TRACE_SIGNALS=1
 )
 
 if (MSVC)

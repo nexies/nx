@@ -19,6 +19,8 @@
 #include <nx/core2/detail/object_defs.hpp>
 #include <nx/core2/object/connection.hpp>
 #include <nx/core2/object/connection_info.hpp>
+#include <nx/core2/object/meta_object.hpp>
+
 
 #include <string>
 #include <type_traits>
@@ -28,11 +30,11 @@ namespace nx::core {
 
 class thread;
 
-template<typename Sender, typename SigFn,
+    template<typename Sender, typename SigFn,
     typename Receiver, typename SlotFn>
     bool
     connect(Sender *, SigFn, Receiver *, SlotFn,
-        connection_type = connection_type::auto_t, connection_flags = {});
+        connection_type = connection_type::auto_t, connection_flags = connection_flag::none);
 
     template<typename Sender, typename SigFn,
              typename Receiver, typename SlotFn>
@@ -142,4 +144,4 @@ private:
 } // namespace nx::core
 
 
-#include <nx/core2/object/signal_functions.hpp>
+#include <nx/core2/object/signal_functions.inl>

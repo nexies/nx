@@ -31,4 +31,8 @@
 #define NX_OBJECT(T)                                                             \
     using _nx_self_t = T;                                                        \
     NX_NODISCARD static constexpr const char *                                   \
-    static_class_name() noexcept { return #T; }
+    static_class_name() noexcept { return #T; }                                  \
+    using meta_object_type = ::nx::core::detail::meta_object<T>;                 \
+    NX_NODISCARD static meta_object_type &                                       \
+    static_meta_object () noexcept                                               \
+    { static meta_object_type meta(#T); return meta; }
