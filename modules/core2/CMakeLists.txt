@@ -3,6 +3,7 @@ set(nx_core2_headers
     include/nx/core2/detail/logger_defs.hpp
     include/nx/core2/detail/signal_defs.hpp
     include/nx/core2/detail/property_defs.hpp
+    include/nx/core2/detail/property_defs2.hpp
     include/nx/core2/detail/object_defs.hpp
     include/nx/core2/object/connection.hpp
     include/nx/core2/object/connection_info.hpp
@@ -13,8 +14,11 @@ set(nx_core2_headers
     include/nx/core2/io_device.hpp
     include/nx/core2/app/application.hpp
     include/nx/core2/core2.hpp
-        include/nx/core2/object/signal_functions.inl
+    include/nx/core2/object/signal_functions.inl
     include/nx/core2/object.hpp
+    include/nx/core2/object/meta_object.hpp
+    include/nx/core2/object/meta_property.hpp
+    include/nx/core2/object/meta_error.hpp
 )
 
 set(nx_core2_sources
@@ -24,9 +28,7 @@ set(nx_core2_sources
     src/loop/loop.cpp
     src/timer/timer.cpp
     src/app/application.cpp
-        include/nx/core2/object/meta_object.hpp
-        include/nx/core2/object/meta_property.hpp
-        include/nx/core2/object/meta_error.hpp
+
 
 
 )

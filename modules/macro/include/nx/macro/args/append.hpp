@@ -15,6 +15,9 @@
 #define _nx_append_args(...) \
     _nx_bool_override(_nx_append_args, _nx_args_count(__VA_ARGS__))(__VA_ARGS__)
 
+#define _nx_append_args_2(...) \
+    _nx_append_args(__VA_ARGS__)
+
 #define _nx_append_va_args(...) \
     _nx_append_args(__VA_ARGS__)
 

@@ -35,9 +35,10 @@ set(nx_macro_headers
         include/nx/macro/numeric/is_max.hpp
         include/nx/macro/detail/limits/eat_64.hpp
         include/nx/macro/detail/put_at_limit.hpp
-        include/nx/macro/args/parse-2.hpp
+        include/nx/macro/args/parse2.hpp
         include/nx/macro/args/argset.hpp
         include/nx/macro/util/put_at_fast.hpp
+        include/nx/macro/args/rules.hpp
         include/nx/macro/args/rules.hpp
 )
 

@@ -20,7 +20,7 @@
 
 ///
 /// @param n
-# define NX_BOOL(n) \
-    _nx_bool(n)
+# define NX_BOOL(...) \
+    _nx_expand(_nx_bool(_nx_expand(__VA_ARGS__))
 
 #endif //NX_MACRO_BOOL_HPP

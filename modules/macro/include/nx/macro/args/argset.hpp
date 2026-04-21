@@ -34,7 +34,7 @@
     NX_TUPLE(0, NX_TUPLE())
 
 # define _nx_argset_entry_get_count(argset_entry) \
-    NX_TUPLE_GET(argset_entry, 0)
+    _nx_tuple_get(0, argset_entry)
 
 # define _nx_argset_entry_get_values(argset_entry) \
     NX_TUPLE_GET(argset_entry, 1)
@@ -110,6 +110,15 @@
         NX_NOT(_nx_argset_contains_many(argset, name)) \
     )
 
+# define _nx_argset_has_value(argset, name) \
+    NX_BOOL(_nx_argset_get(argset, name))
+
+# define _nx_argset_is_flag(argset, name) \
+    NX_AND( \
+        _nx_argset_contains(argset, name), \
+        NX_NOT(_nx_argset_has_value(argset, name)) \
+    )
+
 # define _nx_args_put_tokens_to_argset_cond_d(d, argset, ...) \
     NX_HAS_ARGS(__VA_ARGS__)
 
@@ -147,6 +156,8 @@
 
 # define _nx_args_to_argset_auto_size(...) \
     _nx_args_to_argset_auto_size_d(0, __VA_ARGS__)
+
+
 
 // Expansion examples (for documentation purposes):
 //
@@ -202,6 +213,12 @@
 # define NX_ARGSET_SIZE(argset) \
     _nx_argset_size(argset)
 
+# define NX_ARGSET_EMPTY(argset) \
+    _nx_logic_not(NX_BOOL(NX_ARGSET_SIZE(argset)))
+
+# define NX_ARGSET_NOT_EMPTY(argset) \
+    NX_BOOL(NX_ARGSET_SIZE(argset))
+
 /// Add a named entry.
 /// Two-argument form records a flag (no value); three-argument form records a value.
 ///
@@ -246,5 +263,13 @@
 /// @param name
 # define NX_ARGSET_CONTAINS_MANY(argset, name) \
     _nx_argset_contains_many(argset, name)
+
+
+# define NX_ARGSET_HAS_VALUE(argset, name) \
+    _nx_argset_has_value(argset, name)
+
+# define NX_ARGSET_IS_FLAG(argset, name) \
+    _nx_argset_is_flag(argset, name)
+
 
 #endif //NX_ARGSET_HPP
