@@ -18,9 +18,14 @@
 #include <iostream>
 #include <stdexcept>
 
+#include <nx/core2/detail/property_defs2.hpp>
+
 namespace nx::core {
 
 application * application::instance_ = nullptr;
+
+
+
 
 // ── Logging ───────────────────────────────────────────────────────────────────
 

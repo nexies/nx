@@ -297,6 +297,7 @@
 
 # define _NXPv2_TYPE        0
 # define _NXPv2_STORED      1
+# define _NXPv2_MEMBER      1
 # define _NXPv2_READ        2
 # define _NXPv2_WRITE       3
 # define _NXPv2_RESET       4
@@ -308,16 +309,41 @@
 
 # define _NXPv2_ARG_MAX     10
 
-
-# define _nx_core2_property_v2_rules                \
-    NX_ARGS_RULE_SET2(                              \
-
-    )
-
-// # define _nx_core2_property_v2_parser(args) \
-
+# define _NXPv2_DEFAULT_ARGUMENTS \
+    _nx_tuple( \
+        int,   \
+        , \
+        , \
+        , \
 
 
+# define _NXPv2(arg) _nx_concat_2(_NXPv2_, arg)
+
+# define _NXPv2_T(arg) _nx_args_tokenize(_NXPv2(arg))
+
+# define _NXPv2_T_ALL_ITERATOR(n, a) \
+    _NXPv2_T(a)
+
+# define _NXPv2_T_ALL(...) \
+    _nx_make_decorated_iterate(_NXPv2_T_ALL_ITERATOR,_nx_sequence_comma_separator, __VA_ARGS__)
+
+# define _NXPv2_SORT_COND_D(d, res, ...) \
+    NX_HAS_ARGS(__VA_ARGS__)
+
+# define _NXPv2_SORT_OP_D(d, res, cur, ...) \
+    _nx_logic_if(_nx_args_token_has_value(cur)) ( \
+        _nx_expand( \
+            _nx_tuple_set(res, _nx_args_token_name(cur), _nx_args_token_value(cur))   \
+            _nx_append_args(__VA_ARGS__)) , \
+        _nx_expand( \
+            _nx_tuple_set(res, _nx_args_token_name(cur), 1) \
+            _nx_append_args(__VA_ARGS__)) \
+        )
+
+# define _NXPv2_SORT_RES_D(d, res, ...) \
+    _nx_tuple_unpack(res)
+
+# define _NXPv2_SORT_D(d, /*tokens*/ ...)
 
 # pragma endregion
 

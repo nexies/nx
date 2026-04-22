@@ -24,7 +24,6 @@
         _nx_args_parse2_error(_nx_tuple_get(1, checkres))           \
     )
 
-# define _nx_args_check_and_parse2(rules, parser, argset)
 
 
 # define _nx_args_prepend_prefix_cond_d(d, prefix, res, ...) \

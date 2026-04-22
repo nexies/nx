@@ -48,7 +48,7 @@
         NX_TUPLE_APPEND(_nx_argset_entry_get_values(argset_entry), value) \
     )
 
-# define _nx_argset_make_iterator(n) \
+# define _nx_argset_make_iterator(n, d) \
     _nx_argset_entry()
 
 # define _nx_argset_make(size) \
