@@ -22,7 +22,7 @@ namespace nx::core
         template<typename Object, typename PropType>
         struct property_descriptor
         {
-            static_assert (std::is_base_of<object, Object>::value, "NX_PROPERTY can be only used with nx::core::object and it's inheritors");
+            // static_assert (std::is_base_of<object, Object>::value, "NX_PROPERTY can be only used with nx::core::object and it's inheritors");
             using object_type = Object;
             using type = PropType;
 

@@ -5,6 +5,7 @@
 #include <iostream>
 #include <nx/core2/object/meta_property.hpp>
 #include <nx/core2/object/object.hpp>
+#include <nx/core2/detail/property_defs2.hpp>
 
 struct obj : public nx::core::object
 {
@@ -15,22 +16,27 @@ struct obj : public nx::core::object
     int get_value() const { return value; }
 
     void set_value (const int & value) { this->value = value; }
+
+    // _nxpv2_entry(first_name, TYPE std::string, READ);
+
+
+
 };
 
 int main ()
 {
-    auto & reg = obj::static_meta_object().property_registry();
-    auto desc = reg.register_object_property<int>("value", &obj::value, &obj::get_value, &obj::set_value);
+    auto meta = obj::static_meta_object();
+    auto req = meta.property_registry();
 
-    obj o;
+    std::cerr << NX_TO_STRING(_nxpv2_sort_args_d(0, TYPE int)) << std::endl;
+    std::cerr << NX_TO_STRING(_nxpv2_entry(value, TYPE int)) << std::endl << std::endl;
 
-    auto set_res = reg.static_set("value", &o, 100);
-
-    if (!set_res)
-    {
-        nx::explain(set_res.error());
-    }
-    else
-        std::cerr << "value set: " << o.get_value() << std::endl;
+    std::cerr << NX_TO_STRING(_nxpv2_tokenize(READ)) << std::endl;
+    // std::cerr << NX_TO_STRING(_nxpv2_entry(value, TYPE int, READ)) << std::endl << std::endl;
+    
+    std::cerr << NX_TO_STRING(_nxpv2_sort_args_d(0, TYPE int, READ)) << std::endl << std::endl;
     return 0;
+
+
+
 }

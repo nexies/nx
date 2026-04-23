@@ -28,6 +28,8 @@
 
 # define _nx_tuple_get(idx, t) _nx_choose(idx, _nx_tuple_unpack(t))
 
+# define _nx_tuple_2_get(idx, t) _nx_tuple_get(idx, t)
+
 # define _nx_tuple_append(t, ...) \
     _nx_logic_if(_nx_tuple_empty(t)) \
     (\

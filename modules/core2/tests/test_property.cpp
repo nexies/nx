@@ -7,9 +7,11 @@
 
 
 #include <any>
+#include <iostream>
 #include <string>
 #include <string_view>
 
+#include <nx/core2/detail/property_defs2.hpp>
 
 namespace nx::core
 {
@@ -26,6 +28,8 @@ namespace
         int reset_count {0};
         int notify_count {0};
         std::string text {"init"};
+
+        NX_OBJECT(test_object)
 
         int get_value() const
         {
@@ -54,6 +58,15 @@ namespace
         {
             text = s;
         }
+
+
+
+        void foo ()
+        {
+
+
+        }
+
     };
 }
 
