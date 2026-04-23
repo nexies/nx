@@ -78,7 +78,7 @@ namespace nx::core
 
         public:
             template<typename Type>
-            NX_NODISCARD auto
+            auto
             register_object_property(
                 std::string_view name,
                 typename desc_t<Type>::member_ptr ptr = nullptr,

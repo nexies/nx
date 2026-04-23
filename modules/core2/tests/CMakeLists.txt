@@ -25,3 +25,8 @@ nx_configure_test(property
         COMPONENT core2
         SOURCE test_property.cpp
 )
+
+nx_configure_test(meta_property
+        COMPONENT core2
+        SOURCE test_nx_property.cpp
+)

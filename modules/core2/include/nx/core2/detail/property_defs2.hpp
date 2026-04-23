@@ -324,6 +324,10 @@
 
 # define _nxpv2_MUTABLE         9
 
+# define _nxpv2_READONLY        10
+
+# define _nxpv2_WRITEONLY       11
+
 /// ---=== ARGUMENTS STORAGE SYSTEM ===---
 
 /* TYPE */
@@ -336,8 +340,12 @@
 /* CONST */
 /* FINAL */
 /* MUTABLE */
+/* READONLY */
+/* WRITEONLY */
 # define _nxpv2_default_args                    \
     _nx_tuple(                                  \
+        (0, ()),            \
+        (0, ()),            \
         (0, ()),            \
         (0, ()),            \
         (0, ()),            \
@@ -363,7 +371,10 @@
 //     )
 
 # define _nxpv2_args_add(args, token)                                                           \
-        _nx_tuple_set(args, _nx_args_token_name(token), (1, (_nx_args_token_value(token))))
+        _nx_tuple_set(args, \
+            _nx_args_token_name(token),    \
+            (1, ( _nx_args_token_value(token) ) )   \
+        )
 
 
 # define _nxpv2_sort_args_op_d(d, res, arg, ...)                                                \
@@ -604,7 +615,7 @@
 // ----------------------------------------------------------------
 
 # define _nxpv2_gen_getter_method(prop_name, field_ref)                     \
-    auto _nxpv2_add_prefix(_nxpv2_default_read_prefix, prop_name)() const { \
+    auto _nxpv2_add_prefix(_nxpv2_default_read_prefix, prop_name)() const -> decltype(field_ref){ \
         return field_ref;                                                    \
     }
 
@@ -645,9 +656,15 @@
 //   If NOTIFY present, emits signal after assignment.
 // ----------------------------------------------------------------
 
+// The parameter type is an unconstrained template parameter instead of
+// `const type_expr &` to avoid accessing an incomplete class when type_expr
+// = _nxpv2_member_type(field) (the MEMBER case).  The correct instantiation
+// is pinned by the static_cast in _nxpv2_meta_setter below, which lives
+// inside the registrar constructor — a complete-class context.
 # define _nxpv2_gen_setter_body(prop_name, type_expr, field_ref, args)      \
-    void _nxpv2_add_prefix(_nxpv2_default_write_prefix, prop_name)(         \
-        const type_expr & _value)                                            \
+    template <typename _nxpv2_setter_val_>                                   \
+    void _nxpv2_add_prefix(_nxpv2_default_write_prefix, prop_name)(          \
+        const _nxpv2_setter_val_ & _value)                                   \
     {                                                                        \
         field_ref = _value;                                                  \
         _nx_logic_if(_nxpv2_exists_arg(args, NOTIFY))(                      \
@@ -708,7 +725,7 @@
 
 // getter
 # define _nxpv2_meta_getter_lambda(field_ref)                               \
-    [](const _nx_self_t * _t) { return _t->field_ref; }
+    [&](const _nx_self_t * _t) { return _t->field_ref; }
 
 # define _nxpv2_meta_getter(prop_name, field_ref, has_storage, args)        \
     _nx_logic_if(_nxpv2_exists_arg(args, READ))(                            \
@@ -724,15 +741,21 @@
 
 // setter
 # define _nxpv2_meta_setter_lambda(type_expr, field_ref)                    \
-    [](_nx_self_t * _t, const type_expr & _v) { _t->field_ref = _v; }
+    [&](_nx_self_t * _t, const type_expr & _v) { _t->field_ref = _v; }
 
+// For the bare-WRITE case the generated setter is a function template.
+// We must static_cast to resolve the exact instantiation; the cast is
+// evaluated inside the registrar constructor (complete-class context),
+// so type_expr (possibly _nxpv2_member_type(field)) is valid there.
 # define _nxpv2_meta_setter(prop_name, type_expr, field_ref, has_storage, args) \
     _nx_logic_if(_nxpv2_is_const(args))(                                    \
         nullptr,                                                             \
         _nx_logic_if(_nxpv2_exists_arg(args, WRITE))(                       \
             _nx_logic_if(_nxpv2_has_value(args, WRITE))(                    \
                 &_nx_self_t::_nxpv2_get_value(args, WRITE),                 \
-                &_nx_self_t::_nxpv2_add_prefix(_nxpv2_default_write_prefix, prop_name) \
+                static_cast<void (_nx_self_t::*)(const type_expr &)>(       \
+                    &_nx_self_t::_nxpv2_add_prefix(_nxpv2_default_write_prefix, prop_name) \
+                )                                                            \
             ),                                                               \
             _nx_logic_if(has_storage)(                                      \
                 _nxpv2_meta_setter_lambda(type_expr, field_ref),            \
@@ -782,19 +805,21 @@
 // ----------------------------------------------------------------
 
 # define _nxpv2_gen_meta_reg(prop_name, type_expr, field_ref, has_storage, args)    \
-    inline static const bool                                                 \
-    _nx_concat_3(_nxp_, prop_name, _reg_) = []() {                          \
-        _nx_self_t::static_meta_object().property_registry()                \
-            .template register_object_property<type_expr>(                  \
-                #prop_name,                                                  \
-                nullptr,                                                     \
-                _nxpv2_meta_getter(prop_name, field_ref, has_storage, args), \
-                _nxpv2_meta_setter(prop_name, type_expr, field_ref, has_storage, args), \
-                _nxpv2_meta_notif(prop_name, field_ref, has_storage, args), \
-                _nxpv2_meta_reset(prop_name, args)                          \
-            );                                                               \
-        return true;                                                         \
-    }();
+    struct _nx_concat_3(_nxp_, prop_name, _registrar_) {                    \
+        _nx_concat_3(_nxp_, prop_name, _registrar_)() {                     \
+            _nx_self_t::static_meta_object().property_registry()            \
+                .template register_object_property<type_expr>(              \
+                    #prop_name,                                              \
+                    nullptr,                                                 \
+                    _nxpv2_meta_getter(prop_name, field_ref, has_storage, args), \
+                    _nxpv2_meta_setter(prop_name, type_expr, field_ref, has_storage, args), \
+                    _nxpv2_meta_notif(prop_name, field_ref, has_storage, args), \
+                    _nxpv2_meta_reset(prop_name, args)                      \
+                );                                                          \
+        }                                                                   \
+    };                                                                      \
+    inline static _nx_concat_3(_nxp_, prop_name, _registrar_)              \
+        _nx_concat_3(_nxp_, prop_name, _reg_);
 
 // ----------------------------------------------------------------
 // Shared dispatcher — called by all three cases with resolved
@@ -861,9 +886,10 @@
 # define _nxpv2_entry(name, ...)                                            \
     _nxpv2_generate_code(name, _nxpv2_sort_args_d(0, __VA_ARGS__))
 
-// # define NX_PROPERTY(name, ...) _nxpv2_entry(name, __VA_ARGS__)
-
-const char * s = NX_TO_STRING(_nx_args_tokenize(0 int));
+# ifdef NX_PROPERTY
+#  undef NX_PROPERTY
+# endif
+# define NX_PROPERTY(name, ...) _nxpv2_entry(name, __VA_ARGS__)
 
 
 # pragma endregion
