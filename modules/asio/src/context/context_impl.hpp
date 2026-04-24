@@ -13,6 +13,9 @@
 #include <functional>
 #include <thread>
 #include <queue>
+#include <memory>
+
+#include "nx/common/helpers.hpp"
 
 namespace nx::asio {
 
@@ -52,7 +55,7 @@ namespace nx::asio {
         is_running_in_this_thread () const noexcept;
 
         [[nodiscard]] timer_id
-        create_timer(time_point expiry, task_t task);
+        create_timer(time_point expiry, task_t && task);
         void
         cancel_timer(timer_id id);
 
@@ -61,7 +64,7 @@ namespace nx::asio {
         void
         modify_reactor_handle(native_handle_t handle, void * token, io_interest interest);
         void
-        unregister_reactor_handle(native_handle_t handle);
+        unregister_reactor_handle(native_handle_t handle, void * token, io_interest interest);
 
     private:
         void
@@ -76,8 +79,15 @@ namespace nx::asio {
         std::size_t
         executeReady ();
 
+        std::size_t
+        execute_one_ready ();
+
         void
         processBackendEvents (backend_event * events, std::size_t count);
+
+
+        NX_NODISCARD std::size_t
+        _consume_wakeup_event (backend_event * event);
 
     private:
         std::unique_ptr<backend> backend_;
@@ -96,17 +106,25 @@ namespace nx::asio {
             task_t task;
             bool canceled;
             timer_id id;
+
+            TimerOp(time_point expiry, task_t && task, bool canceled, timer_id id)
+                : expiry(expiry)
+                , task(std::move(task))
+                , canceled(canceled)
+                , id(id)
+            { }
         };
 
-        // struct TimerOpCmp {
-        //     bool operator < (const TimerOp & left, const TimerOp & right) {
-        //         return left.expiry < right.expiry;
-        //     }
-        // };
+        struct TimerCmp {
+            bool operator()(const std::shared_ptr<TimerOp> & a,
+                            const std::shared_ptr<TimerOp> & b) const {
+                return a->expiry > b->expiry; // min-heap: earliest expiry on top
+            }
+        };
 
         std::priority_queue<std::shared_ptr<TimerOp>,
                             std::vector<std::shared_ptr<TimerOp>>,
-                            std::greater<>> timers_;
+                            TimerCmp> timers_;
 
         std::unordered_map<std::uint64_t, std::shared_ptr<TimerOp>> timer_storage_;
         timer_id next_timer_id_ { 0 };

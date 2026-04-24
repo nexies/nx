@@ -28,7 +28,7 @@ namespace nx::asio {
     }
 
     std::size_t io_context::run_once() {
-        return impl_->run_once();
+        return impl_->poll_once();
     }
 
     std::size_t io_context::run_for(duration duration) {

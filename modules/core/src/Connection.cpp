@@ -13,6 +13,15 @@
 
 using namespace nx;
 
+#include <nx/common/platform/standard_defs.hpp>
+
+#if NX_CPP_VERSION >= 202002L
+#define umap_contains(map, key) \
+    (map.contains(key))
+#else
+#   define umap_contains(map, key) \
+    (map.find(key) != map.end())
+#endif
 size_t detail::hash(void* o, void* m)
 {
     return std::hash<void *>{}(o) + (std::hash<void *>{}(m) << 1);
@@ -118,20 +127,28 @@ void ConnectionInfo::_cleanupAfter(const Connection& connection)
 
     bool conn_list_exists { true };
 
-    if (!connections.contains(conn_id) || connections[conn_id].empty())
+    auto connections_contains_conn_id = connections.find(conn_id) != connections.end();
+
+    if (!connections_contains_conn_id || connections[conn_id].empty())
         conn_list_exists = false;
 
     if (!conn_list_exists)
         connections.erase(conn_id);
 
-    if (!conn_list_exists && connections_for_sender.contains(send_id))
+    auto connections_for_sender_contains_send_id =
+        connections_for_sender.find(send_id) != connections_for_sender.end();
+
+    if (!conn_list_exists && connections_for_sender_contains_send_id)
     {
         connections_for_sender[send_id].erase(conn_id);
         if (connections_for_sender[send_id].empty())
             connections_for_sender.erase(send_id);
     }
 
-    if (!conn_list_exists && recv_id && connections_for_receiver.contains(recv_id))
+    auto connections_for_receiver_contains_recv_id =
+        connections_for_receiver.find(recv_id) != connections_for_receiver.end();
+
+    if (!conn_list_exists && recv_id && connections_for_receiver_contains_recv_id)
     {
         connections_for_receiver[recv_id].erase(conn_id);
         if (connections_for_receiver[recv_id].empty())
@@ -143,7 +160,8 @@ void ConnectionInfo::_cleanupAfter(const Connection& connection)
 void ConnectionInfo::_removeAll(const Connection& connection)
 {
     auto id = connection.getId();
-    if (connections.contains(id))
+
+    if (umap_contains(connections, id))
     {
         connections[id].clear();
         _cleanupAfter(connection);
@@ -198,10 +216,10 @@ void ConnectionInfo::receiverDestroyed(receiver_id receiver)
     if (!receiver) return;
 
     // for (auto & conn_id: connections_for_receiver[receiver])
-    while (connections_for_receiver.contains(receiver))
+    while (umap_contains(connections_for_receiver, receiver))
     {
         auto conn_id = *connections_for_receiver[receiver].begin();
-        if (!connections.contains(conn_id))
+        if (!umap_contains(connections, conn_id))
             continue;
 
         if (connections[conn_id].empty())
@@ -247,7 +265,7 @@ bool ConnectionInfo::removeConnection(const Connection& connection, bool remove_
 {
     auto conn_id = connection.getId();
 
-    if (!connections.contains(conn_id))
+    if (!umap_contains(connections, conn_id))
         return false;
 
     auto& list = connections[conn_id];
@@ -263,13 +281,13 @@ bool ConnectionInfo::removeConnection(const Connection& connection, bool remove_
 ConnectionInfo::List<std::shared_ptr<Connection>> ConnectionInfo::getConnections(sender_id sender) const
 {
     List<ConnectionPtr> out;
-    if (!connections_for_sender.contains(sender))
+    if (!umap_contains(connections_for_sender, sender))
         return {};
 
     auto & set = connections_for_sender.at(sender);
     for (auto conn_id: set)
     {
-        if (!connections.contains(conn_id))
+        if (!umap_contains(connections, conn_id))
             continue;
 
         auto & list = connections.at(conn_id);

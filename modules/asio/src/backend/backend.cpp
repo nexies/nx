@@ -16,7 +16,9 @@ std::unique_ptr<backend> create_backend() {
 #if defined(NX_CORE_ASIO_BACKEND_EPOLL_INL)
         return std::make_unique<backend_epoll>();
 #elif defined (NX_CORE_ASIO_BACKEND_KEVENT_INL)
-        // return std::make_unique<>()
+        return std::make_unique<kevent_backend>();
+#elif defined (NX_CORE_ASIO_BACKEND_IOCP_INL)
+        return std::make_unique<iocp_backend>();
 #endif
         return nullptr;
     }

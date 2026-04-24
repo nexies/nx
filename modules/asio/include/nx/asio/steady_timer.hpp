@@ -7,37 +7,45 @@
 
 #include <nx/asio/context/io_context.hpp>
 
+#include "nx/common/helpers.hpp"
+
 namespace nx::asio
 {
     class steady_timer
     {
     public:
-        using Task = io_context::task_t;
-        using Duration = duration;
-        using TimePoint = time_point;
+        using task_t = io_context::task_t;
+        using duration = duration;
+        using time_point = time_point;
+        using clock_t = clock;
 
     private:
         io_context & ctx_;
         timer_id id_;
-        TimePoint expiry_;
+        time_point expiry_;
 
     public:
-        explicit
-        steady_timer(io_context & ctx);
+        NX_DISABLE_COPY(steady_timer)
+
+        explicit steady_timer(io_context & ctx);
+        ~steady_timer();
 
         void
-        asyncWait(Duration duration, Task task);
+        async_wait(duration duration, task_t task);
         void
-        asyncWait(TimePoint expiry, Task task);
+        async_wait(time_point expiry, task_t task);
 
         void cancel();
 
-        Duration timeLeft() const;
+        NX_NODISCARD duration
+        time_left() const;
 
-        timer_id timerId() const;
+        NX_NODISCARD timer_id
+        id() const;
 
-        bool
+        NX_NODISCARD bool
         running () const;
+
     };
 }
 

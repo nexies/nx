@@ -14,8 +14,8 @@
 namespace nx::asio {
 
 # ifdef NX_OS_WINDOWS
-    using NativeHandle = void *;
-    constexpr static NativeHandle g_nullHandle = NULL;
+    typedef void* native_handle_t;
+    constexpr static const native_handle_t g_null_handle = nullptr;
 # else
     using native_handle_t = int;
     constexpr static native_handle_t g_null_handle = -1;
@@ -24,7 +24,10 @@ namespace nx::asio {
     enum class io_interest : std::uint32_t {
         none    = 0x00,
         read    = 0x01,
-        write   = 0x02
+        write   = 0x02,
+#if defined(NX_OS_APPLE)
+        signal  = 0x04
+#endif
     };
 
     inline io_interest
@@ -46,12 +49,12 @@ namespace nx::asio {
     }
 
     enum class io_event : std::uint32_t {
-        None    = 0x00,
-        Read    = 0x01,
-        Write   = 0x02,
-        Error   = 0x03,
-        Hangup  = 0x04,
-        Wakeup  = 0x05,
+        none    = 0x00,
+        read    = 0x01,
+        write   = 0x02,
+        error   = 0x04,
+        hangup  = 0x08,
+        wakeup  = 0x10,
     };
 
     inline io_event
@@ -76,9 +79,17 @@ namespace nx::asio {
     struct backend_event {
         void * token = nullptr;
         native_handle_t identity { 0 };
-        io_event events = io_event::None;
+        io_event events = io_event::none;
         uint64_t u64 { 0 };
         uint32_t u32 { 0 };
+
+        union {
+            struct {
+                int signum;
+                int reps;
+            }signal;
+            uint32_t bytes;
+        } data {};
     };
 
     using clock = std::chrono::system_clock;
@@ -97,7 +108,7 @@ namespace nx::asio {
         static constexpr size_t invalid_val = std::numeric_limits<size_t>::max();
         size_t val { 0 };
         constexpr void
-        inc () { while (val == invalid_val) ++val; }
+        inc () { do { ++val; } while (val == invalid_val); }
     public:
         static constexpr timer_id invalid() { return timer_id { std::numeric_limits<size_t>::max() }; }
 

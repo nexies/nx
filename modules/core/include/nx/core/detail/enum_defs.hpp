@@ -7,9 +7,10 @@
 
 #ifndef __nx_cxx_20_enum
 #error ""
+#else
+#include <nx/experimental/reflect>
 #endif
 
-#include <nx/experimental/reflect>
 #include <nx/core/meta/enum_flags.hpp>
 #include <nx/core/meta/enum.hpp>
 #include <nx/macro/util/platform.hpp>

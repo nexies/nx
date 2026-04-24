@@ -1,4 +1,4 @@
-#if(!defined(NX_CORE_ASIO_BACKEND_EPOLL_INL))&&(defined(__unix__))
+#if (!defined(NX_CORE_ASIO_BACKEND_EPOLL_INL)) && (defined(NX_OS_LINUX))
 #define NX_CORE_ASIO_BACKEND_EPOLL_INL
 
 #include <iostream>
@@ -78,7 +78,7 @@ namespace nx::asio {
             }
         }
 
-        void remove(native_handle_t handle) override {
+        void remove(native_handle_t handle, void * token, io_interest interest) override {
             if (epoll_ctl(epoll_fd_, EPOLL_CTL_DEL, handle, nullptr) == -1) {
                 throw std::runtime_error("remove: epoll_ctl failed");
             }
@@ -110,18 +110,15 @@ namespace nx::asio {
                 ev.u32 = events[i].data.u32;
                 ev.u64 = events[i].data.u64;
 
-                if (events[i].events & EPOLLIN)
-                    ev.events = io_event::Read;
-                if (events[i].events & EPOLLOUT)
-                    ev.events = io_event::Write;
-                if (events[i].events & EPOLLERR)
-                    ev.events = io_event::Error;
-                if (events[i].events & EPOLLHUP)
-                    ev.events = io_event::Hangup;
-                if (events[i].events & EPOLLWAKEUP)
-                    ev.events = io_event::Wakeup;
-                if (events[i].data.fd == event_fd_)
-                    ev.events = io_event::Wakeup;
+                if (events[i].data.fd == event_fd_) {
+                    ev.events = io_event::wakeup;
+                } else {
+                    ev.events = io_event::none;
+                    if (events[i].events & EPOLLIN)  ev.events = ev.events | io_event::read;
+                    if (events[i].events & EPOLLOUT) ev.events = ev.events | io_event::write;
+                    if (events[i].events & EPOLLERR) ev.events = ev.events | io_event::error;
+                    if (events[i].events & EPOLLHUP) ev.events = ev.events | io_event::hangup;
+                }
             }
 
             free(events);

@@ -5,14 +5,19 @@ add_library(nx_network
 )
 
 target_link_libraries(nx_network PRIVATE
-        nx_core
+        nx::core2
 )
 
-include(nxMakeModule)
+#include(nxMakeModule)
 
-nx_make_module(
-        TARGET nx_network
+#nx_make_module(
+#        TARGET nx_network
+#        NAME network
+#        HEADERS_BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include
+#        VERSION 0.0.1
+#)
+
+nx_configure_component(nx_network
         NAME network
-        HEADERS_BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include
         VERSION 0.0.1
 )

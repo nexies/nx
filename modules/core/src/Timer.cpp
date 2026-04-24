@@ -85,7 +85,7 @@ bool Timer::_set()
     }
 
     reps_left = reps;
-    timer->asyncWait(duration(), std::bind(&Timer::_OnTimeout, this));
+    timer->async_wait(duration(), std::bind(&Timer::_OnTimeout, this));
     return true;
 }
 

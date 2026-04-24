@@ -40,8 +40,10 @@
 
 #elif defined(_MSC_VER)
 #  define NX_CXX_MSC
+#  define NX_CXX_MSVC
 #  define NX_CXX "MS VisualC"
 #  define NX_CXX_MSC_VER (_MSC_VER)
+#  define NX_CXX_MSVC_VER (_MSC_VER)
 
 #else
 #  error "Unknown compiler - please reconfigure"
@@ -67,6 +69,13 @@
 #  define __has_feature(x) 0
 #endif
 
+#define NX_HAS_FEATURE(__feature__) __has_feature(__feature__)
+
+#ifndef __has_builtin
+#  define __has_builtin(x) 0
+#endif
+
+#define NX_HAS_BUILTIN(__builtin__) __has_builtin(__builtin__)
 
 //--------------------------------------------------------------------------------------------------
 // Compiler control helpers

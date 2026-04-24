@@ -11,6 +11,9 @@
 #define _nx_choose(pos, ...) \
     NX_CONCAT(_nx_macro_impl_choose_, pos)(__VA_ARGS__)
 
+#define _nx_2_choose(pos, ...) \
+    NX_CONCAT(_nx_macro_impl_choose_, pos)(__VA_ARGS__)
+
 ///
 /// @param pos
 #define NX_CHOOSE(pos, ...) \

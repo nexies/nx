@@ -54,7 +54,8 @@ function(nx_make_module)
     set(_t      ${_NX_TARGET})
     set(_alias  ${NX_NAMESPACE}::${_name})
     set(_ver    ${_NX_VERSION})
-    set(DESC "[${_alias}] -- ")
+#    set(DESC "[] -- ")
+    nx_push_log_scope("${_alias}")
 
     if(NOT NX_BUILD_MODULE_${_name_up} AND NOT NX_BUILD_MODULE_${_name})
 #        message("${DESC} ignoring absence of NX_BUILD_MODULE_${_name_up} definition...")
@@ -68,7 +69,7 @@ function(nx_make_module)
         add_library(${_alias} ALIAS ${_t})
     endif()
 
-    target_compile_options(${_t} PUBLIC -std=c++${NX_CXX_STANDARD})
+#    target_compile_options(${_t} PUBLIC -std=c++${NX_CXX_STANDARD})
 
     nx_make_module_version(NAME ${_name} VERSION ${_ver})
 
@@ -109,9 +110,7 @@ function(nx_make_module)
         if(NOT _NX_HEADERS_BASE_DIRS)
             set(_NX_HEADERS_BASE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/include")
         endif()
-#        message(${DESC} "Headers base dir is set to ${_NX_HEADERS_BASE_DIRS}...")
         list(LENGTH _NX_PUBLIC_HEADERS _headers_count)
-#        message(${DESC} "Found ${_headers_count} public headers")
         target_sources(${_t}
                 PUBLIC
                 FILE_SET public_headers
@@ -148,9 +147,6 @@ function(nx_make_module)
         endif()
     endif()
 
-#    message(${DESC} "Path to headers [BUILD]:   ${_NX_HEADERS_BASE_DIRS}")
-#    message(${DESC} "Path to headers [INSTALL]: ${NX_INSTALL_INCLUDEDIR}")
-
     target_include_directories(${_t}
             PUBLIC
             $<BUILD_INTERFACE:${_NX_HEADERS_BASE_DIRS}>
@@ -168,6 +164,6 @@ function(nx_make_module)
     set_property(GLOBAL PROPERTY NX_ENABLED_COMPONENTS "${_en}")
 
     get_property(_ver GLOBAL PROPERTY NX_${_name_up}_VERSION_STR)
-    message(${DESC} "Configured module ${_name} version ${_ver}")
+    nx_log("Configured module ${_name} version ${_ver}")
 
 endfunction()

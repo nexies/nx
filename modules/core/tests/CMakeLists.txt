@@ -1,10 +1,19 @@
-add_executable(nx_core_test_asio_context
-        asio_context.cpp
-        handle_notifier.cpp
-)
-target_link_libraries(nx_core_test_asio_context PUBLIC nx::core)
+include(nxConfigureTest)
 
-add_executable(nx_core_test_handle_notifier
-        handle_notifier.cpp
+#nx_configure_test(context
+#        COMPONENT core
+#        SOURCE asio_context.cpp
+#        NO_CATCH
+#)
+
+nx_configure_test(handle_notifier
+        COMPONENT core
+        SOURCE handle_notifier.cpp
+        NO_CATCH
 )
-target_link_libraries(nx_core_test_handle_notifier PUBLIC nx::core)
+
+nx_configure_test(manual_meta_object
+        COMPONENT core
+        SOURCE try_meta_object.cpp
+        NO_CATCH
+)

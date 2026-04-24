@@ -5,6 +5,7 @@
 #include <nx/asio/steady_timer.hpp>
 
 #include "context/context_impl.hpp"
+#include "nx/common/types/errors/codes.hpp"
 
 namespace nx::asio
 {
@@ -14,22 +15,38 @@ namespace nx::asio
     {
     }
 
-    void steady_timer::asyncWait(Duration duration, Task task)
+    steady_timer::~steady_timer()
     {
         if (running())
-            throw std::runtime_error("SteadyTimer::asyncWait - timer is already running");
-
-        expiry_ = clock::now() + duration;
-        id_ = ctx_.impl_->create_timer(expiry_, task);
+            cancel();
     }
 
-    void steady_timer::asyncWait(TimePoint expiry, Task task)
+    void steady_timer::async_wait(duration dur, task_t task)
     {
         if (running())
-            throw std::runtime_error("SteadyTimer::asyncWait - timer is already running");
+            cancel();
+
+        expiry_ = clock::now() + dur;
+        // Wrap the task so id_ is cleared after the user callback returns,
+        // making running() == false as soon as the callback completes.
+        id_ = ctx_.impl_->create_timer(expiry_,
+            [this, task = std::move(task)]() mutable {
+                task();
+                id_ = timer_id::invalid();
+            });
+    }
+
+    void steady_timer::async_wait(time_point expiry, task_t task)
+    {
+        if (running())
+            cancel();
 
         expiry_ = expiry;
-        id_ = ctx_.impl_->create_timer(expiry_, task);
+        id_ = ctx_.impl_->create_timer(expiry_,
+            [this, task = std::move(task)]() mutable {
+                task();
+                id_ = timer_id::invalid();
+            });
     }
 
     void steady_timer::cancel()
@@ -38,15 +55,15 @@ namespace nx::asio
         id_ = timer_id::invalid();
     }
 
-    duration steady_timer::timeLeft() const
+    duration steady_timer::time_left() const
     {
         if (running())
             return expiry_ - clock::now();
 
-        return Duration::zero();
+        return duration::zero();
     }
 
-    timer_id steady_timer::timerId() const
+    timer_id steady_timer::id() const
     {
         return id_;
     }

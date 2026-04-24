@@ -190,6 +190,18 @@ namespace nx::tui
 
         static void
         ResetScreenMode (Mode mode);
+
+        static void
+        EnableRawMode();
+
+        static void
+        DisableRawMode();
+
+        static void
+        EnableMouseTracking();
+
+        static void
+        DisableMouseTracking();
     };
 }
 

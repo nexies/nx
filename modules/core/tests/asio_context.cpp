@@ -2,8 +2,8 @@
 // Created by nexie on 22.03.2026.
 //
 
-#include <../include/nx/core/asio/context.hpp>
-#include <nx/core/asio/steady_timer.hpp>
+#include <nx/asio/io_context.hpp>
+#include <nx/asio/steady_timer.hpp>
 #include <iostream>
 
 using namespace nx;

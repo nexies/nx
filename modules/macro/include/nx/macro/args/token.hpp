@@ -10,6 +10,7 @@
 
 #include <nx/macro/tuple/tuple.hpp>
 
+#include <nx/macro/numeric/inc_dec.hpp>
 
 
 
@@ -34,7 +35,14 @@
 ///
 /// (NAME, VALUE) -> VALUE
 # define _nx_args_token_value(token) \
-    _nx_tuple_get(1, token)
+    _nx_logic_if(_nx_bool(_nx_dec(_nx_tuple_size(token)))) ( \
+        _nx_tuple_get(1, token), \
+        _nx_empty() \
+    )
+
+
+// // # define _nx_args_token_has_value(token) \
+//     NX_BOOL(_nx_dec(_nx_tuple_size(token)))
 
 /// Check that token @p token has name @p name
 /// @param d

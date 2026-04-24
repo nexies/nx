@@ -5,6 +5,7 @@
 #ifndef NX_HANDLE_NOTIFIER_HPP
 #define NX_HANDLE_NOTIFIER_HPP
 
+#include <nx/common.hpp>
 #include <functional>
 #include <nx/asio/context/io_context.hpp>
 
@@ -29,10 +30,10 @@ namespace nx::asio
         void
         setInterest (io_interest interest);
 
-        [[nodiscard]] native_handle_t
+        NX_NODISCARD native_handle_t
         handle () const;
 
-        [[nodiscard]] io_interest
+        NX_NODISCARD io_interest
         interest () const;
 
         template <typename Handler>

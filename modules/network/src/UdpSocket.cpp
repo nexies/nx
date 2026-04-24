@@ -2,7 +2,7 @@
 // Created by nexie on 21.02.2026.
 //
 
-#include <nx/core/detail/logger_defs.hpp>
+#include <nx/core2/detail/logger_defs.hpp>
 #include <nx/network/UdpSocket.hpp>
 #include "nx/core/Thread.hpp"
 

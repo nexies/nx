@@ -9,20 +9,24 @@
 // 7. C++ STANDARD
 //====================================================
 
-#if __cplusplus >= 202302L
+#if defined(_MSC_VER)
+    #define NX_CPP_VERSION _MSVC_LANG
+#else
+    #define NX_CPP_VERSION __cplusplus
+#endif
+
+#if NX_CPP_VERSION >= 202302L
     #define NX_CPP23 1
-#elif __cplusplus >= 202002L
+#elif NX_CPP_VERSION >= 202002L
     #define NX_CPP20 1
-#elif __cplusplus >= 201703L
+#elif NX_CPP_VERSION >= 201703L
     #define NX_CPP17 1
-#elif __cplusplus >= 201402L
+#elif NX_CPP_VERSION >= 201402L
     #define NX_CPP14 1
-#elif __cplusplus >= 201103L
+#elif NX_CPP_VERSION >= 201103L
     #define NX_CPP11 1
 #else
     #error "C++11 or higher required"
 #endif
-
-#define NX_CPP_VERSION __cplusplus
 
 #endif //NX_STANDARD_DEFS_HPP

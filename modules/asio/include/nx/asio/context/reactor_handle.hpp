@@ -8,46 +8,83 @@
 #include <nx/asio/backend/backend_types.hpp>
 #include <nx/asio/context/io_context.hpp>
 
+#include <functional>
+#include "nx/common/helpers.hpp"
+
 namespace nx::asio
 {
+    // reactor_handle — строительный блок для любого I/O объекта.
+    //
+    // Два способа использования:
+    //
+    //   1. Композиция (предпочтительно для новых типов):
+    //        class tcp_socket {
+    //            reactor_handle reactor_;
+    //            ...
+    //            reactor_.set_read_handler([this](backend_event & ev) { ... });
+    //        };
+    //
+    //   2. Наследование (для типов с нестандартной диспетчеризацией):
+    //        class signal_set_posix : public reactor_handle {
+    //            void on_event(backend_event & ev) override { ... }
+    //        };
+    //
+    // Handlers срабатывают one-shot: после вызова очищаются.
+    // Чтобы продолжить получать события — установи handler снова внутри callback.
+
     class reactor_handle
     {
+        friend class io_context::impl;
     public:
-        explicit
-        reactor_handle(io_context & ctx);
+        using handler_t = std::function<void(backend_event &)>;
 
-        virtual
-        ~reactor_handle();
+        explicit reactor_handle(io_context & ctx);
+        virtual ~reactor_handle();
 
-        virtual void
-        react(io_event event) = 0;
+        NX_DISABLE_COPY(reactor_handle)
+
+        // Регистрация в event loop
+        void
+        install(native_handle_t handle, io_interest interest);
 
         void
-        install (native_handle_t handle, io_interest interest);
-
-        void
-        modify (native_handle_t handle, io_interest interest);
+        modify(native_handle_t handle, io_interest interest);
 
         void
         uninstall();
 
-        [[nodiscard]] io_interest
-        interest () const;
+        // Установка обработчиков (one-shot: срабатывают один раз, потом очищаются)
+        void
+        set_read_handler (handler_t h);
 
-        [[nodiscard]] native_handle_t
-        handle () const;
+        void
+        set_write_handler(handler_t h);
 
-        [[nodiscard]] bool
-        installed () const;
+        NX_NODISCARD io_interest
+        interest()  const;
 
-        [[nodiscard]] io_context &
-        ctx() const;
+        NX_NODISCARD native_handle_t
+        handle()    const;
+
+        NX_NODISCARD bool
+        installed() const;
+
+        NX_NODISCARD io_context &
+        ctx()       const;
+
+    protected:
+        // Виртуальный — subclass'ы могут переопределить для нестандартной логики.
+        // Реализация по умолчанию диспетчеризует read/write/error к stored handlers.
+        virtual void
+        on_event(backend_event & event);
 
     private:
-        io_context & ctx_;
-        io_interest interest_;
-        native_handle_t handle_;
-        bool installed_;
+        io_context &     ctx_;
+        io_interest      interest_ { io_interest::none };
+        native_handle_t  handle_   { g_null_handle };
+        bool             installed_ { false };
+        handler_t        read_handler_;
+        handler_t        write_handler_;
     };
 
 }

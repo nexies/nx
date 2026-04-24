@@ -10,45 +10,29 @@
 
 namespace nx::asio
 {
-
-    class signal_set::impl : public reactor_handle,
-                             public std::enable_shared_from_this<impl>
+    class signal_set::impl : public std::enable_shared_from_this<impl>
     {
     public:
-        explicit
-        impl(io_context & ctx);
-
-        ~impl ();
-
-        void
-        add(int signal);
+        virtual
+        ~impl () = default;
 
         virtual void
-        remove(int signal);
+        add(int signal) = 0;
 
-        void
-        clear ();
+        virtual void
+        remove(int signal) = 0;
 
-        void
-        asyncWait(HandlerType h);
+        virtual void
+        clear () = 0;
 
-        std::size_t
-        cancel();
+        virtual void
+        async_wait(handler_type h) = 0;
 
-        void
-        react(io_event event) override;
+        virtual std::size_t
+        cancel() = 0;
 
-    private:
-        void rebuild_fd();
-        void close_fd();
-        void handle_readable();
-
-    private:
-        // io_context & ctx_;
-        native_handle_t fd_ { g_null_handle };
-        sigset_t mask_ { };
-        // bool waiting_ { false };
-        HandlerType handler_ { nullptr };
+        static std::shared_ptr<impl>
+        create_impl(io_context & ctx);
     };
 }
 

@@ -1,0 +1,6 @@
+include(nxConfigureComponent)
+include(nxCMakeLogScope)
+include(nxMakeModule)
+include(nxMakeModuleVersion)
+include(nxParseOptions)
+include(nxVersionInfo)

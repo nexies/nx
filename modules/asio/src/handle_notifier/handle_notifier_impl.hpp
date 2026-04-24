@@ -27,11 +27,10 @@ namespace nx::asio
         void
         cancel ();
 
-        void
-        react(io_event event) override;
+        void on_event(backend_event & event) override;
 
     private:
-        void handle_event(io_event ev);
+        void handle_event(backend_event & event);
     };
 }
 

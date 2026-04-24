@@ -8,6 +8,10 @@
 #include <nx/asio/handle_notifier.hpp>
 #include <termios.h>
 
+#if defined(NX_OS_APPLE)
+#include <unistd.h>
+#endif
+
 namespace detail
 {
     inline char hex_digit(unsigned v) {
@@ -224,7 +228,7 @@ class debug_notifier : public nx::asio::reactor_handle
     {
         switch (event)
         {
-        case nx::asio::io_event::Read:
+        case nx::asio::io_event::read:
             {
                 char buf [128] { 0 };
                 auto n = ::read(handle(), buf, sizeof(buf));

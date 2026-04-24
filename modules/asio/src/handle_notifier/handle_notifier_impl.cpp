@@ -26,18 +26,18 @@ namespace nx::asio
         handler_ = std::move(callback);
     }
 
-    void handle_notifier::impl::react(io_event event)
+    void handle_notifier::impl::on_event(backend_event & event)
     {
-        if (event != io_event::None)
+        if (event.events != io_event::none)
             handle_event(event);
     }
 
-    void handle_notifier::impl::handle_event(io_event ev)
+    void handle_notifier::impl::handle_event(backend_event & event)
     {
         if (!handler_)
             return;
 
-        ctx().post([h = std::move(handler_), fd = handle(), ev = ev]
+        ctx().post([h = std::move(handler_), fd = handle(), ev = event.events]
         {
             h(fd, ev);
         });

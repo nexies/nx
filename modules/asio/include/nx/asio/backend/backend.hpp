@@ -7,6 +7,8 @@
 
 #include "backend_types.hpp"
 
+#include <memory>
+
 namespace nx::asio {
 
     class backend {
@@ -22,7 +24,7 @@ namespace nx::asio {
         modify (native_handle_t handle, void * token, io_interest interest) = 0;
 
         virtual void
-        remove (native_handle_t handle) = 0;
+        remove (native_handle_t handle, void * token, io_interest interest) = 0;
 
         virtual void
         wake () = 0;

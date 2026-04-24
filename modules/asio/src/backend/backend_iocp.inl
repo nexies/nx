@@ -1,47 +1,17 @@
-#if !defined(NX_CORE_ASIO_BACKEND_IOCP_INL) && defined(_WIN32)
+#if !defined(NX_CORE_ASIO_BACKEND_IOCP_INL) && defined(NX_OS_WINDOWS)
 #define NX_CORE_ASIO_BACKEND_IOCP_INL
+
+#include <nx/asio/backend/backend.hpp>
 
 #include <windows.h>
 #include <iostream>
 #include <stdexcept>
 #include <memory>
 
-namespace my_async {
+static constexpr ULONG_PTR kWakeKey = 1;
+static constexpr ULONG_PTR kStopKey = 2;
 
-using native_handle = HANDLE;
-
-enum class io_interest : uint32_t {
-    none  = 0,
-    read  = 1u << 0,
-    write = 1u << 1,
-};
-
-enum class io_event : uint32_t {
-    none   = 0,
-    read   = 1u << 0,
-    write  = 1u << 1,
-    error  = 1u << 2,
-    hangup = 1u << 3,
-    wakeup = 1u << 4,
-    timer  = 1u << 5,
-};
-
-struct backend_event {
-    void* token = nullptr;
-    io_event events = io_event::none;
-};
-
-class backend {
-public:
-    virtual ~backend() = default;
-
-    virtual void add(native_handle handle, void* token, io_interest interests) = 0;
-    virtual void modify(native_handle handle, void* token, io_interest interests) = 0;
-    virtual void remove(native_handle handle) = 0;
-
-    virtual void wake() = 0;
-    virtual std::size_t wait(backend_event* out, std::size_t capacity, std::optional<std::chrono::steady_clock::duration> timeout) = 0;
-};
+namespace nx::asio {
 
 class iocp_backend : public backend {
 public:
@@ -57,50 +27,54 @@ public:
         CloseHandle(iocp_handle_);
     }
 
-    void add(native_handle handle, void* token, io_interest interests) override {
+    void add(native_handle_t handle, void* token, io_interest interests) override {
         if (CreateIoCompletionPort(handle, iocp_handle_, reinterpret_cast<ULONG_PTR>(token), 0) == nullptr) {
             throw std::runtime_error("CreateIoCompletionPort failed for add");
         }
     }
 
-    void modify(native_handle handle, void* token, io_interest interests) override {
+    void modify(native_handle_t handle, void* token, io_interest interests) override {
         // На Windows не требуется модификация IOCP (в отличие от epoll)
     }
 
-    void remove(native_handle handle) override {
+    void remove(native_handle_t handle, void* token, io_interest interests) override {
         // Для IOCP нельзя "удалить" дескриптор, как с epoll, но можно закрыть handle
         CloseHandle(handle);
     }
 
     void wake() override {
-        // В Windows IOCP не использует eventfd, но можно просто создать Wakeup дескриптор
-        // Для демонстрации можно использовать сигнализацию через объект событий или манипулировать завершением работы.
+        ::PostQueuedCompletionStatus(iocp_handle_, 0, kWakeKey, nullptr);
     }
 
-    std::size_t wait(backend_event* out, std::size_t capacity, std::optional<std::chrono::steady_clock::duration> timeout) override {
-        DWORD bytesTransferred;
-        ULONG_PTR completionKey;
-        LPOVERLAPPED overlapped;
+    std::size_t wait(backend_event* out, std::size_t capacity,
+                     std::optional<std::chrono::steady_clock::duration> timeout) override
+    {
+        DWORD       bytesTransferred {};
+        ULONG_PTR   completionKey    {};
+        LPOVERLAPPED overlapped      {};
 
-        int timeout_ms = timeout ? std::chrono::duration_cast<std::chrono::milliseconds>(*timeout).count() : INFINITE;
-        BOOL result = GetQueuedCompletionStatus(iocp_handle_, &bytesTransferred, &completionKey, &overlapped, timeout_ms);
+        int timeout_ms = timeout
+            ? static_cast<int>(std::chrono::duration_cast<std::chrono::milliseconds>(*timeout).count())
+            : INFINITE;
 
-        if (!result) {
-            return 0;
+        BOOL ok = GetQueuedCompletionStatus(
+            iocp_handle_, &bytesTransferred, &completionKey, &overlapped, timeout_ms);
+
+        if (!ok)
+            return 0; // timeout or error
+
+        backend_event ev {};
+        if (completionKey == kWakeKey && overlapped == nullptr) {
+            ev.events = io_event::wakeup;
         }
-
-        backend_event ev;
-        ev.token = reinterpret_cast<void*>(completionKey);
-
-        // Заполняем события в зависимости от типа операции
-        // Предполагаем, что в completionKey храним данные о событии (например, чтение/запись)
-
-        out[0] = ev;
+        // completionKey == token pointer for reactor handles (future use)
+        ev.token  = reinterpret_cast<void*>(completionKey);
+        out[0]    = ev;
         return 1;
     }
 
 private:
-    native_handle iocp_handle_;
+    native_handle_t iocp_handle_;
 };
 
 } // namespace my_async

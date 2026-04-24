@@ -4,8 +4,12 @@
 
 #ifndef NX_CORE_ASIO_SIGNAL_SET_HPP
 #define NX_CORE_ASIO_SIGNAL_SET_HPP
+
+#include <nx/common/types.hpp>
+
 #include <functional>
 #include <memory>
+#include <csignal>
 
 namespace nx::asio
 {
@@ -14,7 +18,7 @@ namespace nx::asio
     class signal_set
     {
     public:
-        using HandlerType = std::function<void(int)>;
+        using handler_type = std::function<void(nx::result<int>)>;
 
         explicit
         signal_set(io_context & ctx);
@@ -31,17 +35,20 @@ namespace nx::asio
         template <typename Handler>
         void async_wait(Handler && handler)
         {
-            _asyncWaitImpl(HandlerType(std::forward<Handler>(handler)));
+            _async_wait_impl(handler_type(std::forward<Handler>(handler)));
         }
 
         std::size_t cancel();
 
     private:
-        void _asyncWaitImpl(HandlerType handler);
+        void _async_wait_impl(handler_type handler);
 
+        friend class signal_set_posix;
+        friend class signal_set_kevent;
+        friend class signal_set_windows;
         class impl;
         std::shared_ptr<impl> impl_;
     };
 }
 
-#endif //NX_SIGNAL_SET_HPP
+#endif //NX_CORE_ASIO_SIGNAL_SET_HPP

@@ -412,7 +412,7 @@ namespace nx
             }
         };
 
-        template<typename Function, std::enable_if<not FunctionDescriptor<Function>::Member, int>::type = 0>
+        template<typename Function, typename std::enable_if<not FunctionDescriptor<Function>::Member, int>::type = 0>
         Callable(Function) -> Callable<FunctionRef<Function, typename FunctionDescriptor<Function>::InvokeArguments>,
                                         false, typename FunctionDescriptor<Function>::InvokeArguments>;
 
@@ -440,7 +440,7 @@ namespace nx
             }
         };
 
-        template<typename Function, std::enable_if<FunctionDescriptor<Function>::Member, int>::type = 0>
+        template<typename Function, typename std::enable_if<FunctionDescriptor<Function>::Member, int>::type = 0>
         Callable(
             std::reference_wrapper<typename FunctionDescriptor<Function>::MemberOf>,
             Function)
@@ -450,7 +450,7 @@ namespace nx
             typename FunctionDescriptor<Function>::MemberOf &,
             typename FunctionDescriptor<Function>::Arguments>;
 
-        template<typename Function, std::enable_if<FunctionDescriptor<Function>::Member, int>::type = 0>
+        template<typename Function, typename std::enable_if<FunctionDescriptor<Function>::Member, int>::type = 0>
         Callable(
             typename FunctionDescriptor<Function>::MemberOf &&,
             Function)
@@ -460,7 +460,7 @@ namespace nx
             typename FunctionDescriptor<Function>::MemberOf,
             typename FunctionDescriptor<Function>::Arguments>;
 
-        template<typename Invokable, std::enable_if<FunctionDescriptor<decltype(&Invokable::operator())>::Member, int>::type = 0>
+        template<typename Invokable, typename std::enable_if<FunctionDescriptor<decltype(&Invokable::operator())>::Member, int>::type = 0>
         Callable(Invokable &&)
             -> Callable<
             FunctionRef<decltype(&Invokable::operator()), typename FunctionDescriptor<decltype(&Invokable::operator())>::InvokeArguments>,

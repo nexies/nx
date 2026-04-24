@@ -4,7 +4,7 @@
 
 #include "object_impl.p.hpp"
 
-#include <boost/asio/local/basic_endpoint.hpp>
+// #include <boost/asio/local/basic_endpoint.hpp>
 #include <nx/core/Thread.hpp>
 
 Object::Impl::Impl(Object* obj) noexcept :
@@ -29,7 +29,12 @@ void Object::Impl::addChildObject(Object* child)
 
 void Object::Impl::removeChildObject(Object* child)
 {
-    auto it = std::remove(children_.begin(), children_.end(), child);
+    // auto it = std::remove(children_.begin(), children_.end(), child);
+    for (auto it = children_.begin(); it != children_.end(); ++it)
+        if (*it == child)
+        {
+            children_.erase(it);
+        }
 }
 
 bool Object::Impl::isTopLevelObject() const
