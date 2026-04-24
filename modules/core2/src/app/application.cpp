@@ -103,7 +103,7 @@ application::_create_logger()
 
     auto fmt = std::make_unique<pattern_formatter>();
     fmt->add_custom_flag('T', thread_id_flag);
-    fmt->set_pattern("[%Y-%m-%d %H:%M:%S.%f] [%n] [tid:%T] [%^%l%$] %v (%s:%#)");
+    fmt->set_pattern("[%Y-%m-%d %H:%M:%S.%f] [%n] [tid:%T] [%^%L%$] %v (%s:%#)");
     logger->set_formatter(std::move(fmt));
 
     set_default_logger(std::move(logger));

@@ -15,7 +15,7 @@
 #include <nx/common/types/result.hpp>
 
 #include <nx/core2/detail/signal_defs.hpp>
-#include <nx/core2/detail/property_defs.hpp>
+#include <nx/core2/detail/property_defs2.hpp>
 #include <nx/core2/detail/object_defs.hpp>
 #include <nx/core2/object/connection.hpp>
 #include <nx/core2/object/connection_info.hpp>
@@ -111,9 +111,7 @@ public:
 
     NX_OBJECT(object)
 
-    NX_PROPERTY(TYPE std::string, NAME object_name,
-                READ object_name, WRITE set_object_name,
-                NOTIFY object_name_changed)
+    NX_PROPERTY(object_name, TYPE std::string, READ, WRITE, NOTIFY)
 
     NX_SIGNAL(destroyed)
 

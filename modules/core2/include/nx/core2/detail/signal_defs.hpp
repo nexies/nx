@@ -42,22 +42,22 @@
 // __NX_SIGNAL_N  — signal with argument types
 // ──────────────────────────────────────────────────────────────────────────────
 
-#define __NX_SIGNAL_0(name)                                                     \
-    void name()                                                                  \
-    {                                                                            \
-        using _Self = std::remove_cv_t<std::remove_reference_t<decltype(*this)>>;\
-        ::nx::core::emit(this,                                                   \
-            static_cast<void(_Self::*)()>(&_Self::name));                        \
-    }
-
-#define __NX_SIGNAL_N(name, ...)                                                 \
-    void name(__NX_SIG_ARG_DECL(__VA_ARGS__))                                   \
-    {                                                                            \
-        using _Self = std::remove_cv_t<std::remove_reference_t<decltype(*this)>>;\
-        ::nx::core::emit(this,                                                   \
-            static_cast<void(_Self::*)(__VA_ARGS__)>(&_Self::name),              \
-            __NX_SIG_ARG_FWD(__VA_ARGS__));                                      \
-    }
+// #define __NX_SIGNAL_0(name)                                                     \
+//     void name()                                                                  \
+//     {                                                                            \
+//         using _Self = std::remove_cv_t<std::remove_reference_t<decltype(*this)>>;\
+//         ::nx::core::emit(this,                                                   \
+//             static_cast<void(_Self::*)()>(&_Self::name));                        \
+//     }
+//
+// #define __NX_SIGNAL_N(name, ...)                                                 \
+//     void name(__NX_SIG_ARG_DECL(__VA_ARGS__))                                   \
+//     {                                                                            \
+//         using _Self = std::remove_cv_t<std::remove_reference_t<decltype(*this)>>;\
+//         ::nx::core::emit(this,                                                   \
+//             static_cast<void(_Self::*)(__VA_ARGS__)>(&_Self::name),              \
+//             __NX_SIG_ARG_FWD(__VA_ARGS__));                                      \
+//     }
 
 // Dispatch on whether __VA_ARGS__ is empty
 #define __NX_SIGNAL_DISPATCH(name, ...)                                          \

@@ -24,15 +24,15 @@ ansi_color_begin(level l) noexcept
 {
     switch (l) {
     case level::trace:
-        return "\033[36m";
+        return "\x1b[38;5;8m";
     case level::debug:
-        return "\033[36m";
+        return "\x1b[38;5;6m";
     case level::info:
-        return "\033[32m";
+        return "\x1b[38;5;2m";
     case level::warn:
-        return "\033[33m";
+        return "\x1b[38;5;3m";
     case level::err:
-        return "\033[31m";
+        return "\x1b[38;5;1m";
     case level::critical:
         return "\033[1m\033[31m";
     default:

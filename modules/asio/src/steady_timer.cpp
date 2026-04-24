@@ -15,22 +15,38 @@ namespace nx::asio
     {
     }
 
-    void steady_timer::async_wait(duration duration, task_t task)
+    steady_timer::~steady_timer()
     {
         if (running())
-            throw nx::err::invalid_state("SteadyTimer::asyncWait - timer is already running");
+            cancel();
+    }
 
-        expiry_ = clock::now() + duration;
-        id_ = ctx_.impl_->create_timer(expiry_, std::move(task));
+    void steady_timer::async_wait(duration dur, task_t task)
+    {
+        if (running())
+            cancel();
+
+        expiry_ = clock::now() + dur;
+        // Wrap the task so id_ is cleared after the user callback returns,
+        // making running() == false as soon as the callback completes.
+        id_ = ctx_.impl_->create_timer(expiry_,
+            [this, task = std::move(task)]() mutable {
+                task();
+                id_ = timer_id::invalid();
+            });
     }
 
     void steady_timer::async_wait(time_point expiry, task_t task)
     {
         if (running())
-            throw nx::err::invalid_state("SteadyTimer::asyncWait - timer is already running");
+            cancel();
 
         expiry_ = expiry;
-        id_ = ctx_.impl_->create_timer(expiry_, std::move(task));
+        id_ = ctx_.impl_->create_timer(expiry_,
+            [this, task = std::move(task)]() mutable {
+                task();
+                id_ = timer_id::invalid();
+            });
     }
 
     void steady_timer::cancel()

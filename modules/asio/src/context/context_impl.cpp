@@ -47,7 +47,7 @@ namespace nx::asio
         return 0;
     }
 
-    std::size_t io_context::impl::run(std::optional<duration> duration)
+    std::size_t io_context::impl::run(std::optional<duration> max_duration)
     {
         running_.store(true, std::memory_order_release);
 
@@ -56,23 +56,30 @@ namespace nx::asio
             owner_thread_id = std::this_thread::get_id();
         }
 
-        std::size_t tasks_processed{0};
-        auto timeout = computeWaitTimeout(duration);
-        auto time_start = clock::now();
+        std::size_t tasks_processed { 0 };
+        const auto deadline = max_duration.has_value()
+            ? std::optional<time_point>(clock::now() + *max_duration)
+            : std::nullopt;
+
         while (!stopped_.load(std::memory_order_acquire))
         {
             drainExpiredTimers();
             tasks_processed += executeReady();
-            // if (stopped_.load(std::memory_order_acquire))
-            //     timeout = std::chrono::milliseconds(0);
 
+            // Recompute remaining time each iteration so backend_->wait never
+            // sleeps longer than the time left in the run_for/run_until window.
+            std::optional<duration> remaining;
+            if (deadline.has_value()) {
+                remaining = *deadline - clock::now();
+                if (*remaining <= duration::zero())
+                    break;
+            }
+
+            auto timeout = computeWaitTimeout(remaining);
             backend_event events[64];
             auto event_count = backend_->wait(events, 64, timeout);
 
             processBackendEvents(events, event_count);
-
-            if (timeout.has_value() && (clock::now() > time_start + timeout.value()))
-                break;
         }
         running_.store(false);
         return tasks_processed;
@@ -197,13 +204,19 @@ namespace nx::asio
         auto now = clock::now();
         while (!timers_.empty())
         {
-            if (timers_.top()->expiry > now)
+            auto & top = timers_.top();
+
+            if (top->canceled) {
+                // Always remove cancelled timers so they don't skew the timeout.
+                timer_storage_.erase(top->id);
+                timers_.pop();
+                continue;
+            }
+
+            if (top->expiry > now)
                 break;
 
-            auto& top = timers_.top();
-            if (!top->canceled)
-                post(std::move(top->task));
-
+            post(std::move(top->task));
             timer_storage_.erase(top->id);
             timers_.pop();
         }
@@ -211,16 +224,18 @@ namespace nx::asio
 
     std::optional<duration> io_context::impl::computeWaitTimeout(std::optional<duration> max_duration) const
     {
-        std::optional<duration> out = std::nullopt;
+        // Cancelled timers have been drained by drainExpiredTimers, so the top
+        // of the heap is always the next active (non-cancelled) timer, or empty.
+        std::optional<duration> out;
 
-        if (!timers_.empty())
-            out = timers_.top()->expiry - clock::now();
+        if (!timers_.empty()) {
+            auto until_next = timers_.top()->expiry - clock::now();
+            // Clamp to zero so we never pass a negative duration to the backend.
+            out = until_next > duration::zero() ? until_next : duration::zero();
+        }
 
         if (max_duration.has_value())
-        {
-            out = out.value_or(max_duration.value());
-            out = out > max_duration ? max_duration : out;
-        }
+            out = out.has_value() ? std::min(*out, *max_duration) : max_duration;
 
         return out;
     }
@@ -284,15 +299,10 @@ namespace nx::asio
 
 
 #if defined(NX_OS_WINDOWS)
-#include <windows.h>
-std::size_t io_context::impl::_consume_wakeup_event(backend_event* event)
+    // IOCP wakeup: already consumed by GetQueuedCompletionStatus – nothing to drain.
+    std::size_t io_context::impl::_consume_wakeup_event(backend_event* /*event*/)
     {
-        const auto handle = event->identity;
-        char buf [128];
-        DWORD bytesRead = 0;
-        BOOL ok = ReadFile(handle, buf, sizeof(buf), &bytesRead, nullptr);
-        if (ok) return static_cast<std::size_t>(bytesRead);
-        return 0;
+        return 1;
     }
 #elif defined(NX_OS_LINUX)
 #include <unistd.h>

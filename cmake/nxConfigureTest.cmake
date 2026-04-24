@@ -82,6 +82,15 @@ function(nx_configure_test NAME)
 
     target_link_libraries(${_target} ${_scope} ${_link_libraries})
 
+    # On MinGW, statically link the C/C++ and threading runtimes so the
+    # test binary runs without libgcc_s_seh-1.dll / libstdc++-6.dll /
+    # libwinpthread-1.dll being present in PATH or next to the executable.
+    # MSVCRT.DLL and KERNEL32.DLL are Windows system DLLs and have no static
+    # equivalents in MinGW, so they are unaffected by -static.
+    if(MINGW)
+        target_link_options(${_target} PRIVATE -static)
+    endif()
+
     set_target_properties(${_target} PROPERTIES
             RUNTIME_OUTPUT_DIRECTORY ${_binary_dir}
             OUTPUT_NAME "${_binary}"

@@ -6,12 +6,12 @@ add_subdirectory(common)
 add_subdirectory(logging)
 add_subdirectory(macro)
 add_subdirectory(asio)
-add_subdirectory(core)
 add_subdirectory(core2)
-add_subdirectory(tui)
-add_subdirectory(network)
+#add_subdirectory(tui)
+#add_subdirectory(network)
 
 #    add_subdirectory(memory)
+#add_subdirectory(core)
 
 
 

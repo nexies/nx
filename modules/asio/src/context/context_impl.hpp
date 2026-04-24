@@ -115,15 +115,16 @@ namespace nx::asio {
             { }
         };
 
-        // struct TimerOpCmp {
-        //     bool operator < (const TimerOp & left, const TimerOp & right) {
-        //         return left.expiry < right.expiry;
-        //     }
-        // };
+        struct TimerCmp {
+            bool operator()(const std::shared_ptr<TimerOp> & a,
+                            const std::shared_ptr<TimerOp> & b) const {
+                return a->expiry > b->expiry; // min-heap: earliest expiry on top
+            }
+        };
 
         std::priority_queue<std::shared_ptr<TimerOp>,
                             std::vector<std::shared_ptr<TimerOp>>,
-                            std::greater<>> timers_;
+                            TimerCmp> timers_;
 
         std::unordered_map<std::uint64_t, std::shared_ptr<TimerOp>> timer_storage_;
         timer_id next_timer_id_ { 0 };

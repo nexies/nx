@@ -45,9 +45,10 @@ namespace nx::asio
 
         friend class signal_set_posix;
         friend class signal_set_kevent;
+        friend class signal_set_windows;
         class impl;
         std::shared_ptr<impl> impl_;
     };
 }
 
-#endif //NX_SIGNAL_SET_HPP
+#endif //NX_CORE_ASIO_SIGNAL_SET_HPP

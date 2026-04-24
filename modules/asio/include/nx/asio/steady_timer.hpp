@@ -27,8 +27,8 @@ namespace nx::asio
     public:
         NX_DISABLE_COPY(steady_timer)
 
-        explicit
-        steady_timer(io_context & ctx);
+        explicit steady_timer(io_context & ctx);
+        ~steady_timer();
 
         void
         async_wait(duration duration, task_t task);

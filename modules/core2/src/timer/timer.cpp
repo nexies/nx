@@ -64,7 +64,7 @@ timer::_arm()
     if (!asio_timer_ || !active_.load(std::memory_order_acquire))
         return;
 
-    asio_timer_->async_wait(interval(), [this]()
+    asio_timer_->async_wait(get_interval(), [this]()
     {
         if (!active_.load(std::memory_order_acquire))
             return;
@@ -78,7 +78,7 @@ timer::_on_timeout()
 {
     NX_EMIT(timeout);
 
-    if (type() == timer_type::periodic && active_.load(std::memory_order_acquire))
+    if (get_type() == timer_type::periodic && active_.load(std::memory_order_acquire))
         _arm();
     else
         active_.store(false, std::memory_order_release);

@@ -5,7 +5,7 @@ add_library(nx_network
 )
 
 target_link_libraries(nx_network PRIVATE
-        nx_core
+        nx::core2
 )
 
 #include(nxMakeModule)

@@ -11,7 +11,7 @@ namespace nx::asio
         impl_ {impl::create_impl(ctx)}
     {
         if (!impl_)
-            throw std::runtime_error("signal set not initialized");
+            throw err::runtime_error("signal set not initialized");
     }
 
     signal_set::~signal_set()

@@ -61,6 +61,8 @@ namespace nx {
         error(const std::error_code& code, std::string_view comment,
               const nx::source_location& loc = nx::source_location::current()) noexcept;
 
+        explicit error(std::errc code) noexcept;
+
         error(const error& other);
         error(error&& other) noexcept;
 

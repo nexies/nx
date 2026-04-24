@@ -102,6 +102,12 @@ namespace nx {
         : error(code.category(), code.value(), comment, loc)
     {}
 
+    error::error(std::errc code) noexcept
+        : error(std::make_error_code(code))
+    {
+
+    }
+
     error::error(const error& other)
         : code_(other.code_), flag_(by_cat), d_ {}
     {

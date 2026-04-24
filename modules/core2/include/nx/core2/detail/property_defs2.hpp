@@ -409,7 +409,7 @@
 # define _nxpv2_get_value(args, name)                                    \
     _nx_logic_if(_nxpv2_has_value(args, name))(                          \
         _nx_apply(_nx_tuple_get, 0, _nxpv2_get_value_tup(args, name)),   \
-        _nx_empty()                                                      \
+        _nx_expand( )                                                    \
     )
 
 // # define _tmp_nxpv2_args \
@@ -541,6 +541,11 @@
 # define _nxpv2_get_default(args)                                \
     _nxpv2_get_value(args, DEFAULT)
 
+# define _nxpv2_get_default_bare_value(args)                              \
+    _nx_logic_if(_nxpv2_has_value(args, DEFAULT))(                        \
+        _nx_apply(_nx_tuple_get, 0, _nxpv2_get_value_tup(args, DEFAULT)), \
+        _nx_expand( {} )                                                  \
+    )
 
 /// CONST
 
@@ -631,19 +636,28 @@
 // ----------------------------------------------------------------
 // Gen: NOTIFY signal
 //
-//   bare NOTIFY  → NX_SIGNAL(<name>_changed, type_expr)
+//   bare NOTIFY  → NX_SIGNAL(<name>_changed)   — no argument: avoids copies of
+//                                                 complex types and is safe across
+//                                                 threads (observer calls getter).
 //   NOTIFY sig   → nothing  (existing signal — registered in meta only)
 //   no NOTIFY    → nothing
 // ----------------------------------------------------------------
 
-# define _nxpv2_gen_signal(prop_name, type_expr)                            \
-    NX_SIGNAL(_nxpv2_add_postfix(prop_name, _nxpv2_default_notify_postfix), type_expr)
+# define _nxpv2_gen_signal(prop_name)                                       \
+    NX_SIGNAL(_nxpv2_add_postfix(prop_name, _nxpv2_default_notify_postfix))
 
 # define _nxpv2_gen_notify_dispatch(prop_name, type_expr, args)             \
     _nx_logic_if(_nxpv2_exists_arg(args, NOTIFY))(                          \
         _nx_logic_if(_nxpv2_has_value(args, NOTIFY))(                       \
             _nx_empty(),                                                     \
-            _nxpv2_gen_signal(prop_name, type_expr)                         \
+            _nx_logic_if(_nxpv2_exists_arg(args, MEMBER))(                  \
+                static_assert(false,                                         \
+                    "NX_PROPERTY: bare NOTIFY with MEMBER is not supported " \
+                    "because the member type cannot be deduced while the "   \
+                    "class is incomplete. Pre-declare the signal and use "   \
+                    "NOTIFY <signal_name> instead."),                        \
+                _nxpv2_gen_signal(prop_name)                                \
+            )                                                                \
         ),                                                                   \
         _nx_empty()                                                          \
     )
@@ -668,7 +682,7 @@
     {                                                                        \
         field_ref = _value;                                                  \
         _nx_logic_if(_nxpv2_exists_arg(args, NOTIFY))(                      \
-            NX_EMIT(_nxpv2_get_notify(prop_name, args), _value);,           \
+            NX_EMIT(_nxpv2_get_notify(prop_name, args));,                   \
             _nx_empty()                                                      \
         )                                                                    \
     }
@@ -697,9 +711,9 @@
 # define _nxpv2_gen_reset_body(prop_name, type_expr, field_ref, args)       \
     void _nxpv2_add_prefix(_nxpv2_default_reset_prefix, prop_name)()        \
     {                                                                        \
-        field_ref = _nxpv2_get_default(args);                               \
+        field_ref = _nxpv2_get_default_bare_value(args);                     \
         _nx_logic_if(_nxpv2_exists_arg(args, NOTIFY))(                      \
-            NX_EMIT(_nxpv2_get_notify(prop_name, args), field_ref);,        \
+            NX_EMIT(_nxpv2_get_notify(prop_name, args));,                   \
             _nx_empty()                                                      \
         )                                                                    \
     }
@@ -758,29 +772,21 @@
                 )                                                            \
             ),                                                               \
             _nx_logic_if(has_storage)(                                      \
-                _nxpv2_meta_setter_lambda(type_expr, field_ref),            \
+                _nx_logic_if(_nxpv2_exists_arg(args, READ))(                \
+                    nullptr,                                                 \
+                    _nxpv2_meta_setter_lambda(type_expr, field_ref)         \
+                ),                                                           \
                 nullptr                                                      \
             )                                                                \
         )                                                                    \
     )
 
-// notif — void(_nx_self_t*): emit signal with current value
-// Value is read via getter (if READ present) or direct field access.
-# define _nxpv2_meta_notif_current_value(prop_name, field_ref, args)        \
-    _nx_logic_if(_nxpv2_exists_arg(args, READ))(                            \
-        _nx_logic_if(_nxpv2_has_value(args, READ))(                         \
-            _t->_nxpv2_get_value(args, READ)(),                             \
-            _t->_nxpv2_add_prefix(_nxpv2_default_read_prefix, prop_name)()  \
-        ),                                                                   \
-        _t->field_ref                                                        \
-    )
-
-# define _nxpv2_meta_notif(prop_name, field_ref, has_storage, args)         \
+// notif — void(_nx_self_t*): emit signal with no arguments.
+// Observers call the getter themselves if they need the current value.
+# define _nxpv2_meta_notif(prop_name, args)                                 \
     _nx_logic_if(_nxpv2_exists_arg(args, NOTIFY))(                          \
         [](_nx_self_t * _t) {                                                \
-            _t->_nxpv2_get_notify(prop_name, args)(                         \
-                _nxpv2_meta_notif_current_value(prop_name, field_ref, args) \
-            );                                                               \
+            _t->_nxpv2_get_notify(prop_name, args)();                       \
         },                                                                   \
         nullptr                                                              \
     )
@@ -813,7 +819,7 @@
                     nullptr,                                                 \
                     _nxpv2_meta_getter(prop_name, field_ref, has_storage, args), \
                     _nxpv2_meta_setter(prop_name, type_expr, field_ref, has_storage, args), \
-                    _nxpv2_meta_notif(prop_name, field_ref, has_storage, args), \
+                    _nxpv2_meta_notif(prop_name, args),                     \
                     _nxpv2_meta_reset(prop_name, args)                      \
                 );                                                          \
         }                                                                   \

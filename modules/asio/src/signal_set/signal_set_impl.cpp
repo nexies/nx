@@ -7,6 +7,7 @@
 #include "signal_set_impl.hpp"
 #include "signal_set_posix.inl"
 #include "signal_set_kevent.inl"
+#include "signal_set_windows.inl"
 
 namespace nx::asio {
     std::shared_ptr<signal_set::impl>
@@ -15,11 +16,10 @@ namespace nx::asio {
         return std::make_shared<signal_set_posix>(ctx);
 #elif defined(NX_OS_APPLE)
         return std::make_shared<signal_set_kevent>(ctx);
-#elif defined (NX_OS_WINDOWS)
-        return nullptr;
+#elif defined(NX_OS_WINDOWS)
+        return std::make_shared<signal_set_windows>(ctx);
 #else
 # error "signal_set is not supported. please reconfigure"
 #endif
-        return nullptr;
     }
 }

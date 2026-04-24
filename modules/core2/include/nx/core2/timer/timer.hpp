@@ -52,15 +52,11 @@ public:
 
     // ── Properties ────────────────────────────────────────────────────────────
 
-    NX_PROPERTY(TYPE duration_t, NAME interval,
-                READ interval,  WRITE set_interval,
-                NOTIFY interval_changed,
-                DEFAULT std::chrono::seconds(1))
+    NX_PROPERTY(interval, TYPE duration_t,
+                READ, WRITE, NOTIFY, DEFAULT std::chrono::seconds(1))
 
-    NX_PROPERTY(TYPE timer_type, NAME type,
-                READ type,      WRITE set_type,
-                NOTIFY type_changed,
-                DEFAULT timer_type::single_shot)
+    NX_PROPERTY(type, TYPE timer_type,
+                READ, WRITE, NOTIFY, DEFAULT timer_type::single_shot)
 
     // ── Signals ───────────────────────────────────────────────────────────────
 

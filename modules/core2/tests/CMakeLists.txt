@@ -26,7 +26,13 @@ nx_configure_test(property
         SOURCE test_property.cpp
 )
 
-nx_configure_test(meta_property
+nx_configure_test(nx_property
         COMPONENT core2
         SOURCE test_nx_property.cpp
+)
+
+nx_configure_test(manual_application
+        COMPONENT core2
+        SOURCE manual_test_application.cpp
+        NO_CATCH
 )
