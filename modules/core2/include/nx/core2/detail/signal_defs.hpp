@@ -68,6 +68,10 @@
 //    ISEMPTY=1 (no args)  → __NX_SIGNAL_1 handles the no-argument case.
 
 // ISEMPTY=0: signal WITH arguments
+#ifdef __NX_SIGNAL_0
+#undef __NX_SIGNAL_0
+#endif
+
 #define __NX_SIGNAL_0(name, ...)                                                 \
     void name(__NX_SIG_ARG_DECL(__VA_ARGS__))                                   \
     {                                                                            \
@@ -76,6 +80,11 @@
             static_cast<void(SelfType::*)(__VA_ARGS__)>(&SelfType::name),              \
             __NX_SIG_ARG_FWD(__VA_ARGS__));                                      \
     }
+
+
+#ifdef __NX_SIGNAL_1
+#undef __NX_SIGNAL_1
+#endif
 
 // ISEMPTY=1: signal with NO arguments
 #define __NX_SIGNAL_1(name, ...)                                                 \
