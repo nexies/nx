@@ -35,4 +35,4 @@
     using meta_object_type = ::nx::core::detail::meta_object<T>;                 \
     NX_NODISCARD static meta_object_type &                                       \
     static_meta_object () noexcept                                               \
-    { static meta_object_type meta(#T); return meta; }
+    { static meta_object_type meta(#T); return meta; }                           \
