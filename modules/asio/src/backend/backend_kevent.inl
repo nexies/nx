@@ -35,51 +35,18 @@ public:
     }
 
     void add(native_handle_t handle, void* token, io_interest interests) override {
-        struct kevent ev;
-        int filter = 0;
-        if (interests == io_interest::read)
-            filter = EVFILT_READ;
-        else if (interests == io_interest::write)
-            filter = EVFILT_WRITE;
-        else if (interests == io_interest::signal)
-            filter = EVFILT_SIGNAL;
-
-        EV_SET(&ev, handle, filter, EV_ADD | EV_ENABLE, 0, 0, token);
-        if (kevent(kqueue_fd_, &ev, 1, nullptr, 0, nullptr) == -1) {
-            throw std::runtime_error("kevent failed for add");
-        }
+        kevent_update(handle, token, interests, EV_ADD | EV_ENABLE);
     }
 
     void modify(native_handle_t handle, void* token, io_interest interests) override {
-        struct kevent ev;
-        int filter = 0;
-        if ((interests & io_interest::read) != io_interest::none) {
-            filter = EVFILT_READ;
-        }
-        if ((interests & io_interest::write) != io_interest::read) {
-            filter = EVFILT_WRITE;
-        }
-
-        EV_SET(&ev, handle, filter, EV_ADD | EV_ENABLE, 0, 0, token);
-        if (kevent(kqueue_fd_, &ev, 1, nullptr, 0, nullptr) == -1) {
-            throw std::runtime_error("kevent failed for modify");
-        }
+        // kevent EV_ADD is idempotent — re-adding an existing filter updates it.
+        // We add all filters in the new set; removing dropped filters is left to
+        // remove() since we don't track the previous interests here.
+        kevent_update(handle, token, interests, EV_ADD | EV_ENABLE);
     }
 
     void remove(native_handle_t handle, void * token, io_interest interest) override {
-        struct kevent ev;
-        int filter = 0;
-        if (interest == io_interest::read)
-            filter = EVFILT_READ;
-        else if (interest == io_interest::write)
-            filter = EVFILT_WRITE;
-        else if (interest == io_interest::signal)
-            filter = EVFILT_SIGNAL;
-
-        EV_SET(&ev, handle, filter, EV_DELETE, 0, 0, token);
-        if (kevent(kqueue_fd_, &ev, 1, nullptr, 0, nullptr) == -1) {
-            throw std::runtime_error("kevent failed for remove");
-        }
+        kevent_update(handle, token, interest, EV_DELETE);
     }
 
     void wake() override {
@@ -132,6 +99,27 @@ public:
     }
 
 private:
+    void kevent_update(native_handle_t handle, void* token,
+                       io_interest interests, int flags)
+    {
+        struct kevent ev;
+        if ((interests & io_interest::read) != io_interest::none) {
+            EV_SET(&ev, handle, EVFILT_READ, flags, 0, 0, token);
+            if (kevent(kqueue_fd_, &ev, 1, nullptr, 0, nullptr) == -1)
+                throw std::runtime_error("kevent failed (read filter)");
+        }
+        if ((interests & io_interest::write) != io_interest::none) {
+            EV_SET(&ev, handle, EVFILT_WRITE, flags, 0, 0, token);
+            if (kevent(kqueue_fd_, &ev, 1, nullptr, 0, nullptr) == -1)
+                throw std::runtime_error("kevent failed (write filter)");
+        }
+        if ((interests & io_interest::signal) != io_interest::none) {
+            EV_SET(&ev, handle, EVFILT_SIGNAL, flags, 0, 0, token);
+            if (kevent(kqueue_fd_, &ev, 1, nullptr, 0, nullptr) == -1)
+                throw std::runtime_error("kevent failed (signal filter)");
+        }
+    }
+
     native_handle_t kqueue_fd_;
 };
 

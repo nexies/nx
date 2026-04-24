@@ -52,9 +52,9 @@ namespace nx::asio {
         none    = 0x00,
         read    = 0x01,
         write   = 0x02,
-        error   = 0x03,
-        hangup  = 0x04,
-        wakeup  = 0x05,
+        error   = 0x04,
+        hangup  = 0x08,
+        wakeup  = 0x10,
     };
 
     inline io_event
@@ -108,7 +108,7 @@ namespace nx::asio {
         static constexpr size_t invalid_val = std::numeric_limits<size_t>::max();
         size_t val { 0 };
         constexpr void
-        inc () { while (val == invalid_val) ++val; }
+        inc () { do { ++val; } while (val == invalid_val); }
     public:
         static constexpr timer_id invalid() { return timer_id { std::numeric_limits<size_t>::max() }; }
 

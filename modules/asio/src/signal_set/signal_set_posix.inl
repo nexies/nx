@@ -90,10 +90,6 @@ namespace nx::asio
 #endif
         }
 
-        void
-        react(io_event event) override {
-        }
-
     private:
         void rebuild_fd() {
             close_fd();

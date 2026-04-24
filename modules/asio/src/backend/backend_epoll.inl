@@ -110,18 +110,15 @@ namespace nx::asio {
                 ev.u32 = events[i].data.u32;
                 ev.u64 = events[i].data.u64;
 
-                if (events[i].events & EPOLLIN)
-                    ev.events = io_event::read;
-                if (events[i].events & EPOLLOUT)
-                    ev.events = io_event::write;
-                if (events[i].events & EPOLLERR)
-                    ev.events = io_event::error;
-                if (events[i].events & EPOLLHUP)
-                    ev.events = io_event::hangup;
-                if (events[i].events & EPOLLWAKEUP)
+                if (events[i].data.fd == event_fd_) {
                     ev.events = io_event::wakeup;
-                if (events[i].data.fd == event_fd_)
-                    ev.events = io_event::wakeup;
+                } else {
+                    ev.events = io_event::none;
+                    if (events[i].events & EPOLLIN)  ev.events = ev.events | io_event::read;
+                    if (events[i].events & EPOLLOUT) ev.events = ev.events | io_event::write;
+                    if (events[i].events & EPOLLERR) ev.events = ev.events | io_event::error;
+                    if (events[i].events & EPOLLHUP) ev.events = ev.events | io_event::hangup;
+                }
             }
 
             free(events);

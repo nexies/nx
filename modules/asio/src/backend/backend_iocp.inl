@@ -43,36 +43,33 @@ public:
     }
 
     void wake() override {
-        // В Windows IOCP не использует eventfd, но можно просто создать Wakeup дескриптор
-        // Для демонстрации можно использовать сигнализацию через объект событий или манипулировать завершением работы.
-        int a = 1;
         ::PostQueuedCompletionStatus(iocp_handle_, 0, kWakeKey, nullptr);
-
     }
 
-    std::size_t wait(backend_event* out, std::size_t capacity, std::optional<std::chrono::steady_clock::duration> timeout) override {
-        DWORD bytesTransferred;
-        ULONG_PTR completionKey;
-        LPOVERLAPPED overlapped;
+    std::size_t wait(backend_event* out, std::size_t capacity,
+                     std::optional<std::chrono::steady_clock::duration> timeout) override
+    {
+        DWORD       bytesTransferred {};
+        ULONG_PTR   completionKey    {};
+        LPOVERLAPPED overlapped      {};
 
-        int timeout_ms = timeout ? std::chrono::duration_cast<std::chrono::milliseconds>(*timeout).count() : INFINITE;
-        BOOL result = GetQueuedCompletionStatus(iocp_handle_, &bytesTransferred, &completionKey, &overlapped, timeout_ms);
+        int timeout_ms = timeout
+            ? static_cast<int>(std::chrono::duration_cast<std::chrono::milliseconds>(*timeout).count())
+            : INFINITE;
 
-        if (!result) {
-            return 0;
-        }
+        BOOL ok = GetQueuedCompletionStatus(
+            iocp_handle_, &bytesTransferred, &completionKey, &overlapped, timeout_ms);
 
-        backend_event ev;
-        ev.token = reinterpret_cast<void*>(completionKey);
-        if (completionKey == kWakeKey && overlapped == nullptr)
-        {
+        if (!ok)
+            return 0; // timeout or error
+
+        backend_event ev {};
+        if (completionKey == kWakeKey && overlapped == nullptr) {
             ev.events = io_event::wakeup;
         }
-
-        // Заполняем события в зависимости от типа операции
-        // Предполагаем, что в completionKey храним данные о событии (например, чтение/запись)
-
-        out[0] = ev;
+        // completionKey == token pointer for reactor handles (future use)
+        ev.token  = reinterpret_cast<void*>(completionKey);
+        out[0]    = ev;
         return 1;
     }
 

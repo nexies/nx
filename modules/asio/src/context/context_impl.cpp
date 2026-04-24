@@ -154,7 +154,7 @@ namespace nx::asio
 
     timer_id io_context::impl::create_timer(time_point expiry, task_t && task)
     {
-        auto id = next_timer_id_++;
+        auto id = ++next_timer_id_;
         auto timer_op = std::make_shared<TimerOp>(expiry, std::forward<task_t>(task), false, id);
 
         if (!timer_op)
@@ -287,7 +287,7 @@ namespace nx::asio
     {
         for (auto i = 0; i < count; i++)
         {
-            if (events[i].events == io_event::wakeup)
+            if ((events[i].events & io_event::wakeup) != io_event::none)
             {
                 auto n = _consume_wakeup_event(&(events[i]));
                 continue;

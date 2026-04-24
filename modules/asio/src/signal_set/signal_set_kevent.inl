@@ -41,8 +41,6 @@ namespace nx::asio
                 obj_->on_signal(event.data.signal.signum, event.data.signal.reps);
             }
 
-            void
-            react(io_event event) override {}
         };
 
     public:
