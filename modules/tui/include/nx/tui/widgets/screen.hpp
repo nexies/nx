@@ -1,0 +1,79 @@
+#pragma once
+
+#include <nx/tui/widgets/widget.hpp>
+#include <nx/tui/graphics/display_buffer.hpp>
+
+namespace nx::tui {
+
+struct key_event;
+struct mouse_event;
+
+// ── screen ────────────────────────────────────────────────────────────────────
+//
+// Root widget that owns the terminal display surface.
+//
+// Maintains a front buffer (last rendered frame) and a back buffer (next
+// frame).  render() paints all widgets into the back buffer then calls
+// _flush_diff() which outputs only the cells that changed and swaps buffers.
+//
+// Coordinate system: buffer is 0-based (col, row).  Terminal ANSI codes are
+// 1-based — the conversion happens inside _flush_diff().
+
+class screen : public widget {
+    friend class tui_application;
+
+    display_buffer back_;
+    display_buffer front_;
+    widget *       focus_        = nullptr;
+    bool           full_repaint_ = true; // set by resize(), cleared after first _flush_diff
+
+public:
+    NX_OBJECT(screen)
+
+    explicit
+    screen(nx::core::object * parent = nullptr);
+
+    // Resize both buffers and update root geometry.
+    // Call this after construction and whenever the terminal is resized.
+    void
+    resize(int cols, int rows);
+
+    // Paint all widgets into the back buffer, then flush differences to the
+    // terminal.
+    void
+    render();
+
+    // ── Event dispatch ────────────────────────────────────────────────────────
+
+    void
+    dispatch_key_press(key_event e);
+    void
+    dispatch_key_release(key_event e);
+    void
+    dispatch_mouse(mouse_event e);
+
+    // ── Focus ─────────────────────────────────────────────────────────────────
+
+    NX_SIGNAL(focused_changed)
+    void set_focused_widget(widget * w);
+
+    NX_PROPERTY(focused_widget,
+        MEMBER focus_, READ, WRITE set_focused_widget, NOTIFY focused_changed);
+
+private:
+    // Recursively render w and its children.
+    // global_x/global_y: position of w in buffer (0-based) coordinates.
+    void
+    _render_widget(widget & w, style_option style, int global_x, int global_y);
+
+    // Compare back_ and front_, emit ANSI for changed cells, swap buffers.
+    void
+    _flush_diff();
+
+    // Hit-test: returns the deepest visible widget under (qx, qy) in buffer
+    // coords.  wx/wy are the global position of the root widget passed in.
+    widget *
+    _widget_at(widget & w, int wx, int wy, int qx, int qy);
+};
+
+} // namespace nx::tui

@@ -1,371 +1,285 @@
-//
-// Created by nexie on 18.03.2026.
-//
-
-#include "nx/tui/types/color.hpp"
-#include "nx/tui/types/color.hpp"
-#include "nx/tui/types/color.hpp"
+#include <vector>
+#include <cmath>
+#include <fmt/format.h>
 
 #include <nx/tui/types/color.hpp>
-
 #include <nx/tui/terminal/terminal.hpp>
 
 namespace
 {
-    constexpr uint32_t g_8bit_mask = 0b0000'0000'1111'1111;
-
-    constexpr uint32_t g_true_red_shift = 24;
-    constexpr uint32_t g_true_green_shift = 16;
-    constexpr uint32_t g_true_blue_shift = 8;
-    constexpr uint32_t g_true_alpha_shift = 0;
-
-    constexpr uint32_t ratio_255_to_6 = 256 / 6;
-    constexpr uint32_t palette256_shades_of_gray_count = 24;
+    constexpr uint32_t g_8bit_mask         = 0b0000'0000'1111'1111;
+    constexpr uint32_t g_true_red_shift    = 24;
+    constexpr uint32_t g_true_green_shift  = 16;
+    constexpr uint32_t g_true_blue_shift   = 8;
+    constexpr uint32_t g_true_alpha_shift  = 0;
 
     constexpr uint32_t
-    to_rgb_helper (uint8_t red, uint8_t green, uint8_t blue, uint8_t alpha)
+    pack_rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a) noexcept
     {
-        return static_cast<uint32_t>(red) << g_true_red_shift |
-            static_cast<uint32_t>(green) << g_true_green_shift |
-            static_cast<uint32_t>(blue) << g_true_blue_shift |
-            static_cast<uint32_t>(red) << g_true_alpha_shift;
+        return (uint32_t(r) << g_true_red_shift)
+             | (uint32_t(g) << g_true_green_shift)
+             | (uint32_t(b) << g_true_blue_shift)
+             | (uint32_t(a) << g_true_alpha_shift);
     }
 
     constexpr uint32_t
-    to_rgb_helper (uint8_t red, uint8_t green, uint8_t blue)
+    pack_rgb(uint8_t r, uint8_t g, uint8_t b) noexcept
     {
-        return static_cast<uint32_t>(red) << g_true_red_shift |
-            static_cast<uint32_t>(green) << g_true_green_shift |
-            static_cast<uint32_t>(blue) << g_true_blue_shift;
+        return (uint32_t(r) << g_true_red_shift)
+             | (uint32_t(g) << g_true_green_shift)
+             | (uint32_t(b) << g_true_blue_shift);
     }
 
     constexpr uint8_t
-    from_rgb_helper (uint32_t value, uint32_t shift)
+    unpack(uint32_t value, uint32_t shift) noexcept
     {
         return static_cast<uint8_t>((value >> shift) & g_8bit_mask);
     }
 
-    constexpr uint8_t
-    red_from_rgb_helper (uint32_t value)
-    {
-        return from_rgb_helper (value, g_true_red_shift);
-    }
-
-    constexpr uint8_t
-    green_from_rgb_helper (uint32_t value)
-    {
-        return from_rgb_helper (value, g_true_green_shift);
-    }
-
-    constexpr uint8_t
-    blue_from_rgb_helper (uint32_t value)
-    {
-        return from_rgb_helper (value, g_true_blue_shift);
-    }
-
-    constexpr uint8_t
-    alpha_from_rgb_helper (uint32_t value)
-    {
-        return from_rgb_helper (value, g_true_alpha_shift);
-    }
-
-    const std::vector<uint32_t> palette16_to_rgb =
-    {
-        to_rgb_helper(0,   0,   0), // black
-        to_rgb_helper(205, 0,   0), // red
-        to_rgb_helper(0,   205, 0), // green
-        to_rgb_helper(205, 205, 0), // yellow
-        to_rgb_helper(0,   0,   238), // blue
-        to_rgb_helper(205, 0,   205), // magenta
-        to_rgb_helper(0,   205, 205), // cyan
-        to_rgb_helper(229, 229, 229), // white
-
-        to_rgb_helper(127, 127, 127), // bright black
-        to_rgb_helper(255, 0,   0), // bright red
-        to_rgb_helper(0,   255, 0), // bright green
-        to_rgb_helper(255, 255, 0), // bright yellow
-        to_rgb_helper(92,  92,  255), // bright blue
-        to_rgb_helper(255, 0, 255), // bright magenta
-        to_rgb_helper(0,   255, 255), // bright cyan
-        to_rgb_helper(255, 255, 255), // bright white
+    const std::vector<uint32_t> g_palette16_rgb = {
+        pack_rgb(  0,   0,   0), // 0  black
+        pack_rgb(205,   0,   0), // 1  red
+        pack_rgb(  0, 205,   0), // 2  green
+        pack_rgb(205, 205,   0), // 3  yellow
+        pack_rgb(  0,   0, 238), // 4  blue
+        pack_rgb(205,   0, 205), // 5  magenta
+        pack_rgb(  0, 205, 205), // 6  cyan
+        pack_rgb(229, 229, 229), // 7  light gray
+        pack_rgb(127, 127, 127), // 8  dark gray
+        pack_rgb(255,   0,   0), // 9  bright red
+        pack_rgb(  0, 255,   0), // 10 bright green
+        pack_rgb(255, 255,   0), // 11 bright yellow
+        pack_rgb( 92,  92, 255), // 12 bright blue
+        pack_rgb(255,   0, 255), // 13 bright magenta
+        pack_rgb(  0, 255, 255), // 14 bright cyan
+        pack_rgb(255, 255, 255), // 15 white
     };
 
     constexpr uint32_t
-    rgb_to_palette (uint8_t red, uint8_t green, uint8_t blue)
+    rgb_to_palette256(uint8_t r, uint8_t g, uint8_t b) noexcept
     {
-        const auto dred = red * 6 / 256;
-        const auto dgreen = green * 6 / 256;
-        const auto dblue = blue * 6 / 256;
+        const auto dr = r * 6u / 256u;
+        const auto dg = g * 6u / 256u;
+        const auto db = b * 6u / 256u;
 
-        const auto to_256_code = [] (uint8_t red, uint8_t green, uint8_t blue)
-        {
-            return red * 36 + green * 6 + blue + 16;
-        };
-
-        // shade of gray
-        if (dred == dgreen && dgreen == dblue)
-        {
-            auto level = red * 24 / 256;
-            return 232 + level;
+        if (dr == dg && dg == db) {
+            return 232u + r * 24u / 256u; // grayscale ramp
         }
-
-        // 6x6x6 rgb cube
-        return to_256_code (dred, dgreen, dblue);
+        return 16u + dr * 36u + dg * 6u + db; // 6x6x6 cube
     }
 
     constexpr uint32_t
-    rgb_from_palette(uint32_t value)
+    palette256_to_rgb(uint32_t index) noexcept
     {
-        //TODO: need a color table for converting Palette16 to RGB
-        if (value < 16)
-            return palette16_to_rgb[value];
+        if (index < 16)
+            return g_palette16_rgb[index];
 
-        if (value < 232)
-        {
-            auto n = value - 16;
-            auto r = n / 36;
-            auto g = (n % 36) / 6;
-            auto b = n % 6;
-            return to_rgb_helper(r * 256 / 6, g * 256 / 6, b * 256 / 6);
+        if (index < 232) {
+            const auto n = index - 16;
+            const auto r = n / 36;
+            const auto g = (n % 36) / 6;
+            const auto b = n % 6;
+            return pack_rgb(
+                static_cast<uint8_t>(r * 256 / 6),
+                static_cast<uint8_t>(g * 256 / 6),
+                static_cast<uint8_t>(b * 256 / 6));
         }
 
-        if (value < 256)
-        {
-            const auto level = value - 232;
-            return to_rgb_helper(value * 256 / 24, value * 256 / 24,value * 256 / 24);
+        if (index < 256) {
+            const auto level = static_cast<uint8_t>((index - 232) * 256 / 24);
+            return pack_rgb(level, level, level);
         }
 
         return 0;
     }
-}
 
-namespace nx::tui
+} // anonymous namespace
+
+
+namespace nx::tui {
+
+// ── Accessors ─────────────────────────────────────────────────────────────────
+
+uint8_t color::r() const noexcept
 {
-    constexpr ColorType Color::type() const
-    {
-        return type_;
-    }
-
-    constexpr uint8_t Color::red() const
-    {
-        switch (type_)
-        {
-        case ColorType::TrueColor:
-            return red_from_rgb_helper (value_);
-        case ColorType::Palette256:
-        case ColorType::Palette16:
-            {
-            auto rgb = rgb_from_palette(value_);
-            return red_from_rgb_helper (rgb);
-            }
-        default:
-            return 0;
-        }
-    }
-
-    constexpr uint8_t Color::green() const
-    {
-        switch (type_)
-        {
-        case ColorType::TrueColor:
-            return green_from_rgb_helper (value_);
-        case ColorType::Palette256:
-        case ColorType::Palette16:
-            {
-                auto rgb = rgb_from_palette(value_);
-                return green_from_rgb_helper (rgb);
-            }
-        default:
-            return 0;
-        }
-    }
-
-    constexpr uint8_t Color::blue() const
-    {
-        switch (type_)
-        {
-        case ColorType::TrueColor:
-            return blue_from_rgb_helper (value_);
-        case ColorType::Palette256:
-        case ColorType::Palette16:
-            {
-                auto rgb = rgb_from_palette(value_);
-                return blue_from_rgb_helper (rgb);
-            }
-        default:
-            return 0;
-        }
-    }
-
-    constexpr uint8_t Color::alpha() const
-    {
-        if (type_ == ColorType::TrueColor)
-            return alpha_from_rgb_helper (value_);
-        else
-            return 255;
-    }
-
-    std::string Color::print(bool background) const
-    {
-        switch (type_)
-        {
-        case ColorType::Palette1: return "\x1b[0m";
-        case ColorType::Palette16:
-        case ColorType::Palette256:
-            {
-                if (background)
-                    return fmt::format("\x1b[48;5;{}m", value_);
-                return fmt::format("\x1b[38;5;{}m", value_);
-            }
-        case ColorType::TrueColor:
-            {
-                return fmt::format("\x1b[{};2;{};{};{}m", background ? 48 : 38, red(), green(), blue());
-            }
-        default:
-            return "<INVALID_COLOR>";
-        }
-    }
-
-    const Color Color::Default      (ColorType::Palette1, 0);
-    const Color Color::Black        (ColorType::Palette16, 0);
-    const Color Color::Red          (ColorType::Palette16, 1);
-    const Color Color::Green        (ColorType::Palette16, 2);
-    const Color Color::Yellow       (ColorType::Palette16, 3);
-    const Color Color::Blue         (ColorType::Palette16, 4);
-    const Color Color::Magenta      (ColorType::Palette16, 5);
-    const Color Color::Cyan         (ColorType::Palette16, 6);
-    const Color Color::GrayLight    (ColorType::Palette16, 7);
-    const Color Color::GrayDark     (ColorType::Palette16, 8);
-    const Color Color::RedLight     (ColorType::Palette16, 9);
-    const Color Color::GreenLight   (ColorType::Palette16, 10);
-    const Color Color::YellowLight  (ColorType::Palette16, 11);
-    const Color Color::BlueLight    (ColorType::Palette16, 12);
-    const Color Color::MagentaLight (ColorType::Palette16, 13);
-    const Color Color::CyanLight    (ColorType::Palette16, 14);
-    const Color Color::White        (ColorType::Palette16, 15);
-
-    Color Color::RGB(uint8_t red, uint8_t green, uint8_t blue)
-    {
-        return Color(red, green, blue);
-    }
-
-    Color Color::RGBA(uint8_t red, uint8_t green, uint8_t blue, uint8_t alpha)
-    {
-        return Color(red, green, blue, alpha);
-    }
-
-    Color Color::FromPalette16(uint32_t value)
-    {
-        return Color(ColorType::Palette16, value);
-    }
-
-    Color Color::FromPalette256(uint32_t value)
-    {
-        return Color(ColorType::Palette256, value);
-    }
-
-    Color Color::Interpolate(float t, const Color& color1, const Color& color2)
-    {
-        auto interp = [t](uint8_t a_u, uint8_t b_u) {
-            constexpr float gamma = 2.2F;
-            const float a_f = powf(a_u, gamma);
-            const float b_f = powf(b_u, gamma);
-            const float c_f = a_f * (1.0F - t) +  //
-                              b_f * t;
-            return static_cast<uint8_t>(powf(c_f, 1.F / gamma));
-        };
-
-        return RGB(interp(color1.red(), color2.red()),
-            interp(color1.green(), color2.green()),
-            interp(color1.blue(), color2.blue()));
-    }
-
-    Color Color::Blend(const Color& color1, const Color& color2)
-    {
-        return Interpolate(color1.alpha() / 255.f, color1, color2);
-    }
-
-    Color Color::Negative(const Color& color)
-    {
-        return RGBA(255 - color.red(), 255 - color.green(), 255 - color.blue(), color.alpha());
-    }
-
-    Color::Color() :
-        Color(ColorType::Palette1, 0)
-    {
-    }
-
-    Color::Color(ColorType type, uint32_t value)
-        : type_ { type }
-    , value_ { value }
-    { }
-
-    // Color::Color(Palette1 value) :
-    // type_ { ColorType::Palette1 },
-    // value_ { value }
-    // {
-
-    // }
-
-    // Color::Color(Palette16 value)
-    // : type_ { ColorType::Palette16 }
-    // , value_ { value }
-    // {
-
-    // }
-
-    // Color::Color(Palette256 value)
-    // : type_ { ColorType::Palette256 }
-    // , value_ { value }
-    // {
-
-    // }
-
-    Color::Color(uint8_t red, uint8_t green, uint8_t blue)
-        : type_ { Terminal::GetColorSupport() >= ColorType::TrueColor
-            ? ColorType::TrueColor : ColorType::Palette256 }
-    , value_ { type_ >= ColorType::TrueColor
-        ? to_rgb_helper(red, green, blue) : rgb_to_palette(red, green, blue) }
-    {
-
-    }
-
-    Color::Color(uint8_t red, uint8_t green, uint8_t blue, uint8_t alpha)
-        : type_ { Terminal::GetColorSupport() >= ColorType::TrueColor
-            ? ColorType::TrueColor : ColorType::Palette256 }
-    , value_ { type_ >= ColorType::TrueColor
-        ? to_rgb_helper(red, green, blue, alpha) : rgb_to_palette(red, green, blue)}
-    {
-
-    }
-
-    std::string Color::colorName() const
-    {
-        switch (type_)
-        {
-        case ColorType::Palette1:
-            return fmt::format("Palette1::Default");
-        case ColorType::Palette16:
-            return fmt::format("Palette16::{}", (value_));
-        case ColorType::Palette256:
-            {
-                if (value_ < 16) return fmt::format("Palette256::{}", (value_));
-                if (value_ < 232)
-                {
-                    auto n = value_ - 16;
-                    auto r = n / 36;
-                    auto g = (n % 36) / 6;
-                    auto b = n % 6;
-                    return fmt::format("Palette256::rgb({}, {}, {})", r, g, b);
-                }
-                if (value_ < 256) return fmt::format("Palette256::gray({})", value_ - 232);
-
-                return fmt::format("Palette256::INVALID_COLOR");
-            }
-        case ColorType::TrueColor:
-            return fmt::format("RGBA::#{:x}", value_);
-        default:
-            return "invalid color";
-        }
+    switch (type_) {
+    case color_type::true_color:
+        return unpack(value_, g_true_red_shift);
+    case color_type::palette256:
+    case color_type::palette16:
+        return unpack(palette256_to_rgb(value_), g_true_red_shift);
+    default:
+        return 0;
     }
 }
+
+uint8_t color::g() const noexcept
+{
+    switch (type_) {
+    case color_type::true_color:
+        return unpack(value_, g_true_green_shift);
+    case color_type::palette256:
+    case color_type::palette16:
+        return unpack(palette256_to_rgb(value_), g_true_green_shift);
+    default:
+        return 0;
+    }
+}
+
+uint8_t color::b() const noexcept
+{
+    switch (type_) {
+    case color_type::true_color:
+        return unpack(value_, g_true_blue_shift);
+    case color_type::palette256:
+    case color_type::palette16:
+        return unpack(palette256_to_rgb(value_), g_true_blue_shift);
+    default:
+        return 0;
+    }
+}
+
+uint8_t color::a() const noexcept
+{
+    if (type_ == color_type::true_color)
+        return unpack(value_, g_true_alpha_shift);
+    return 255;
+}
+
+// ── ANSI output ───────────────────────────────────────────────────────────────
+
+std::string color::to_ansi(bool background) const
+{
+    switch (type_) {
+    case color_type::palette1:
+        return "\x1b[0m";
+    case color_type::palette16:
+    case color_type::palette256:
+        if (background)
+            return fmt::format("\x1b[48;5;{}m", value_);
+        return fmt::format("\x1b[38;5;{}m", value_);
+    case color_type::true_color:
+        return fmt::format("\x1b[{};2;{};{};{}m",
+                           background ? 48 : 38, r(), g(), b());
+    default:
+        return {};
+    }
+}
+
+// ── Debug name ────────────────────────────────────────────────────────────────
+
+std::string color::name() const
+{
+    switch (type_) {
+    case color_type::palette1:
+        return "palette1::default";
+    case color_type::palette16:
+        return fmt::format("palette16::{}", value_);
+    case color_type::palette256: {
+        if (value_ < 16)  return fmt::format("palette256::{}", value_);
+        if (value_ < 232) {
+            const auto n = value_ - 16;
+            return fmt::format("palette256::rgb({},{},{})", n/36, (n%36)/6, n%6);
+        }
+        if (value_ < 256) return fmt::format("palette256::gray({})", value_ - 232);
+        return "palette256::invalid";
+    }
+    case color_type::true_color:
+        return fmt::format("rgba::#{:08x}", value_);
+    default:
+        return "invalid";
+    }
+}
+
+// ── Named constants ───────────────────────────────────────────────────────────
+
+const color color::default_color   { color_type::palette1,  0  };
+const color color::black           {
+    terminal::get_color_support() == color_type::true_color ?
+    rgb(0, 0, 0) : color(color_type::palette16, 0)  };
+const color color::red             { color_type::palette16, 1  };
+const color color::green           { color_type::palette16, 2  };
+const color color::yellow          { color_type::palette16, 3  };
+const color color::blue            { color_type::palette16, 4  };
+const color color::magenta         { color_type::palette16, 5  };
+const color color::cyan            { color_type::palette16, 6  };
+const color color::gray_light      { color_type::palette16, 7  };
+const color color::gray_dark       { color_type::palette16, 8  };
+const color color::red_bright      { color_type::palette16, 9  };
+const color color::green_bright    { color_type::palette16, 10 };
+const color color::yellow_bright   { color_type::palette16, 11 };
+const color color::blue_bright     { color_type::palette16, 12 };
+const color color::magenta_bright  { color_type::palette16, 13 };
+const color color::cyan_bright     { color_type::palette16, 14 };
+const color color::white           { color_type::palette16, 15 };
+
+// ── Factory methods ───────────────────────────────────────────────────────────
+
+color color::rgb(uint8_t r, uint8_t g, uint8_t b)
+{
+    return color(r, g, b);
+}
+
+color color::rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
+{
+    return color(r, g, b, a);
+}
+
+color color::from_palette16(uint32_t index)
+{
+    return color(color_type::palette16, index);
+}
+
+color color::from_palette256(uint32_t index)
+{
+    return color(color_type::palette256, index);
+}
+
+color color::interpolate(float t, const color & a, const color & b)
+{
+    auto interp = [t](uint8_t a_u, uint8_t b_u) -> uint8_t {
+        constexpr float gamma = 2.2f;
+        const float af = std::powf(static_cast<float>(a_u), gamma);
+        const float bf = std::powf(static_cast<float>(b_u), gamma);
+        const float cf = af * (1.0f - t) + bf * t;
+        return static_cast<uint8_t>(std::powf(cf, 1.0f / gamma));
+    };
+    return rgb(interp(a.r(), b.r()), interp(a.g(), b.g()), interp(a.b(), b.b()));
+}
+
+color color::blend(const color & a, const color & b)
+{
+    return interpolate(a.a() / 255.0f, a, b);
+}
+
+color color::negative(const color & c)
+{
+    return rgba(255 - c.r(), 255 - c.g(), 255 - c.b(), c.a());
+}
+
+// ── Constructors ──────────────────────────────────────────────────────────────
+
+color::color()
+    : color(color_type::palette1, 0)
+{}
+
+color::color(color_type type, uint32_t value)
+    : type_  { type  }
+    , value_ { value }
+{}
+
+color::color(uint8_t r, uint8_t g, uint8_t b)
+    : type_ { terminal::get_color_support() == color_type::true_color
+              ? color_type::true_color : color_type::palette256 }
+    , value_ { type_ == color_type::true_color
+               ? pack_rgb(r, g, b) : rgb_to_palette256(r, g, b) }
+{}
+
+color::color(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
+    : type_ { terminal::get_color_support() == color_type::true_color
+              ? color_type::true_color : color_type::palette256 }
+    , value_ { type_ == color_type::true_color
+               ? pack_rgba(r, g, b, a) : rgb_to_palette256(r, g, b) }
+{}
+
+} // namespace nx::tui

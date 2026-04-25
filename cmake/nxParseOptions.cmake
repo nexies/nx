@@ -37,6 +37,19 @@ if(NX_BUILD_TESTS)
 
 endif()
 
+## EXAMPLES
+if(NX_BUILD_EXAMPLES)
+    #    if(NOT DEFINED NX_EXAMPLES_PATH)
+    #        set(NX_EXAMPLES_PATH ${NX_PROJECT_SOURCE_DIR}/examples)
+    #    endif()
+
+    if(NOT DEFINED NX_EXAMPLES_BINARY_DIR)
+        set(NX_EXAMPLES_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/demos)
+    endif()
+
+    nx_log("Build examples - ON")
+    #    add_subdirectory(${NX_EXAMPLES_PATH})
+endif()
 
 ## MODULES
 if(NX_BUILD_MODULES)
@@ -47,17 +60,5 @@ if(NX_BUILD_MODULES)
     add_subdirectory(${NX_MODULES_PATH})
 endif()
 
-## EXAMPLES
-if(NX_BUILD_EXAMPLES)
-    if(NOT DEFINED NX_EXAMPLES_PATH)
-        set(NX_EXAMPLES_PATH ${NX_PROJECT_SOURCE_DIR}/examples)
-    endif()
 
-    if(NOT DEFINED NX_EXAMPLES_BINARY_DIR)
-        set(NX_EXAMPLES_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/examples)
-    endif()
-
-    nx_log("Build examples - ON")
-    add_subdirectory(${NX_EXAMPLES_PATH})
-endif()
 

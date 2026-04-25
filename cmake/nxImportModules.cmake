@@ -1,4 +1,6 @@
 include(nxConfigureComponent)
+include(nxConfigureTest)
+include(nxConfigureDemo)
 include(nxCMakeLogScope)
 include(nxMakeModule)
 include(nxMakeModuleVersion)

@@ -1,56 +1,47 @@
-//
-// Created by nexie on 18.03.2026.
-//
-
-#ifndef NX_TUI_PAINTER_HPP
-#define NX_TUI_PAINTER_HPP
+#pragma once
 
 #include <nx/tui/graphics/display_buffer.hpp>
+#include <nx/tui/types/style_option.hpp>
+
+#include <string>
 
 namespace nx::tui {
 
-    class Painter {
-
+    class painter {
     public:
-        using rect_type = Rect<int>;
-        using size_type = Size<int>;
-        using point_type = Point<int>;
-        using buffer_type = DisplayBuffer;
+        using rect_type   = rect<int>;
+        using size_type   = size<int>;
+        using point_type  = point<int>;
+        using buffer_type = display_buffer;
 
     private:
         buffer_type & buffer_;
-        rect_type rect_;
+        rect_type     rect_;
+        color         color_;
+        color         background_color_;
+        pixel_style   pixel_style_;
 
-        Color color_;
-        Color background_color_;
-        PixelStyle pixel_style_;
-
-        [[nodiscard]] point_type
-        _projectPoint (const point_type & pos) const;
+        [[nodiscard]] point_type _project_point(const point_type & pos) const;
 
     public:
-        explicit
-        Painter (buffer_type & buffer);
-        Painter (buffer_type & buffer, rect_type rect);
+        explicit painter(buffer_type & buffer);
+        painter(buffer_type & buffer, rect_type clip_rect);
 
-        void
-        enableStyle (const PixelStyle & pixel_style);
+        void enable_style(pixel_style style);
+        void disable_style(pixel_style style);
+        void set_style(pixel_style style);
 
-        void
-        disableStyle (const PixelStyle & pixel_style);
+        void set_color(const color & c);
+        void set_background_color(const color & c);
 
-        void
-        setStyle (const PixelStyle & pixel_style);
+        void draw_text(const point_type & pos, const std::string & text) const;
+        void draw_char(const point_type & pos, const std::string & ch) const;
 
-        void
-        setColor (const Color & color);
+        // Fill the entire clip rect with ch using the current color/style.
+        void fill(const std::string & ch = " ") const;
 
-        void
-        setBackgroundColor (const Color & color);
-
-        void
-        drawText (const point_type & pos, const std::string & text) const;
+        // Apply a style_option: sets only the fields that are present.
+        void apply_style(const style_option & s) noexcept;
     };
-}
 
-#endif //NX_TUI_PAINTER_HPP
+} // namespace nx::tui

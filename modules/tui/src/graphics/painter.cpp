@@ -1,68 +1,89 @@
-//
-// Created by nexie on 20.03.2026.
-//
-
 #include <nx/tui/graphics/painter.hpp>
 
-namespace nx::tui
+namespace nx::tui {
+
+painter::painter(buffer_type & buffer)
+    : buffer_(buffer)
+    , rect_(buffer.rect())
+{}
+
+painter::painter(buffer_type & buffer, rect_type clip_rect)
+    : buffer_(buffer)
+    , rect_(clip_rect)
+{}
+
+void painter::enable_style(pixel_style style)  { pixel_style_ |= style; }
+void painter::disable_style(pixel_style style) { pixel_style_ &= ~style; }
+void painter::set_style(pixel_style style)     { pixel_style_ = style; }
+void painter::set_color(const color & c)       { color_ = c; }
+void painter::set_background_color(const color & c) { background_color_ = c; }
+
+void painter::draw_text(const point_type & pos, const std::string & text) const
 {
-    Painter::Painter(buffer_type& buffer)
-        : buffer_(buffer)
-        , rect_(buffer.rect())
-    {
+    const int base_x = rect_.x() + pos.x;
+    const int by     = rect_.y() + pos.y;
 
-    }
+    // Clip row.
+    if (by < rect_.y() || by >= rect_.y() + rect_.height()) return;
 
-    Painter::Painter(buffer_type& buffer, rect_type rect)
-        : buffer_(buffer)
-        , rect_(rect)
-    {
+    // Iterate UTF-8 characters; each occupies exactly one terminal cell.
+    int         col = 0;
+    std::size_t i   = 0;
+    while (i < text.size()) {
+        // Determine byte length of this UTF-8 character.
+        const auto c = static_cast<unsigned char>(text[i]);
+        std::size_t char_len;
+        if      (c < 0x80) char_len = 1;
+        else if (c < 0xE0) char_len = 2;
+        else if (c < 0xF0) char_len = 3;
+        else               char_len = 4;
+        // Guard against malformed / truncated input.
+        if (i + char_len > text.size()) char_len = text.size() - i;
 
-    }
+        const int bx = base_x + col;
+        if (bx >= rect_.x() + rect_.width()) break; // past right edge
 
-    void Painter::enableStyle(const PixelStyle& pixel_style)
-    {
-        pixel_style_ |= pixel_style;
-    }
-
-    void Painter::disableStyle(const PixelStyle& pixel_style)
-    {
-        pixel_style_ &= ~pixel_style;
-    }
-
-    void Painter::setStyle(const PixelStyle& pixel_style)
-    {
-        pixel_style_ = pixel_style;
-    }
-
-    void Painter::setColor(const Color& color)
-    {
-        color_ = color;
-    }
-
-    void Painter::setBackgroundColor(const Color& color)
-    {
-        background_color_ = color;
-    }
-
-    void Painter::drawText(const point_type & pos, const std::string& text) const
-    {
-        const auto abs_pos = _projectPoint(pos);
-
-        for (auto i = 0; i < text.length(); ++i)
-        {
-            auto & pixel = buffer_.pixelAt(abs_pos.x + i, abs_pos.y);
-            pixel.style = pixel_style_;
-            pixel.background_color = background_color_;
-            pixel.foreground_color = color_;
-            pixel.character = text[i];
+        if (bx >= rect_.x()) { // within horizontal clip
+            auto & px           = buffer_.pixel_at(bx, by);
+            px.style            = pixel_style_;
+            px.background_color = background_color_;
+            px.foreground_color = color_;
+            px.character        = std::string(text.data() + i, char_len);
         }
 
-    }
-
-    Painter::point_type Painter::_projectPoint(const point_type & pos) const
-    {
-        return { pos.x + rect_.x(), pos.y + rect_.y() };
+        i += char_len;
+        ++col;
     }
 }
 
+void painter::draw_char(const point_type & pos, const std::string & ch) const
+{
+    draw_text(pos, ch);
+}
+
+void painter::fill(const std::string & ch) const
+{
+    for (int row = 0; row < rect_.height(); ++row) {
+        for (int col = 0; col < rect_.width(); ++col) {
+            auto & px           = buffer_.pixel_at(rect_.x() + col, rect_.y() + row);
+            px.style            = pixel_style_;
+            px.background_color = background_color_;
+            px.foreground_color = color_;
+            px.character        = ch;
+        }
+    }
+}
+
+void painter::apply_style(const style_option & s) noexcept
+{
+    if (s.foreground)  set_color(*s.foreground);
+    if (s.background)  set_background_color(*s.background);
+    if (s.decorations) set_style(*s.decorations);
+}
+
+painter::point_type painter::_project_point(const point_type & pos) const
+{
+    return { pos.x + rect_.x(), pos.y + rect_.y() };
+}
+
+} // namespace nx::tui

@@ -47,7 +47,7 @@ public:
 
     // Run the main event loop. Blocks until quit() or exit() is called.
     // Returns the exit code.
-    int
+    virtual int
     exec();
 
     // Request a graceful shutdown with exit code 0.

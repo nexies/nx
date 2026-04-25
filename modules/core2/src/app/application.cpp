@@ -227,7 +227,7 @@ application::_os_signal_handler(nx::result<int> sig_result)
 void
 application::_print_startup_info() const
 {
-    nxInfo("application '{}' starting", app_name_);
+    // nxInfo("application '{}' starting", app_name_);
 }
 
 application *

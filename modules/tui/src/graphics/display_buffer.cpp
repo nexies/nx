@@ -1,92 +1,59 @@
-//
-// Created by nexie on 17.03.2026.
-//
-
 #include <nx/tui/graphics/display_buffer.hpp>
 #include <nx/tui/graphics/painter.hpp>
 
 using namespace nx::tui;
 
-thread_local DisplayBuffer::pixel_type g_dummy_pixel;
+thread_local display_buffer::pixel_type g_dummy_pixel;
 
-DisplayBuffer::DisplayBuffer(units hrow, units wcol)
-    : rect_({hrow, wcol})
+display_buffer::display_buffer(units rows, units cols)
+    : rect_({ rows, cols })
 {
-    pixels_.resize(hrow * wcol);
+    pixels_.resize(rows * cols);
 }
 
-DisplayBuffer::DisplayBuffer(Size<units> size) :
-    DisplayBuffer(size.height, size.width)
-{
+display_buffer::display_buffer(size_type s)
+    : display_buffer(s.height, s.width)
+{}
 
+display_buffer::~display_buffer() = default;
+
+painter display_buffer::get_painter()
+{
+    return painter(*this);
 }
 
-DisplayBuffer::~DisplayBuffer()
+void display_buffer::resize(units rows, units cols)
 {
+    rect_ = rect_type({ rows, cols });
+    pixels_.resize(rows * cols);
 }
 
-Painter DisplayBuffer::getPainter()
-{
-    return Painter(*this);
-}
-
-void DisplayBuffer::resize(units hrow, units wcol)
-{
-    rect_ = Rect<units>({hrow, wcol});
-    pixels_.resize(hrow * wcol);
-}
-
-DisplayBuffer::pixel_reference DisplayBuffer::pixelAt(units x, units y)
+display_buffer::pixel_reference display_buffer::pixel_at(units x, units y)
 {
     if (!rect_.contains(x, y))
         return g_dummy_pixel;
     return pixels_[x + y * rect_.width()];
 }
 
-DisplayBuffer::const_pixel_reference DisplayBuffer::pixelAt(units x, units y) const
+display_buffer::const_pixel_reference display_buffer::pixel_at(units x, units y) const
 {
     if (!rect_.contains(x, y))
         return g_dummy_pixel;
     return pixels_[x + y * rect_.width()];
 }
 
-DisplayBuffer::character_type& DisplayBuffer::at(units x, units y)
+display_buffer::character_type & display_buffer::at(units x, units y)
 {
-    return pixelAt(x, y).character;
+    return pixel_at(x, y).character;
 }
 
-const DisplayBuffer::character_type& DisplayBuffer::at(units x, units y) const
+const display_buffer::character_type & display_buffer::at(units x, units y) const
 {
-    return pixelAt(x, y).character;
+    return pixel_at(x, y).character;
 }
 
-DisplayBuffer::units DisplayBuffer::hrow() const
+void display_buffer::clear()
 {
-    return rect_.height();
-}
-
-DisplayBuffer::units DisplayBuffer::wcol() const
-{
-    return rect_.width();
-}
-
-void DisplayBuffer::clear()
-{
-    for (auto & pixel : pixels_)
-        pixel = Pixel{};
-}
-
-DisplayBuffer::size_type DisplayBuffer::size() const
-{
-    return rect_.size();
-}
-
-DisplayBuffer::rect_type DisplayBuffer::rect() const
-{
-    return rect_;
-}
-
-const std::vector<DisplayBuffer::pixel_type>& DisplayBuffer::data() const
-{
-    return pixels_;
+    for (auto & px : pixels_)
+        px = pixel{};
 }

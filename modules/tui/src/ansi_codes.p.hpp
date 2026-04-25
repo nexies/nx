@@ -94,6 +94,17 @@ namespace nx::tui::ansi {
     DECL_ANSI_CMD(disable_alt_buffer,   _csi("?1049l"))
     DECL_ANSI_CMD(enable_alt_buffer,    _csi("?1049h"))
 
+    // Mouse tracking
+    // ?1000 — basic X10 button press/release
+    // ?1003 — any-event (reports all motion too)
+    // ?1006 — SGR extended encoding (coordinates > 223, release distinction)
+    DECL_ANSI_CMD(enable_mouse_button,    _csi("?1000h"))
+    DECL_ANSI_CMD(disable_mouse_button,   _csi("?1000l"))
+    DECL_ANSI_CMD(enable_mouse_any,       _csi("?1003h"))
+    DECL_ANSI_CMD(disable_mouse_any,      _csi("?1003l"))
+    DECL_ANSI_CMD(enable_mouse_sgr,       _csi("?1006h"))
+    DECL_ANSI_CMD(disable_mouse_sgr,      _csi("?1006l"))
+
 # define DECL_ANSI_SCREEN_MODE_CMD(name, code) \
     DECL_ANSI_CMD(set_screen_mode_##name, CSI "=" code "h") \
     DECL_ANSI_CMD(reset_screen_mode_##name, CSI "=" code "l") \

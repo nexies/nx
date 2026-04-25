@@ -1,81 +1,55 @@
-//
-// Created by nexie on 17.03.2026.
-//
-
-#ifndef NX_TUI_CANVAS_HPP
-#define NX_TUI_CANVAS_HPP
+#pragma once
 
 #include <nx/tui/graphics/pixel.hpp>
 #include <nx/tui/types/rect.hpp>
 
 #include <vector>
 
-namespace nx::tui
-{
-    class Painter;
+namespace nx::tui {
 
-    class DisplayBuffer
+    class painter;
+
+    class display_buffer
     {
-
-        friend class Painter;
+        friend class painter;
 
     public:
-        using pixel_type = Pixel;
-        using pixel_reference = pixel_type&;
-        using const_pixel_reference = const pixel_type&;
-        using units = int;
-        using character_type = pixel_type::character_type;
+        using pixel_type             = pixel;
+        using pixel_reference        = pixel_type &;
+        using const_pixel_reference  = const pixel_type &;
+        using units                  = int;
+        using character_type         = pixel_type::character_type;
+        using rect_type              = rect<units>;
+        using size_type              = size<units>;
 
-
-        using rect_type = Rect<units>;
-        using size_type = Size<units>;
     private:
-        rect_type rect_;
+        rect_type              rect_;
         std::vector<pixel_type> pixels_;
+
     public:
-        DisplayBuffer(units hrow, units wcol);
-        DisplayBuffer(Size<units> size);
+        display_buffer(units rows, units cols);
+        explicit display_buffer(size_type s);
+        virtual ~display_buffer();
 
-        virtual
-        ~DisplayBuffer();
+        [[nodiscard]] painter get_painter();
 
-        [[nodiscard]] Painter
-        getPainter ();
+        void resize(units rows, units cols);
 
-        void
-        resize (units hrow, units wcol);
+        [[nodiscard]] pixel_reference       pixel_at(units x, units y);
+        [[nodiscard]] const_pixel_reference pixel_at(units x, units y) const;
 
-        pixel_reference
-        pixelAt (units x, units y);
+        [[nodiscard]] character_type &       at(units x, units y);
+        [[nodiscard]] const character_type & at(units x, units y) const;
 
-        [[nodiscard]] const_pixel_reference
-        pixelAt (units x, units y) const;
+        [[nodiscard]] units rows() const noexcept { return rect_.height(); }
+        [[nodiscard]] units cols() const noexcept { return rect_.width();  }
 
-        [[nodiscard]]
-        character_type&
-        at (units x, units y);
+        void clear();
 
-        [[nodiscard]] const character_type&
-        at (units x, units y) const;
+        [[nodiscard]] size_type size() const noexcept { return rect_.size(); }
+        [[nodiscard]] rect_type rect() const noexcept { return rect_; }
 
-        [[nodiscard]] units
-        hrow () const;
-
-        [[nodiscard]] units
-        wcol () const;
-
-        void
-        clear ();
-
-        [[nodiscard]] size_type
-        size () const;
-
-        [[nodiscard]] rect_type
-        rect () const;
-
-        [[nodiscard]] const std::vector<pixel_type> &
-        data () const;
+        [[nodiscard]] const std::vector<pixel_type> & data() const noexcept { return pixels_; }
     };
-}
 
-#endif //NX_TUI_CANVAS_HPP
+} // namespace nx::tui

@@ -1,40 +1,27 @@
-//
-// Created by nexie on 17.03.2026.
-//
+#pragma once
 
-#ifndef NX_TUI_POINT_HPP
-#define NX_TUI_POINT_HPP
+#include <nx/tui/types/size.hpp>
 
-#include "size.hpp"
+namespace nx::tui {
 
-namespace nx::tui
-{
-
-    template<typename Type = int>
-    struct Point
+    template<typename T = int>
+    struct point
     {
-        using units = SizeTraits<Type>::size_type;
+        using value_type = typename size_traits<T>::value_type;
 
-        Point(units p_x, units p_y) noexcept
-            : x {p_x}
-            , y {p_y}
+        value_type x {};
+        value_type y {};
+
+        constexpr point() noexcept = default;
+
+        constexpr point(value_type p_x, value_type p_y) noexcept
+            : x { p_x }, y { p_y }
         {}
 
-        Point()
-            : x { 0 }
-            , y { 0 }
+        // Construct from size (width -> x, height -> y).
+        explicit constexpr point(size<T> s) noexcept
+            : x { s.width }, y { s.height }
         {}
-
-        Point(Size<Type> p_size) noexcept
-            : x { p_size.width }
-            , y { p_size.height }
-        {}
-
-        units x;
-        units y;
     };
 
-
-}
-
-#endif //NX_TUI_POINT_HPP
+} // namespace nx::tui

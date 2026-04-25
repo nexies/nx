@@ -1,47 +1,33 @@
-//
-// Created by nexie on 17.03.2026.
-//
-
-#ifndef NX_TUI_PIXEL_HPP
-#define NX_TUI_PIXEL_HPP
+#pragma once
 
 #include <string>
+#include <nx/common/types/enum_flags.hpp>
 #include <nx/tui/types/color.hpp>
 
+namespace nx::tui {
 
-
-namespace nx::tui
-{
-
-    enum PixelStyleOptions : uint16_t
-    {
-        None                = 0x0000'0000,
-        Blink               = 0x0000'0001,
-        Dim                 = 0x0000'0002,
-        Italic              = 0x0000'0004,
-        Inverted            = 0x0000'0008,
-        Underlined          = 0x0000'0010,
-        UnderlinedDouble    = 0x0000'0020,
-        StrikeThrough       = 0x0000'0040,
-        AutoMerge           = 0x0000'0080,
+    enum class pixel_style_flag : uint16_t {
+        none              = 0x0000,
+        blink             = 0x0001,
+        dim               = 0x0002,
+        italic            = 0x0004,
+        inverted          = 0x0008,
+        underline         = 0x0010,
+        underline_double  = 0x0020,
+        strike_through    = 0x0040,
+        auto_merge        = 0x0080,
     };
 
-    NX_FLAGS(PixelStyleOptions, PixelStyle);
+    NX_FLAGS(pixel_style_flag, pixel_style)
 
-    struct Pixel
+    struct pixel
     {
         using character_type = std::string;
 
-        Pixel ()
-        : style { PixelStyleOptions::None }
-        , character { " " }
-        { }
-
-        character_type character = " ";
-        Color foreground_color = Color::Default;
-        Color background_color = Color::Default;
-        PixelStyle style;
+        character_type character         = " ";
+        color          foreground_color  = color::default_color;
+        color          background_color  = color::default_color;
+        pixel_style    style             = pixel_style_flag::none;
     };
-}
 
-#endif //NX_TUI_PIXEL_HPP
+} // namespace nx::tui

@@ -125,7 +125,10 @@
 /// NX_EMIT(signal_name [, arg1, arg2, ...])
 /// Calls the signal method and optionally logs the emission.
 #define NX_EMIT(name, ...)      \
+    do {    \
     __NX_EMIT_TRACE(name, __VA_ARGS__); \
-    name(__VA_ARGS__)
+    name(__VA_ARGS__);   \
+    } while (0);
+
 
 // NOLINTEND(readability-identifier-naming)

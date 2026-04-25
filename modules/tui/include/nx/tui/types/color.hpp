@@ -1,103 +1,87 @@
-//
-// Created by nexie on 17.03.2026.
-//
-
-#ifndef NX_COLOR_HPP
-#define NX_COLOR_HPP
+#pragma once
 
 #include <cstdint>
 #include <string>
-#include <nx/core/detail/enum_defs.hpp>
 
-namespace nx::tui
-{
-    enum class ColorType : uint8_t
-    {
-        Palette1 = 0x10,
-        Palette16 = 0x20,
-        Palette256 = 0x40,
-        TrueColor = 0x80,
+namespace nx::tui {
+
+    enum class color_type : uint8_t {
+        palette1   = 0x10,
+        palette16  = 0x20,
+        palette256 = 0x40,
+        true_color = 0x80,
     };
 
-    class Color
+    class color
     {
     public:
-        const static Color Default;
-        const static Color Black;
-        const static Color Red;
-        const static Color Green;
-        const static Color Yellow;
-        const static Color Blue;
-        const static Color Magenta;
-        const static Color Cyan;
-        const static Color GrayLight;
-        const static Color GrayDark;
-        const static Color RedLight;
-        const static Color GreenLight;
-        const static Color YellowLight;
-        const static Color BlueLight;
-        const static Color MagentaLight;
-        const static Color CyanLight;
-        const static Color White;
+        // ── Named constants ───────────────────────────────────────────────────
+        // "default_color" means "use the terminal's default" (no explicit color).
+        static const color default_color;
+        static const color black;
+        static const color red;
+        static const color green;
+        static const color yellow;
+        static const color blue;
+        static const color magenta;
+        static const color cyan;
+        static const color gray_light;
+        static const color gray_dark;
+        static const color red_bright;
+        static const color green_bright;
+        static const color yellow_bright;
+        static const color blue_bright;
+        static const color magenta_bright;
+        static const color cyan_bright;
+        static const color white;
 
-        static Color RGB (uint8_t red, uint8_t green, uint8_t blue);
-        static Color RGBA (uint8_t red, uint8_t green, uint8_t blue, uint8_t alpha);
-        static Color FromPalette16 (uint32_t value);
-        static Color FromPalette256 (uint32_t value);
+        // ── Factory methods ───────────────────────────────────────────────────
+        static color rgb(uint8_t r, uint8_t g, uint8_t b);
+        static color rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
+        static color from_palette16(uint32_t index);
+        static color from_palette256(uint32_t index);
 
-        static Color Interpolate (float t, const Color & color1, const Color & color2);
-        static Color Blend (const Color & color1, const Color & color2);
-        static Color Negative (const Color & color);
+        static color interpolate(float t, const color & a, const color & b);
+        static color blend(const color & a, const color & b);
+        static color negative(const color & c);
+
+        // ── Constructors ──────────────────────────────────────────────────────
+        color();
+        color(uint8_t r, uint8_t g, uint8_t b);
+        color(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
+
+        // ── Accessors ─────────────────────────────────────────────────────────
+        [[nodiscard]] constexpr color_type type() const noexcept { return type_; }
+        [[nodiscard]] uint8_t r() const noexcept;
+        [[nodiscard]] uint8_t g() const noexcept;
+        [[nodiscard]] uint8_t b() const noexcept;
+        [[nodiscard]] uint8_t a() const noexcept;
+
+        [[nodiscard]] std::string name()     const;
+        // Returns the ANSI escape sequence to set this color.
+        // Pass background=true for background color sequence.
+        [[nodiscard]] std::string to_ansi(bool background = false) const;
+
+        // ── Comparison ────────────────────────────────────────────────────────
+        [[nodiscard]] constexpr bool
+        operator==(const color & o) const noexcept
+        { return r() == o.r() && g() == o.g() && b() == o.b(); }
+
+        [[nodiscard]] constexpr bool
+        operator!=(const color & o) const noexcept
+        { return !(*this == o); }
 
     private:
-        ColorType type_ = ColorType::Palette1;
-        uint32_t value_ = 100;
+        color_type type_  = color_type::palette1;
+        uint32_t   value_ = 100;
 
-        Color(ColorType type, uint32_t value);
-    public:
-        Color();
-        Color(uint8_t red, uint8_t green, uint8_t blue);
-        Color(uint8_t red, uint8_t green, uint8_t blue, uint8_t alpha);
-
-        [[nodiscard]]
-        std::string colorName () const;
-
-        [[nodiscard]] constexpr ColorType
-        type() const;
-
-        [[nodiscard]] constexpr uint8_t
-        red () const;
-
-        [[nodiscard]] constexpr uint8_t
-        green () const;
-
-        [[nodiscard]] constexpr uint8_t
-        blue () const;
-
-        [[nodiscard]] constexpr uint8_t
-        alpha () const;
-
-        [[nodiscard]] std::string
-        print (bool background = false) const;
-
-        [[nodiscard]] constexpr bool
-        operator == (const Color & other) const
-        {
-            return (red() == other.red() && green() == other.green() && blue() == other.blue());
-        }
-
-        [[nodiscard]] constexpr bool
-        operator != (const Color & other) const
-        {
-            return !(*this == other);
-        }
+        color(color_type type, uint32_t value);
     };
-}
+
+} // namespace nx::tui
 
 inline std::ostream &
-operator << (std::ostream & os, const nx::tui::Color & c)
+operator<<(std::ostream & os, const nx::tui::color & c)
 {
-    return os << c.print();
+    return os << c.to_ansi();
 }
-
-#endif //NX_COLOR_HPP

@@ -1,63 +1,60 @@
-//
-// Created by nexie on 09.03.2026.
-//
-
-#ifndef NX_TUI_SIZE_HPP
-#define NX_TUI_SIZE_HPP
+#pragma once
 
 #include <type_traits>
 
 namespace nx::tui {
 
-    template<typename Type>
-    struct SizeTraits
+    template<typename T>
+    struct size_traits
     {
-        static_assert (std::is_integral<Type>::value || std::is_floating_point<Type>::value, "Template parameter 'Type' must be an integral or a floating point");
-        using size_type = Type;
+        static_assert(std::is_integral_v<T> || std::is_floating_point_v<T>,
+                      "size_traits<T>: T must be integral or floating-point");
+        using value_type = T;
     };
 
-    template <typename Type = int>
-    struct Size {
-        using traits_type = SizeTraits<Type>;
+    template<typename T = int>
+    struct size {
+        using traits_type = size_traits<T>;
+        using value_type  = typename traits_type::value_type;
 
-        traits_type::size_type height;
-        traits_type::size_type width;
+        value_type height {};
+        value_type width  {};
     };
 
-    template<typename Type = int>
-    [[nodiscard]] constexpr auto
-    operator + (const Size<Type> & left, const Size<Type> & right) -> Size<Type>
+    template<typename T = int>
+    [[nodiscard]] constexpr size<T>
+    operator+(const size<T> & a, const size<T> & b) noexcept
     {
-        return {left.height + right.height, left.width + right.width};
+        return { a.height + b.height, a.width + b.width };
     }
 
-    template<typename Type = int>
-    [[nodiscard]] constexpr auto
-    operator - (const Size<Type> & left, const Size<Type> & right) -> Size<Type>
+    template<typename T = int>
+    [[nodiscard]] constexpr size<T>
+    operator-(const size<T> & a, const size<T> & b) noexcept
     {
-        return {left.height - right.height, left.width - right.width};
+        return { a.height - b.height, a.width - b.width };
     }
 
-    template<typename Type = int, typename Operand = Type>
-    [[nodiscard]] constexpr auto
-    operator * (const Size<Type> & left, const Operand & right) -> decltype(auto)
+    template<typename T = int, typename S = T>
+    [[nodiscard]] constexpr size<T>
+    operator*(const size<T> & a, S scalar) noexcept
     {
-        return Size(left.height * right, left.width * right);
+        return { static_cast<T>(a.height * scalar), static_cast<T>(a.width * scalar) };
     }
 
-    template<typename Type = int, typename Operand = Type>
-    [[nodiscard]] constexpr auto
-    operator / (const Size<Type> & left, const Operand & right) -> decltype(auto)
+    template<typename T = int, typename S = T>
+    [[nodiscard]] constexpr size<T>
+    operator/(const size<T> & a, S scalar) noexcept
     {
-        return Size(left.height / right, left.width / right);
+        return { static_cast<T>(a.height / scalar), static_cast<T>(a.width / scalar) };
     }
 
-    struct WindowSize {
-        Size<int> chars;
-        Size<int> pixels;
+    // Physical terminal window size: character grid + pixel dimensions.
+    struct window_size {
+        size<int> chars;
+        size<int> pixels;
     };
 
-    using Dimension = Size<size_t>;
-}
+    using dimension = size<std::size_t>;
 
-#endif //NX_TUI_SIZE_HPP
+} // namespace nx::tui
