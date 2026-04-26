@@ -29,6 +29,8 @@ public:
 
     // ── Signals ───────────────────────────────────────────────────────────────
 
+    void click();
+
     NX_SIGNAL(clicked)
 
     [[nodiscard]] size_type size_hint() const override;

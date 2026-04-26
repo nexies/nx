@@ -3,35 +3,49 @@
 #include <nx/tui/types/color.hpp>
 #include <nx/tui/graphics/pixel.hpp>
 
+#include <memory>
 #include <optional>
+#include <vector>
 
 namespace nx::tui {
+
+// Forward declaration — full definition in style_modifier.hpp.
+class style_modifier;
 
 // ── style_option ──────────────────────────────────────────────────────────────
 //
 // A composable, partial set of visual attributes.
-// Any field left as std::nullopt is "not set" — it does not override anything
-// when styles are merged.
+//
+// Fields left as std::nullopt are "not set" — they do not override anything
+// when styles are merged.  Modifiers are positional transforms applied at
+// paint time; they are appended (not replaced) when styles are merged.
 //
 // Merge semantics (operator|):
-//   right-hand side fields take precedence over left-hand side when set.
+//   - Static fields: right-hand side takes precedence when set.
+//   - Modifiers: right-hand side modifiers are appended after left-hand side.
 //
-// Typical usage:
-//   widget->set_style(fg(color::white) | bg(color::blue));
-//   painter.apply_style(fg(color::cyan_bright) | decoration(pixel_style_flag::italic));
+// Usage:
+//   widget->set_style(fg(color::white) | h_brightness(target::fg, 1.0f, 0.4f));
 
 struct style_option {
     std::optional<color>       foreground;
     std::optional<color>       background;
     std::optional<pixel_style> decorations;
 
-    // Merge: any field present in rhs overrides the corresponding lhs field.
+    // Position-aware modifiers — run in order at paint time.
+    // Shared ownership allows cheap copying of style_option.
+    std::vector<std::shared_ptr<style_modifier>> modifiers;
+
+    // ── Merge ─────────────────────────────────────────────────────────────────
+
     [[nodiscard]] friend style_option
     operator|(style_option lhs, const style_option & rhs) noexcept
     {
         if (rhs.foreground)  lhs.foreground  = rhs.foreground;
         if (rhs.background)  lhs.background  = rhs.background;
         if (rhs.decorations) lhs.decorations = rhs.decorations;
+        lhs.modifiers.insert(lhs.modifiers.end(),
+                             rhs.modifiers.begin(), rhs.modifiers.end());
         return lhs;
     }
 
@@ -42,48 +56,30 @@ struct style_option {
 
     [[nodiscard]] bool empty() const noexcept
     {
-        return !foreground && !background && !decorations;
+        return !foreground && !background && !decorations && modifiers.empty();
     }
 };
 
 // ── Factory helpers ───────────────────────────────────────────────────────────
 
-/// Returns a style_option with only the foreground color set.
 [[nodiscard]] inline style_option fg(color c) noexcept
 {
-    style_option s;
-    s.foreground = c;
-    return s;
+    style_option s; s.foreground = c; return s;
 }
 
-/// Returns a style_option with only the background color set.
 [[nodiscard]] inline style_option bg(color c) noexcept
 {
-    style_option s;
-    s.background = c;
-    return s;
+    style_option s; s.background = c; return s;
 }
 
-/// Returns a style_option with only the text decorations set.
 [[nodiscard]] inline style_option decoration(pixel_style d) noexcept
 {
-    style_option s;
-    s.decorations = d;
-    return s;
+    style_option s; s.decorations = d; return s;
 }
 
-// ── Decoration shortcuts ──────────────────────────────────────────────────────
-
-[[nodiscard]] inline style_option italic() noexcept
-{ return decoration(pixel_style_flag::italic); }
-
-[[nodiscard]] inline style_option underline() noexcept
-{ return decoration(pixel_style_flag::underline); }
-
-[[nodiscard]] inline style_option inverted() noexcept
-{ return decoration(pixel_style_flag::inverted); }
-
-[[nodiscard]] inline style_option dim() noexcept
-{ return decoration(pixel_style_flag::dim); }
+[[nodiscard]] inline style_option italic()    noexcept { return decoration(pixel_style_flag::italic);    }
+[[nodiscard]] inline style_option underline() noexcept { return decoration(pixel_style_flag::underline); }
+[[nodiscard]] inline style_option inverted()  noexcept { return decoration(pixel_style_flag::inverted);  }
+[[nodiscard]] inline style_option dim()       noexcept { return decoration(pixel_style_flag::dim);       }
 
 } // namespace nx::tui

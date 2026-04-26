@@ -274,14 +274,14 @@ int main(int argc, char * argv[])
 
     // ── Input routing ─────────────────────────────────────────────────────────
 
-    input_reader     reader;
-    input_dispatcher dispatcher(&app);
-
-    nx::core::connect(&reader, &input_reader::key_pressed,
-                      &dispatcher, &input_dispatcher::on_key);
-    nx::core::connect(&reader, &input_reader::mouse_input,
-                      &dispatcher, &input_dispatcher::on_mouse);
-    reader.start();
+    // input_reader     reader;
+    // input_dispatcher dispatcher(&app);
+    //
+    // nx::core::connect(&reader, &input_reader::key_pressed,
+    //                   &dispatcher, &input_dispatcher::on_key);
+    // nx::core::connect(&reader, &input_reader::mouse_input,
+    //                   &dispatcher, &input_dispatcher::on_mouse);
+    // reader.start();
 
     return app.exec();
 }

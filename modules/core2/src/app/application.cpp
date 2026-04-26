@@ -176,6 +176,7 @@ application::_handle_exit(int code)
     detail::thread_registry::instance().wait_all();
     if (auto * l = loop::current())
         l->exit(code);
+    disconnect(this, &application::_do_exit, this, &application::_handle_exit);
 }
 
 // ── Info ──────────────────────────────────────────────────────────────────────

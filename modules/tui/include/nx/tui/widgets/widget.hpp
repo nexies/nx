@@ -9,6 +9,7 @@
 #include <nx/tui/types/rect.hpp>
 #include <nx/tui/types/size_policy.hpp>
 #include <nx/tui/types/style_option.hpp>
+#include <nx/tui/input/event_filter.hpp>
 #include <nx/tui/input/key_event.hpp>
 #include <nx/tui/input/mouse_event.hpp>
 
@@ -51,6 +52,7 @@ private:
     focus_policy             focus_policy_ = focus_policy::no_focus;
     std::unique_ptr<layout>  layout_;
     style_option             style_        {};
+    std::vector<event_filter *> filters_   {};
     size_policy              v_policy_     = size_policy::preferred;
     size_policy              h_policy_     = size_policy::expanding;
     int                      stretch_      = 1;
@@ -115,6 +117,13 @@ public:
     void set_hint_width (int w) noexcept { hint_.width  = w; }
     void set_hint_height(int h) noexcept { hint_.height = h; }
 
+    // ── Event filters ─────────────────────────────────────────────────────────
+    // Filters run before on_key_press / on_mouse_press.
+    // The widget does NOT take ownership of the filter pointer.
+
+    void install_event_filter(event_filter * f);
+    void remove_event_filter (event_filter * f);
+
     // ── Child widgets ─────────────────────────────────────────────────────────
 
     NX_NODISCARD std::vector<widget *>
@@ -177,6 +186,10 @@ private:
 
     void
     _clear_dirty() noexcept { dirty_ = false; }
+
+    // Returns true if any filter consumed the event.
+    bool _run_filters_key  (key_event   & e);
+    bool _run_filters_mouse(mouse_event & e);
 };
 
 } // namespace nx::tui

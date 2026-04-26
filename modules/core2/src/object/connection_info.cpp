@@ -161,14 +161,18 @@ void
 connection_info::add_sender(object * sender)
 {
     std::lock_guard lock { mutex_ };
-    senders_.insert(sender);
+    senders_[sender]++;
 }
 
 void
 connection_info::remove_sender(object * sender)
 {
     std::lock_guard lock { mutex_ };
-    senders_.erase(sender);
+    auto it = senders_.find(sender);
+    if (it == senders_.end())
+        return;
+    if (--it->second <= 0)
+        senders_.erase(it);
 }
 
 void
@@ -188,24 +192,37 @@ connection_info::notify_receivers_of_destruction()
     }
 
     for (auto * recv : receivers)
-        if (recv && recv->_nx_connection_info())
+        if (recv && recv->_nx_connection_info()) {
+            // TODO: temporary workaround
+            if (recv == owner_)
+                continue;
+
             recv->_nx_connection_info()->remove_sender(owner_);
+        }
 }
 
 void
 connection_info::notify_senders_of_destruction()
 {
-    // Take a snapshot to avoid iterating under lock while senders modify state
-    std::set<object *> senders_copy;
+    // Snapshot sender pointers (keys only) to avoid iterating under lock while
+    // senders modify state.
+    std::vector<object *> senders_copy;
     {
         std::lock_guard lock { mutex_ };
-        senders_copy = senders_;
+        senders_copy.reserve(senders_.size());
+        for (auto & [sender, _] : senders_)
+            senders_copy.push_back(sender);
     }
 
     for (auto * sender : senders_copy)
-        if (sender && sender->_nx_connection_info())
+        if (sender && sender->_nx_connection_info()) {
+            // TODO: temporary workaround
+            if (sender == owner_)
+                continue;
+
             sender->_nx_connection_info()->remove_connections_to(
                 static_cast<void *>(owner_));
+        }
 }
 
 } // namespace nx::core

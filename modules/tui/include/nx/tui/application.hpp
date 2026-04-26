@@ -20,9 +20,11 @@
 #include <nx/tui/terminal.hpp>
 #include <nx/tui/widgets/screen.hpp>
 #include <nx/tui/input/input_reader.hpp>
+#include <nx/tui/input/event_filter.hpp>
 
 #include <memory>
 #include <optional>
+#include <vector>
 
 namespace nx::tui {
 
@@ -49,6 +51,14 @@ public:
     // Emitted whenever the terminal window is resized (SIGWINCH).
     NX_SIGNAL(window_resized, window_size)
 
+    // ── Event filters ─────────────────────────────────────────────────────────
+    // App-level filters run before any event reaches the screen or default
+    // application handling (e.g. Escape → quit).
+    // The application does NOT take ownership; caller must manage lifetime.
+
+    void install_event_filter(event_filter * f);
+    void remove_event_filter (event_filter * f);
+
     // ── Screen access ─────────────────────────────────────────────────────────
 
     [[nodiscard]] screen * main_screen() const noexcept { return screen_.get(); }
@@ -69,6 +79,7 @@ private:
     void _on_window_resize(window_size ws);
 
 
+    std::vector<event_filter *>           app_filters_;
     std::unique_ptr<nx::asio::signal_set> sigwinch_set_;
     std::unique_ptr<screen>               screen_;
     std::unique_ptr<input_reader>         input_reader_;

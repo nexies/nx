@@ -13,3 +13,8 @@ nx_configure_demo(form
         COMPONENT tui
         SOURCE form_demo.cpp
 )
+
+nx_configure_demo(frame
+        COMPONENT tui
+        SOURCE frame_demo.cpp
+)

@@ -50,6 +50,7 @@ public:
     explicit label(nx::core::object * parent = nullptr)
         : widget(parent)
     {
+        set_object_name("label");
         set_vertical_policy(size_policy::fixed);
     }
 
@@ -86,6 +87,7 @@ public:
     explicit event_log(nx::core::object * parent = nullptr)
         : widget(parent)
     {
+        set_object_name("event_log");
         set_focus_policy(focus_policy::strong_focus);
         auto app = tui_application::instance();
         if (app) {
@@ -242,8 +244,9 @@ public:
 
     explicit input_dispatcher(tui_application * app,
                               nx::core::object * parent = nullptr)
-        : nx::core::object(parent), app_(app)
-    {}
+        : nx::core::object(parent), app_(app) {
+        set_object_name("input_dispatcher");
+    }
 
     void on_key(key_event e) {
         if (e.code == key::printable && e.character == 'q') {
@@ -290,14 +293,14 @@ int main(int argc, char * argv[])
 
     // ── Input routing ─────────────────────────────────────────────────────────
 
-    input_reader     reader;
-    input_dispatcher dispatcher(&app);
-
-    nx::core::connect(&reader, &input_reader::key_pressed,
-                      &dispatcher, &input_dispatcher::on_key);
-    nx::core::connect(&reader, &input_reader::mouse_input,
-                      &dispatcher, &input_dispatcher::on_mouse);
-    reader.start();
+    // input_reader     reader;
+    // input_dispatcher dispatcher(&app);
+    //
+    // nx::core::connect(&reader, &input_reader::key_pressed,
+    //                   &dispatcher, &input_dispatcher::on_key);
+    // nx::core::connect(&reader, &input_reader::mouse_input,
+    //                   &dispatcher, &input_dispatcher::on_mouse);
+    // reader.start();
 
     return app.exec();
 }

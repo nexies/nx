@@ -12,6 +12,7 @@ add_library(nx_tui
     src/widgets/label.cpp
     src/widgets/button.cpp
     src/widgets/line_edit.cpp
+    src/widgets/frame.cpp
 
     include/nx/tui/application.hpp
     include/nx/tui/terminal/terminal.hpp
@@ -32,9 +33,11 @@ add_library(nx_tui
     include/nx/tui/input/input_event.hpp
     include/nx/tui/input/escape_parser.hpp
     include/nx/tui/input/input_reader.hpp
+    include/nx/tui/input/event_filter.hpp
     include/nx/tui/detail/utf8.hpp
     include/nx/tui/types/size_policy.hpp
     include/nx/tui/types/style_option.hpp
+    include/nx/tui/types/style_modifier.hpp
     include/nx/tui/types/text_align.hpp
     include/nx/tui/layouts/layout.hpp
     include/nx/tui/widgets/widget.hpp
@@ -42,6 +45,8 @@ add_library(nx_tui
     include/nx/tui/widgets/label.hpp
     include/nx/tui/widgets/button.hpp
     include/nx/tui/widgets/line_edit.hpp
+    include/nx/tui/widgets/frame.hpp
+    include/nx/tui/types/border_style.hpp
     include/nx/tui/terminal/guards.hpp
     include/nx/tui/terminal.hpp
 )

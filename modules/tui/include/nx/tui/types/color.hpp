@@ -42,8 +42,9 @@ namespace nx::tui {
         static color from_palette256(uint32_t index);
 
         static color interpolate(float t, const color & a, const color & b);
-        static color blend(const color & a, const color & b);
-        static color negative(const color & c);
+        static color scale    (const color & c, float factor);
+        static color blend    (const color & a, const color & b);
+        static color negative (const color & c);
 
         // ── Constructors ──────────────────────────────────────────────────────
         color();

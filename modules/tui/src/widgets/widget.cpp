@@ -2,6 +2,8 @@
 #include <nx/tui/layouts/layout.hpp>
 #include <nx/tui/graphics/painter.hpp>
 
+#include <algorithm>
+
 namespace nx::tui {
 
 widget::widget(object * parent)
@@ -50,5 +52,33 @@ void widget::on_wheel(mouse_event &)       {}
 void widget::on_resize(size_type, size_type) {}
 void widget::on_focus_in()  { focused_ = true;  update(); }
 void widget::on_focus_out() { focused_ = false; update(); }
+
+// ── event filters ─────────────────────────────────────────────────────────────
+
+void widget::install_event_filter(event_filter * f)
+{
+    if (f && std::find(filters_.begin(), filters_.end(), f) == filters_.end())
+        filters_.push_back(f);
+}
+
+void widget::remove_event_filter(event_filter * f)
+{
+    filters_.erase(std::remove(filters_.begin(), filters_.end(), f),
+                   filters_.end());
+}
+
+bool widget::_run_filters_key(key_event & e)
+{
+    for (auto * f : filters_)
+        if (f->filter_key(e)) return true;
+    return false;
+}
+
+bool widget::_run_filters_mouse(mouse_event & e)
+{
+    for (auto * f : filters_)
+        if (f->filter_mouse(e)) return true;
+    return false;
+}
 
 } // namespace nx::tui

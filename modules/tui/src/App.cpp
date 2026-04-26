@@ -3,6 +3,7 @@
 #include <nx/asio/io_context.hpp>
 #include <nx/core2/thread/thread.hpp>
 
+#include <algorithm>
 #include <csignal>
 
 using namespace nx::tui;
@@ -37,6 +38,13 @@ tui_application::exec()
     raw_mode_.emplace();
     mouse_.emplace();
 
+    input_reader_ = std::make_unique<tui::input_reader>(this);
+
+    nx::core::connect(input_reader_.get(), &input_reader::key_pressed,
+                  this, &tui_application::_on_key);
+    nx::core::connect(input_reader_.get(), &input_reader::mouse_input,
+                      this, &tui_application::_on_mouse);
+
     // Resize the root screen to match the current terminal dimensions.
     // (screen_ is created in the constructor; we just adapt it to the real
     //  terminal size which is now known because the alt-buffer is active.)
@@ -56,8 +64,17 @@ tui_application::exec()
     // it (which would cause the full-repaint erase to wipe their output).
     if (screen_) screen_->render();
 
+    if (input_reader_) input_reader_->start();
+
     const int code = nx::core::application::exec();
 
+
+    nx::core::disconnect(input_reader_.get(), &input_reader::key_pressed,
+              this, &tui_application::_on_key);
+    nx::core::disconnect(input_reader_.get(), &input_reader::mouse_input,
+                      this, &tui_application::_on_mouse);
+
+    input_reader_.reset(nullptr);
     screen_.reset();
 
     mouse_.reset();
@@ -100,15 +117,47 @@ tui_application::_on_os_signal(int signum)
 }
 
 void
+tui_application::install_event_filter(event_filter * f)
+{
+    if (f && std::find(app_filters_.begin(), app_filters_.end(), f) == app_filters_.end())
+        app_filters_.push_back(f);
+}
+
+void
+tui_application::remove_event_filter(event_filter * f)
+{
+    app_filters_.erase(std::remove(app_filters_.begin(), app_filters_.end(), f),
+                       app_filters_.end());
+}
+
+void
 tui_application::_on_key(key_event e)
 {
-    if (screen_) screen_->dispatch_key_press(e);
+    // App-level filters run first.
+    for (auto * f : app_filters_)
+        if (f->filter_key(e)) return;
+
+    if (e.code == key::escape) {
+        this->quit();
+        return;
+    }
+    if (screen_) {
+        screen_->dispatch_key_press(e);
+        screen_->render();
+    }
 }
 
 void
 tui_application::_on_mouse(mouse_event e)
 {
-    if (screen_) screen_->dispatch_mouse(e);
+    // App-level filters run first.
+    for (auto * f : app_filters_)
+        if (f->filter_mouse(e)) return;
+
+    if (screen_) {
+        screen_->dispatch_mouse(e);
+        screen_->render();
+    }
 }
 
 void

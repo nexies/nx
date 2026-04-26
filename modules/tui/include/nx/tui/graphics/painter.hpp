@@ -2,46 +2,65 @@
 
 #include <nx/tui/graphics/display_buffer.hpp>
 #include <nx/tui/types/style_option.hpp>
+#include <nx/tui/types/style_modifier.hpp>
 
 #include <string>
 
 namespace nx::tui {
 
-    class painter {
-    public:
-        using rect_type   = rect<int>;
-        using size_type   = size<int>;
-        using point_type  = point<int>;
-        using buffer_type = display_buffer;
+class painter {
+public:
+    using rect_type   = rect<int>;
+    using size_type   = size<int>;
+    using point_type  = point<int>;
+    using buffer_type = display_buffer;
 
-    private:
-        buffer_type & buffer_;
-        rect_type     rect_;
-        color         color_;
-        color         background_color_;
-        pixel_style   pixel_style_;
+private:
+    buffer_type &  buffer_;
+    rect_type      rect_;
+    style_option   style_;           // static fields + modifiers
 
-        [[nodiscard]] point_type _project_point(const point_type & pos) const;
+    // Returns the effective style for a cell at clip-local (col, row).
+    // If no source is set, returns the static style unchanged.
+    [[nodiscard]] style_option _at(int col, int row) const noexcept;
 
-    public:
-        explicit painter(buffer_type & buffer);
-        painter(buffer_type & buffer, rect_type clip_rect);
+    // Write a single character to the buffer at absolute (bx, by),
+    // using the effective style computed from clip-local (local_col, local_row).
+    void _write(int bx, int by, int local_col, int local_row,
+                const std::string & ch) const;
 
-        void enable_style(pixel_style style);
-        void disable_style(pixel_style style);
-        void set_style(pixel_style style);
+    [[nodiscard]] point_type _project_point(const point_type & pos) const;
 
-        void set_color(const color & c);
-        void set_background_color(const color & c);
+public:
+    explicit painter(buffer_type & buffer);
+    painter(buffer_type & buffer, rect_type clip_rect);
 
-        void draw_text(const point_type & pos, const std::string & text) const;
-        void draw_char(const point_type & pos, const std::string & ch) const;
+    // ── Static style ──────────────────────────────────────────────────────────
 
-        // Fill the entire clip rect with ch using the current color/style.
-        void fill(const std::string & ch = " ") const;
+    void enable_style (pixel_style s) noexcept;
+    void disable_style(pixel_style s) noexcept;
+    void set_style    (pixel_style s) noexcept;
 
-        // Apply a style_option: sets only the fields that are present.
-        void apply_style(const style_option & s) noexcept;
-    };
+    void set_color           (const color & c) noexcept;
+    void set_background_color(const color & c) noexcept;
+
+    [[nodiscard]] color current_color() const noexcept {
+        return style_.foreground.value_or(color::default_color);
+    }
+    [[nodiscard]] color current_background_color() const noexcept {
+        return style_.background.value_or(color::default_color);
+    }
+
+    // Apply a style_option: only present fields override the current style.
+    void apply_style(const style_option & s) noexcept;
+
+    // ── Draw operations ───────────────────────────────────────────────────────
+
+    void draw_text(const point_type & pos, const std::string & text) const;
+    void draw_char(const point_type & pos, const std::string & ch)   const;
+
+    // Fill the entire clip rect with ch using the effective per-cell style.
+    void fill(const std::string & ch = " ") const;
+};
 
 } // namespace nx::tui

@@ -32,11 +32,11 @@ void screen::resize(int cols, int rows)
 void screen::render()
 {
     back_.clear();
-    _render_widget(*this, get_style(), 0, 0);
+    _render_widget(*this, {}, 0, 0);  // root: no inherited style
     _flush_diff();
 }
 
-void screen::_render_widget(widget & w, style_option style, int global_x, int global_y)
+void screen::_render_widget(widget & w, style_option inherited, int global_x, int global_y)
 {
     if (!w.is_visible()) return;
 
@@ -48,19 +48,23 @@ void screen::_render_widget(widget & w, style_option style, int global_x, int gl
     const auto sz = w.size();
     if (sz.width <= 0 || sz.height <= 0) return;
 
+    // Effective style = parent's inherited style overridden by widget's own.
+    // This is what both the painter and the widget's children will see.
+    const style_option effective = inherited | w.get_style();
+
     // Paint this widget using a painter clipped to its global rect.
     {
         rect<int> clip(global_x, global_y, sz.width, sz.height);
         painter   p(back_, clip);
-        style |= w.get_style();
-        p.apply_style(style); // pre-configure painter with widget's base style
+        p.apply_style(effective);
         w.on_paint(p);
         w._clear_dirty();
     }
 
-    // Recurse into children (front-to-back: later children paint on top).
+    // Recurse into children, passing the effective style as their inherited.
     for (auto * child : w.child_widgets()) {
-        _render_widget(*child, style, global_x + child->pos().x, global_y + child->pos().y);
+        _render_widget(*child, effective,
+                       global_x + child->pos().x, global_y + child->pos().y);
     }
 }
 
@@ -158,6 +162,9 @@ static void _collect_focusable(widget & w, std::vector<widget *> & out)
 
 void screen::dispatch_key_press(key_event e)
 {
+    // Run widget-level filters on the focused widget before any processing.
+    if (focus_ && focus_->_run_filters_key(e)) return;
+
     // Tab / Shift+Tab — cycle focus among tab-focusable widgets.
     if (e.code == key::tab) {
         std::vector<widget *> focusable;
@@ -203,6 +210,9 @@ void screen::dispatch_mouse(mouse_event e)
 
     auto * target = _widget_at(*this, 0, 0, qx, qy);
     if (!target) return;
+
+    // Run widget-level filters before dispatching the mouse event.
+    if (target->_run_filters_mouse(e)) return;
 
     switch (e.action) {
     case mouse_action::press:

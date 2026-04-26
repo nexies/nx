@@ -62,9 +62,10 @@ public:
 
 private:
     // Recursively render w and its children.
+    // inherited:        effective style accumulated from all ancestors.
     // global_x/global_y: position of w in buffer (0-based) coordinates.
     void
-    _render_widget(widget & w, style_option style, int global_x, int global_y);
+    _render_widget(widget & w, style_option inherited, int global_x, int global_y);
 
     // Compare back_ and front_, emit ANSI for changed cells, swap buffers.
     void

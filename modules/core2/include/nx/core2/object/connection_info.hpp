@@ -97,8 +97,10 @@ private:
     // receiver ptr → set of connection IDs (for fast lookup on receiver death)
     std::unordered_map<void *, std::set<detail::connection_id_t>> by_receiver_;
 
-    // objects whose signals we're listening to
-    std::set<object *> senders_;
+    // objects whose signals we're listening to, with a reference count.
+    // An object appears once per live connection (not once per sender object),
+    // so disconnecting one connection does not erase tracking for others.
+    std::unordered_map<object *, int> senders_;
 };
 
 } // namespace nx::core

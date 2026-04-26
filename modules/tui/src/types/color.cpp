@@ -247,6 +247,15 @@ color color::interpolate(float t, const color & a, const color & b)
     return rgb(interp(a.r(), b.r()), interp(a.g(), b.g()), interp(a.b(), b.b()));
 }
 
+color color::scale(const color & c, float factor)
+{
+    const float f = factor < 0.f ? 0.f : (factor > 1.f ? 1.f : factor);
+    return rgb(
+        static_cast<uint8_t>(c.r() * f),
+        static_cast<uint8_t>(c.g() * f),
+        static_cast<uint8_t>(c.b() * f));
+}
+
 color color::blend(const color & a, const color & b)
 {
     return interpolate(a.a() / 255.0f, a, b);
