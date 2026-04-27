@@ -17,11 +17,12 @@ namespace nx
     template<typename Type, typename Error>
     class basic_result {
     public:
-        using error_type = Error;
-        using value_type = Type;
-
-        using reference = Type &;
-        using const_reference = const Type &;
+        using error_type       = Error;
+        using value_type       = Type;
+        using reference        = Type &;
+        using const_reference  = const Type &;
+        using pointer          = Type *;
+        using const_pointer    = const Type *;
 
         using expect_handler = std::function<value_type(const error_type &)>;
 
@@ -29,110 +30,105 @@ namespace nx
         std::variant<value_type, error_type> data_;
         bool is_error_;
 
-        void
-        make_value (value_type && val) {
-            data_.template emplace<value_type>(std::forward<value_type>(val));
-        }
-
-        void
-        make_value (const value_type & val) {
-            data_.template emplace<value_type>(val);
-        }
-
-        void
-        make_error(error_type && err) {
-            data_.template emplace<error_type>(std::forward<error_type>(err));
-        }
-
-        void
-        make_error(const error_type & err) {
-            data_.template emplace<error_type>(err);
-        }
-
-
     public:
+        // ── Value access ──────────────────────────────────────────────────────
 
         NX_NODISCARD constexpr const_reference
-        value()  {
+        value() const {
             if (!is_error_)
                 return std::get<value_type>(data_);
             throw nx::err::invalid_argument("nx::basic_result is not a value");
         }
 
+        NX_NODISCARD constexpr reference
+        value() {
+            if (!is_error_)
+                return std::get<value_type>(data_);
+            throw nx::err::invalid_argument("nx::basic_result is not a value");
+        }
+
+        NX_NODISCARD constexpr const_reference
+        operator*() const { return value(); }
+
+        NX_NODISCARD constexpr reference
+        operator*() { return value(); }
+
+        NX_NODISCARD constexpr const_pointer
+        operator->() const { return &value(); }
+
+        NX_NODISCARD constexpr pointer
+        operator->() { return &value(); }
+
         NX_NODISCARD constexpr value_type
-        value_or(const value_type & or_value) {
+        value_or(const value_type & or_value) const {
             if (!is_error_)
                 return std::get<value_type>(data_);
             return or_value;
         }
 
-        NX_NODISCARD constexpr bool
-        has_value () const noexcept {
-            return !is_error_;
-        }
+        // ── Error access ──────────────────────────────────────────────────────
 
         NX_NODISCARD constexpr const error_type &
-        error () const {
+        error() const {
             if (is_error_)
                 return std::get<error_type>(data_);
             throw nx::err::invalid_argument("nx::basic_result is not an error");
         }
 
+        // ── State ─────────────────────────────────────────────────────────────
+
         NX_NODISCARD constexpr bool
-        is_error () const noexcept {
-            return is_error_;
-        }
+        has_value() const noexcept { return !is_error_; }
+
+        NX_NODISCARD constexpr bool
+        is_error() const noexcept { return is_error_; }
+
+        NX_NODISCARD constexpr explicit
+        operator bool() const noexcept { return has_value(); }
+
+        // ── Monadic helpers ───────────────────────────────────────────────────
 
         NX_NODISCARD value_type
-        expect (expect_handler && handler) {
+        expect(expect_handler && handler) {
             if (is_error_)
                 return handler(error());
             return value();
         }
 
-        NX_NODISCARD constexpr explicit
-        operator bool () const {
-            return this->has_value();
-        }
+        // ── Constructors ──────────────────────────────────────────────────────
 
-    public:
-        basic_result(value_type && value)
+        // Constructors use std::in_place_type to avoid requiring a default
+        // constructor on value_type.
+
+        basic_result(value_type && v)
             : is_error_ { false }
-            , data_ { } {
-            make_value(std::forward<value_type>(value));
-        }
+            , data_ { std::in_place_type<value_type>, std::forward<value_type>(v) } {}
 
-        basic_result(error_type && error)
-            : is_error_ { true }
-            , data_ {} {
-            make_error(std::forward<error_type>(error));
-        }
-
-        basic_result(const value_type & value)
+        basic_result(const value_type & v)
             : is_error_ { false }
-            , data_ {} {
-            make_value(value);
-        }
+            , data_ { std::in_place_type<value_type>, v } {}
 
-        basic_result(const error_type & error)
+        basic_result(error_type && e)
             : is_error_ { true }
-            , data_ {} {
-            make_error(error);
-        }
+            , data_ { std::in_place_type<error_type>, std::forward<error_type>(e) } {}
 
+        basic_result(const error_type & e)
+            : is_error_ { true }
+            , data_ { std::in_place_type<error_type>, e } {}
+
+        // Only available when value_type is default-constructible.
+        template<typename U = value_type,
+                 std::enable_if_t<std::is_default_constructible_v<U>, int> = 0>
         basic_result()
             : is_error_ { false }
-            , data_ { } {
-            make_value(value_type());
-        }
+            , data_ { std::in_place_type<value_type> } {}
 
-        ~basic_result() {
-        }
+        ~basic_result() = default;
 
-        basic_result(const basic_result & other) = default;
-        basic_result(basic_result && other) = default;
-        basic_result & operator=(const basic_result & other) = default;
-        basic_result & operator=(basic_result && other) = default;
+        basic_result(const basic_result &)            = default;
+        basic_result(basic_result &&)                 = default;
+        basic_result & operator=(const basic_result &) = default;
+        basic_result & operator=(basic_result &&)      = default;
     };
 
     // ──────────────────────────────────────────────────────────────────────────
@@ -150,7 +146,7 @@ namespace nx
         std::optional<Error> error_;
 
     public:
-        // ── Observers ─────────────────────────────────────────────────────────
+        // ── State ─────────────────────────────────────────────────────────────
 
         NX_NODISCARD constexpr bool
         has_value() const noexcept { return !error_.has_value(); }
@@ -161,7 +157,9 @@ namespace nx
         NX_NODISCARD constexpr explicit
         operator bool() const noexcept { return has_value(); }
 
-        // Returns void — useful in generic code; throws if this is an error.
+        // ── Value / error access ──────────────────────────────────────────────
+
+        // Throws if this is an error; useful in generic code.
         constexpr void
         value() const {
             if (is_error())
@@ -169,13 +167,14 @@ namespace nx
         }
 
         NX_NODISCARD constexpr const error_type &
-            error() const {
+        error() const {
             if (is_error())
                 return *error_;
             throw nx::err::invalid_argument("nx::basic_result<void> is not an error");
         }
 
-        // Calls handler(error) if this is an error, otherwise does nothing.
+        // ── Monadic helpers ───────────────────────────────────────────────────
+
         template<typename Handler>
         void expect(Handler && handler) const {
             if (is_error())
@@ -184,19 +183,16 @@ namespace nx
 
         // ── Constructors ──────────────────────────────────────────────────────
 
-        // Success — default-construct with {}
         basic_result() noexcept : error_(std::nullopt) {}
 
         basic_result(Error && e)       : error_(std::move(e)) {}
         basic_result(const Error & e)  : error_(e) {}
 
-        basic_result(const basic_result &) = default;
-        basic_result(basic_result &&)      = default;
-
+        basic_result(const basic_result &)             = default;
+        basic_result(basic_result &&)                  = default;
         basic_result & operator=(const basic_result &) = default;
         basic_result & operator=(basic_result &&)      = default;
-
-        ~basic_result() = default;
+        ~basic_result()                                = default;
     };
 
     template<typename Value>

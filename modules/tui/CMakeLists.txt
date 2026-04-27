@@ -34,7 +34,7 @@ add_library(nx_tui
     include/nx/tui/input/escape_parser.hpp
     include/nx/tui/input/input_reader.hpp
     include/nx/tui/input/event_filter.hpp
-    include/nx/tui/detail/utf8.hpp
+    #include/nx/tui/detail/utf8.hpp
     include/nx/tui/types/size_policy.hpp
     include/nx/tui/types/style_option.hpp
     include/nx/tui/types/style_modifier.hpp

@@ -1,5 +1,21 @@
+#include <nx/common/platform.hpp>
+
+#if  defined(NX_POSIX)
 #include <sys/ioctl.h>
 #include <termios.h>
+#elif defined(NX_OS_WINDOWS)
+#define WIN32_LEAN_AND_MEAN
+
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+
+#include <windows.h>
+
+#else
+#error "Unsupported platform. Please reconfigure"
+#endif
+
 #include <unistd.h>
 
 #include <fmt/format.h>
@@ -12,11 +28,34 @@ using namespace nx::tui;
 
 // ── Capabilities ──────────────────────────────────────────────────────────────
 
+namespace
+{
+    window_size fallback_size ()
+    {
+
+    }
+}
+
+
 window_size terminal::get_window_size()
 {
+#if defined(NX_OS_WINDOWS)
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+
+    if (GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi)) {
+        return window_size{csbi.srWindow.Bottom - csbi.srWindow.Top + 1,
+            csbi.srWindow.Right - csbi.srWindow.Left + 1
+        };
+    }
+
+    return fallback_size();
+#else
+
     winsize w { 0 };
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
     return { { w.ws_row, w.ws_col }, { w.ws_ypixel, w.ws_xpixel } };
+
+#endif
 }
 
 namespace {

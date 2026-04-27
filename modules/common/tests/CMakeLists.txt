@@ -14,3 +14,8 @@ nx_configure_test(result
         COMPONENT common
         SOURCE test_result.cpp
 )
+
+nx_configure_test(utf8
+        COMPONENT common
+        SOURCE test_utf8.cpp
+)
