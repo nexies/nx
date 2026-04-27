@@ -27,10 +27,10 @@
 #include <nx/asio/io_context.hpp>
 #include <nx/tui/application.hpp>
 #include <nx/tui/input/input_reader.hpp>
-#include <nx/tui/layouts/layout.hpp>
 #include <nx/tui/types/size_policy.hpp>
 #include <nx/tui/widgets/widget.hpp>
 #include <nx/tui/widgets/screen.hpp>
+#include <nx/tui/widgets/box.hpp>
 #include <nx/tui/graphics/painter.hpp>
 #include <nx/tui/terminal/terminal.hpp>
 
@@ -280,15 +280,16 @@ int main(int argc, char * argv[])
     //   ├── label      fixed height 1
     //   └── event_log  expanding — fills the rest
 
-    auto * title = new label(scr);
+    auto * root = new v_box(scr);
+
+    auto * title = new label(root);
     title->set_text("  nx::tui  Widget Demo  —  press 'q' to quit");
     title->set_fg(color::cyan_bright);
     // label already has vertical_policy = fixed; size_hint().height = 1
 
-    auto * log = new event_log(scr);
+    auto * log = new event_log(root);
     // event_log uses default expanding vertical policy
 
-    scr->set_layout(std::make_unique<v_box_layout>());
     scr->set_focused_widget(log);
 
     // ── Input routing ─────────────────────────────────────────────────────────

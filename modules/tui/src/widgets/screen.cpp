@@ -1,5 +1,4 @@
 #include <nx/tui/widgets/screen.hpp>
-#include <nx/tui/layouts/layout.hpp>
 #include <nx/tui/graphics/painter.hpp>
 #include <nx/tui/terminal/terminal.hpp>
 #include <nx/tui/input/key_event.hpp>
@@ -27,6 +26,20 @@ void screen::resize(int cols, int rows)
     set_geometry({ 0, 0, cols, rows });
 }
 
+// ── layout ────────────────────────────────────────────────────────────────────
+//
+// Screen gives ALL direct children the full screen geometry so that a single
+// root layout widget (h_box, v_box, or similar) naturally fills the terminal.
+
+void screen::_apply_layout()
+{
+    const int w = size().width;
+    const int h = size().height;
+    for (auto * child : child_widgets()) {
+        child->set_geometry({0, 0, w, h});
+    }
+}
+
 // ── render ────────────────────────────────────────────────────────────────────
 
 void screen::render()
@@ -41,9 +54,7 @@ void screen::_render_widget(widget & w, style_option inherited, int global_x, in
     if (!w.is_visible()) return;
 
     // Apply layout to reposition children before painting.
-    if (auto * l = w.get_layout()) {
-        l->apply(w);
-    }
+    w._apply_layout();
 
     const auto sz = w.size();
     if (sz.width <= 0 || sz.height <= 0) return;

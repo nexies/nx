@@ -4,7 +4,6 @@
 #include <nx/tui/types/border_style.hpp>
 #include <nx/tui/types/color.hpp>
 
-#include <memory>
 #include <string>
 
 namespace nx::tui {
@@ -46,19 +45,13 @@ public:
     void set_title(std::string t) { title_ = std::move(t); update(); }
     [[nodiscard]] const std::string & title() const noexcept { return title_; }
 
-    // ── Content layout ────────────────────────────────────────────────────────
-    // Assign a layout to the inner area (border excluded).
-    // Equivalent to widget::set_layout but wrapped so children are positioned
-    // inside the 1-cell border margin automatically.
-
-    void set_content_layout(std::unique_ptr<layout> l);
-
     // ── size_hint ─────────────────────────────────────────────────────────────
     // Adds 2 (for border) to each dimension of explicit hint or current size.
 
     [[nodiscard]] size_type size_hint() const override;
 
 protected:
+    void _apply_layout() override;
     void on_paint(painter & p) override;
 };
 

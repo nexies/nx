@@ -1,21 +1,22 @@
 // form_demo — label, button, line_edit + Tab focus traversal.
 //
-// Widget tree (all sizing handled by layouts — no manual geometry):
+// Widget tree (all sizing handled by box containers — no manual geometry):
 //
-//   screen (v_box_layout, spacing=1)
-//   ├── title_lbl         label      fixed h=1
-//   ├── name_row          widget     h_box_layout, fixed h=1
-//   │   ├── name_lbl      label      fixed w=10
-//   │   └── name_edit     line_edit  expanding
-//   ├── email_row         widget     h_box_layout, fixed h=1
-//   │   ├── email_lbl     label      fixed w=10
-//   │   └── email_edit    line_edit  expanding
-//   ├── btn_row           widget     h_box_layout, fixed h=1, spacing=2
-//   │   ├── submit_btn    button     fixed w=12
-//   │   ├── clear_btn     button     fixed w=12
-//   │   └── spacer        widget     expanding (fills rest)
-//   ├── sep_line          separator_line  fixed h=1
-//   └── log_view          log_view   expanding
+//   screen
+//   └── root (v_box, spacing=1)
+//       ├── title_lbl         label      fixed h=1
+//       ├── name_row          h_box      fixed h=1
+//       │   ├── name_lbl      label      fixed w=10
+//       │   └── name_edit     line_edit  expanding
+//       ├── email_row         h_box      fixed h=1
+//       │   ├── email_lbl     label      fixed w=10
+//       │   └── email_edit    line_edit  expanding
+//       ├── btn_row           h_box      fixed h=1, spacing=2
+//       │   ├── submit_btn    button     fixed w=12
+//       │   ├── clear_btn     button     fixed w=12
+//       │   └── spacer        widget     expanding (fills rest)
+//       ├── sep_line          separator_line  fixed h=1
+//       └── log_view          log_view   expanding
 //
 // Tab / Shift+Tab   — cycle focus
 // Enter on Submit   — log Name + Email
@@ -33,12 +34,12 @@
 #include <nx/tui/input/input_reader.hpp>
 #include <nx/tui/input/key_event.hpp>
 #include <nx/tui/input/mouse_event.hpp>
-#include <nx/tui/layouts/layout.hpp>
 #include <nx/tui/widgets/screen.hpp>
 #include <nx/tui/widgets/label.hpp>
 #include <nx/tui/widgets/button.hpp>
 #include <nx/tui/widgets/line_edit.hpp>
 #include <nx/tui/widgets/widget.hpp>
+#include <nx/tui/widgets/box.hpp>
 #include <nx/tui/graphics/painter.hpp>
 #include <nx/tui/types/style_option.hpp>
 
@@ -86,8 +87,6 @@ protected:
 };
 
 // ── separator_line ────────────────────────────────────────────────────────────
-//
-// Draws a full-width horizontal rule using current size().width.
 
 class separator_line : public widget {
 public:
@@ -105,38 +104,6 @@ public:
 protected:
     void on_paint(painter & p) override {
         p.draw_text({0, 0}, std::string(size().width, '-'));
-    }
-};
-
-// ── input_dispatcher ──────────────────────────────────────────────────────────
-
-class input_dispatcher : public nx::core::object {
-    tui_application * app_;
-
-public:
-    NX_OBJECT(input_dispatcher)
-
-    explicit input_dispatcher(tui_application * app,
-                              nx::core::object * parent = nullptr)
-        : nx::core::object(parent), app_(app)
-    {}
-
-    void on_key(key_event e) {
-        if (e.code == key::escape) {
-            app_->quit();
-            return;
-        }
-        if (auto * s = app_->main_screen()) {
-            s->dispatch_key_press(e);
-            s->render();
-        }
-    }
-
-    void on_mouse(mouse_event e) {
-        if (auto * s = app_->main_screen()) {
-            s->dispatch_mouse(e);
-            s->render();
-        }
     }
 };
 
@@ -173,13 +140,11 @@ public:
         scr_->render();
     }
 
-    // Enter in name_edit → move focus to email_edit.
     void on_name_return() {
         scr_->set_focused_widget(email_edit_);
         scr_->render();
     }
 
-    // Enter in email_edit → trigger submit.
     void on_email_return() {
         on_submit();
     }
@@ -191,44 +156,53 @@ int main(int argc, char * argv[])
 {
     tui_application app(argc, argv);
     auto * scr = app.main_screen();
+    scr->set_style(bg(color::black));
 
     // ── Widget tree ───────────────────────────────────────────────────────────
 
+    auto * root = new v_box(scr);
+    root->set_spacing(1);
+
     // Title row.
-    auto * title_lbl = new label(scr);
+    auto * title_lbl = new label(root);
     title_lbl->set_text("  nx::tui  Form Demo  —  Tab/Shift+Tab: focus  Escape: quit");
     title_lbl->set_style(fg(color::cyan_bright));
 
-    // Name row container.
-    auto * name_row  = new widget(scr);
+    // Name row.
+    auto * name_row  = new h_box(root);
     name_row->set_fixed_height(1);
-    name_row->set_layout(std::make_unique<h_box_layout>());
+    name_row->set_spacing(2);
+    name_row->set_margin(6);
 
     auto * name_lbl  = new label(name_row);
     name_lbl->set_text("Name:");
-    name_lbl->set_fixed_width(10);
+    name_lbl->set_fixed_width(6);
 
     auto * name_edit = new line_edit(name_row);
     name_edit->set_style(fg(color::white) | bg(color::gray_dark));
+    name_edit->set_fixed_width(20);
+    // new widget(name_row);
 
-    // Email row container.
-    auto * email_row  = new widget(scr);
+    // Email row.
+    auto * email_row  = new h_box(root);
     email_row->set_fixed_height(1);
-    email_row->set_layout(std::make_unique<h_box_layout>());
+    email_row->set_spacing(2);
+    email_row->set_margin(6);
 
     auto * email_lbl  = new label(email_row);
     email_lbl->set_text("Email:");
-    email_lbl->set_fixed_width(10);
+    email_lbl->set_fixed_width(6);
 
     auto * email_edit = new line_edit(email_row);
     email_edit->set_style(fg(color::white) | bg(color::gray_dark));
+    email_edit->set_fixed_width(20);
+    // new widget(email_row);
 
-    // Button row container.
-    auto * btn_row = new widget(scr);
+    // Button row.
+    auto * btn_row = new h_box(root);
     btn_row->set_fixed_height(1);
-    auto btn_box = std::make_unique<h_box_layout>();
-    btn_box->set_spacing(2);
-    btn_row->set_layout(std::move(btn_box));
+    btn_row->set_spacing(2);
+    btn_row->set_margin(6);
 
     auto * submit_btn = new button(btn_row);
     submit_btn->set_text("Submit");
@@ -241,25 +215,19 @@ int main(int argc, char * argv[])
     clear_btn->set_style(fg(color::black) | bg(color::yellow));
 
     // Spacer fills remaining width.
-    auto * spacer = new widget(btn_row);
+    new widget(btn_row);
 
     // Separator.
-    auto * sep = new separator_line(scr);
+    auto * sep = new separator_line(root);
     sep->set_style(fg(color::gray_dark));
 
     // Log view.
-    auto * log = new log_view(scr);
+    auto * log = new log_view(root);
     log->append("  Ready. Fill in the fields and press Submit.");
 
-    // ── Screen layout ─────────────────────────────────────────────────────────
+    // ── Focus + signals ───────────────────────────────────────────────────────
 
-    auto * vbox = new v_box_layout;
-    vbox->set_spacing(1);
-    scr->set_layout(std::unique_ptr<layout>(vbox));
-    scr->set_style(bg(color::black));
     scr->set_focused_widget(name_edit);
-
-    // ── Controller + signals ──────────────────────────────────────────────────
 
     form_controller ctrl(name_edit, email_edit, scr, log);
 
@@ -271,17 +239,6 @@ int main(int argc, char * argv[])
                       &ctrl, &form_controller::on_name_return);
     nx::core::connect(email_edit, &line_edit::return_pressed,
                       &ctrl, &form_controller::on_email_return);
-
-    // ── Input routing ─────────────────────────────────────────────────────────
-
-    // input_reader     reader;
-    // input_dispatcher dispatcher(&app);
-    //
-    // nx::core::connect(&reader, &input_reader::key_pressed,
-    //                   &dispatcher, &input_dispatcher::on_key);
-    // nx::core::connect(&reader, &input_reader::mouse_input,
-    //                   &dispatcher, &input_dispatcher::on_mouse);
-    // reader.start();
 
     return app.exec();
 }

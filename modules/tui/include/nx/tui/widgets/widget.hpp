@@ -1,11 +1,9 @@
 #pragma once
 
-#include <memory>
 #include <vector>
 
 #include <nx/core2/object/object.hpp>
 
-#include <nx/tui/layouts/layout.hpp>
 #include <nx/tui/types/rect.hpp>
 #include <nx/tui/types/size_policy.hpp>
 #include <nx/tui/types/style_option.hpp>
@@ -50,7 +48,6 @@ private:
     bool                     dirty_        = true;
     bool                     focused_      = false;
     focus_policy             focus_policy_ = focus_policy::no_focus;
-    std::unique_ptr<layout>  layout_;
     style_option             style_        {};
     std::vector<event_filter *> filters_   {};
     size_policy              v_policy_     = size_policy::preferred;
@@ -93,11 +90,6 @@ public:
     NX_PROPERTY(focus_policy, MEMBER focus_policy_,
         READ, WRITE, RESET, DEFAULT focus_policy::no_focus)
 
-    // ── Layout ────────────────────────────────────────────────────────────────
-    // Widget takes ownership of the layout.
-    void    set_layout(std::unique_ptr<layout> l) { layout_ = std::move(l); }
-    layout * get_layout() const noexcept           { return layout_.get(); }
-
     // ── Size policy ───────────────────────────────────────────────────────────
     // Controls how this widget is sized by its parent layout.
 
@@ -135,6 +127,12 @@ public:
     NX_NODISCARD virtual size_type
     size_hint() const;
 
+    // Minimum size this widget requires for correct rendering.
+    // Default: fixed-policy dimensions use size_hint(); flexible → 0.
+    // Container widgets (h_box, v_box) override this to aggregate children.
+    NX_NODISCARD virtual size_type
+    minimum_size() const;
+
     // ── Style ─────────────────────────────────────────────────────────────────
     NX_PROPERTY(style, MEMBER style_, READ get_style, WRITE set_style)
 
@@ -166,6 +164,11 @@ protected:
     // ── Event handlers (override in subclasses) ───────────────────────────────
 
     virtual void on_paint(painter & p);
+
+    // Called by screen::_render_widget before painting, so child widgets are
+    // repositioned before their own paint pass.  Override in container widgets
+    // (h_box, v_box, frame) to position children.  Default is a no-op.
+    virtual void _apply_layout();
 
     virtual void on_key_press(key_event & e);
     virtual void on_key_release(key_event & e);

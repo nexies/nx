@@ -60,6 +60,11 @@ public:
     NX_PROPERTY(focused_widget,
         MEMBER focus_, READ, WRITE set_focused_widget, NOTIFY focused_changed);
 
+protected:
+    // Sizes all direct children to fill the screen so that a root layout
+    // widget (v_box, h_box) naturally takes the full terminal area.
+    void _apply_layout() override;
+
 private:
     // Recursively render w and its children.
     // inherited:        effective style accumulated from all ancestors.

@@ -132,6 +132,12 @@ protected:
     virtual void
     _on_thread_changed(thread * old_thread, thread * new_thread);
 
+    // Called on the parent when a child is added or removed via set_parent().
+    // Also called on the old parent when the child's destructor runs.
+    // Default implementations are no-ops.
+    virtual void on_child_added  (object * child);
+    virtual void on_child_removed(object * child);
+
 private:
     class impl;
     std::unique_ptr<impl> impl_;

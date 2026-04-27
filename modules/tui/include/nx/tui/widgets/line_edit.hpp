@@ -2,6 +2,7 @@
 
 #include <nx/tui/widgets/widget.hpp>
 
+#include <optional>
 #include <string>
 #include <cstddef>
 
@@ -50,7 +51,9 @@ protected:
 
 private:
     // Keep scroll_off_ so that the cursor is always visible.
-    void _adjust_scroll();
+    // When pin_vis_col is given, the cursor is locked to that screen column
+    // by adjusting scroll_off_ (used for Backspace to keep cursor in place).
+    void _adjust_scroll(std::optional<std::size_t> pin_vis_col = std::nullopt);
 };
 
 } // namespace nx::tui

@@ -1,6 +1,5 @@
 #include <nx/tui/widgets/label.hpp>
 #include <nx/tui/graphics/painter.hpp>
-#include <nx/tui/detail/utf8.hpp>
 
 namespace nx::tui {
 

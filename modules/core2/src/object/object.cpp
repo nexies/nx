@@ -28,8 +28,10 @@ public:
         // Unlink from parent first so the parent won't attempt to delete us
         // when its own destructor runs (handles stack-allocated children that
         // are destroyed before their parent).
-        if (parent_)
+        if (parent_) {
+            parent_->on_child_removed(owner_);
             parent_->impl_->remove_child(owner_);
+        }
 
         // Receiver side: tell senders to drop connections pointing at us.
         conn_info_.notify_senders_of_destruction();
@@ -142,13 +144,16 @@ object::set_parent(object * new_parent)
         return;
 
     // Remove from current parent
-    if (impl_->parent_)
+    if (impl_->parent_) {
+        impl_->parent_->on_child_removed(this);
         impl_->parent_->impl_->remove_child(this);
+    }
 
     impl_->parent_ = new_parent;
 
     if (new_parent) {
         new_parent->impl_->add_child(this);
+        new_parent->on_child_added(this);
 
         // Inherit thread affinity from parent if not already set
         if (!impl_->thread_ && new_parent->impl_->thread_)
@@ -198,6 +203,9 @@ object::_on_thread_changed(thread * /*old_thread*/, thread * /*new_thread*/)
     // Base implementation: no-op.
     // Subclasses (e.g. timer) may need to re-arm timers on the new context.
 }
+
+void object::on_child_added  (object *) {}
+void object::on_child_removed(object *) {}
 
 // ──────────────────────────────────────────────────────────────────────────────
 // detail::is_same_thread / detail::post_to_thread

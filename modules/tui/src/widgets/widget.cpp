@@ -1,5 +1,4 @@
 #include <nx/tui/widgets/widget.hpp>
-#include <nx/tui/layouts/layout.hpp>
 #include <nx/tui/graphics/painter.hpp>
 
 #include <algorithm>
@@ -42,6 +41,15 @@ widget::size_type widget::size_hint() const
     };
 }
 
+widget::size_type widget::minimum_size() const
+{
+    return {
+        v_policy_ == size_policy::fixed ? size_hint().height : 0,
+        h_policy_ == size_policy::fixed ? size_hint().width  : 0
+    };
+}
+
+void widget::_apply_layout()               {}
 void widget::on_paint(painter &)           {}
 void widget::on_key_press(key_event &)     {}
 void widget::on_key_release(key_event &)   {}

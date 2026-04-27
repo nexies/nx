@@ -2,7 +2,6 @@
 #include <nx/tui/graphics/painter.hpp>
 
 #include <algorithm>
-#include <array>
 #include <string>
 
 namespace nx::tui {
@@ -41,52 +40,21 @@ border_chars chars_for(border_style s) noexcept
 
 } // namespace
 
-// ── frame_layout ──────────────────────────────────────────────────────────────
-//
-// Wraps an inner layout and offsets all children by (1,1) so they sit inside
-// the border.  Children whose assigned size equals the full parent dimension
-// are shrunk by 2 to fit inside the border.
-
-class frame_layout : public layout {
-    std::unique_ptr<layout> inner_;
-
-public:
-    void set_inner(std::unique_ptr<layout> l) { inner_ = std::move(l); }
-
-    void apply(widget & parent) override
-    {
-        if (!inner_) return;
-
-        const int pw = parent.size().width;
-        const int ph = parent.size().height;
-        if (pw < 3 || ph < 3) return;
-
-        inner_->apply(parent);
-
-        // Offset every child into the inner area.
-        for (auto * child : parent.child_widgets()) {
-            const auto g = child->geometry();
-            const int  new_w = (g.width() == pw) ? pw - 2 : g.width();
-            const int  new_h = (g.height() == ph) ? ph - 2 : g.height();
-            child->set_geometry({ g.x() + 1, g.y() + 1, new_w, new_h });
-        }
-    }
-};
-
 // ── frame ─────────────────────────────────────────────────────────────────────
 
 frame::frame(nx::core::object * parent)
     : widget(parent)
-{
-    auto fl = std::make_unique<frame_layout>();
-    widget::set_layout(std::move(fl));
-}
+{}
 
-void frame::set_content_layout(std::unique_ptr<layout> l)
+// Position all children inside the 1-cell border margin.
+void frame::_apply_layout()
 {
-    // The widget already owns a frame_layout; update its inner layout.
-    auto * fl = static_cast<frame_layout *>(get_layout());
-    fl->set_inner(std::move(l));
+    const int pw = size().width;
+    const int ph = size().height;
+    if (pw < 3 || ph < 3) return;
+
+    for (auto * child : child_widgets())
+        child->set_geometry({1, 1, pw - 2, ph - 2});
 }
 
 widget::size_type frame::size_hint() const

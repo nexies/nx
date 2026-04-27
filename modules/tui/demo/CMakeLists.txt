@@ -18,3 +18,8 @@ nx_configure_demo(frame
         COMPONENT tui
         SOURCE frame_demo.cpp
 )
+
+nx_configure_demo(key_check
+        COMPONENT tui
+        SOURCE key_check_demo.cpp
+)

@@ -3,9 +3,66 @@
 #include <nx/tui/input/key_event.hpp>
 #include <nx/tui/input/mouse_event.hpp>
 #include <nx/tui/types/style_option.hpp>
-#include <nx/tui/detail/utf8.hpp>
+
+#include <nx/common/types/utf8.hpp>
 
 namespace nx::tui {
+
+// ── UTF-8 / grapheme helpers (file-local) ─────────────────────────────────────
+
+// Advance `n` grapheme clusters forward from byte offset `start`.
+// Returns the resulting byte offset.
+static std::size_t
+utf8_advance(const std::string & text, std::size_t start, std::size_t n)
+{
+    const char * p   = text.data() + start;
+    const char * end = text.data() + text.size();
+    for (std::size_t i = 0; i < n && p < end; ++i) {
+        auto r = nx::utf8::detail::cluster_end(p, end);
+        p = r ? *r : p + 1; // skip one bad byte on error
+    }
+    return static_cast<std::size_t>(p - text.data());
+}
+
+// Count grapheme clusters in [from_byte, to_byte).
+static std::size_t
+utf8_col_count(const std::string & text, std::size_t from_byte, std::size_t to_byte)
+{
+    const char * p   = text.data() + from_byte;
+    const char * end = text.data() + to_byte;
+    std::size_t count = 0;
+    while (p < end) {
+        auto r = nx::utf8::detail::cluster_end(p, end);
+        p = r ? *r : p + 1;
+        ++count;
+    }
+    return count;
+}
+
+// Return the byte length of the grapheme cluster starting at `pos`.
+static std::size_t
+utf8_cluster_len(const std::string & text, std::size_t pos)
+{
+    const char * p   = text.data() + pos;
+    const char * end = text.data() + text.size();
+    auto r = nx::utf8::detail::cluster_end(p, end);
+    return r ? static_cast<std::size_t>(*r - p) : 1;
+}
+
+// Find the start of the grapheme cluster that ends at byte offset `pos`.
+// Steps back over UTF-8 continuation bytes (codepoint boundary), then
+// checks whether combining marks attach it to an earlier base.
+static std::size_t
+utf8_prev_cluster_start(const std::string & text, std::size_t pos)
+{
+    if (pos == 0) return 0;
+    // Step back to the start of the previous codepoint.
+    std::size_t p = pos - 1;
+    while (p > 0 && (static_cast<unsigned char>(text[p]) & 0xC0) == 0x80) --p;
+    return p;
+}
+
+
 
 line_edit::line_edit(nx::core::object * parent)
     : widget(parent)
@@ -42,7 +99,7 @@ void line_edit::on_paint(painter & p)
     // scroll_off_ and cursor_ are byte offsets; view width is in columns.
     const std::size_t view_cols = static_cast<std::size_t>(w);
     const std::size_t start     = scroll_off_;
-    const std::size_t end       = utf8::advance(text_, start, view_cols);
+    const std::size_t end       = utf8_advance(text_, start, view_cols);
 
     if (start < text_.size()) {
         p.draw_text({ 0, 0 }, text_.substr(start, end - start));
@@ -50,12 +107,11 @@ void line_edit::on_paint(painter & p)
 
     // Draw cursor when focused (inverted cell at cursor column).
     if (has_focus()) {
-        const int cur_col = static_cast<int>(utf8::col_count(text_, scroll_off_, cursor_));
+        const int cur_col = static_cast<int>(utf8_col_count(text_, scroll_off_, cursor_));
         if (cur_col >= 0 && cur_col < w) {
             std::string cur_ch = " ";
             if (cursor_ < text_.size()) {
-                std::size_t clen = utf8::char_len(text_, cursor_);
-                if (cursor_ + clen > text_.size()) clen = text_.size() - cursor_;
+                const std::size_t clen = utf8_cluster_len(text_, cursor_);
                 cur_ch = std::string(text_.data() + cursor_, clen);
             }
             painter cur_p = p;
@@ -69,6 +125,10 @@ void line_edit::on_paint(painter & p)
 
 void line_edit::on_key_press(key_event & e)
 {
+    // When set, _adjust_scroll will lock the cursor to this visual column
+    // instead of just ensuring it is visible.
+    std::optional<std::size_t> pin_vis_col;
+
     switch (e.code) {
     case key::printable: {
         // Don't insert text for modified characters (Ctrl+X, Alt+X are commands).
@@ -105,9 +165,12 @@ void line_edit::on_key_press(key_event & e)
     }
     case key::backspace:
         if (cursor_ > 0) {
-            // Step back over a UTF-8 continuation sequence.
-            std::size_t pos = cursor_ - 1;
-            while (pos > 0 && (text_[pos] & 0xC0) == 0x80) --pos;
+            // When the view is scrolled, keep the cursor at the same screen
+            // column after deletion (content to the left shifts left).
+            if (scroll_off_ > 0)
+                pin_vis_col = utf8_col_count(text_, scroll_off_, cursor_);
+
+            const std::size_t pos = utf8_prev_cluster_start(text_, cursor_);
             text_.erase(pos, cursor_ - pos);
             cursor_ = pos;
             NX_EMIT(text_changed)
@@ -115,23 +178,20 @@ void line_edit::on_key_press(key_event & e)
         break;
     case key::delete_key:
         if (cursor_ < text_.size()) {
-            std::size_t next = cursor_ + 1;
-            while (next < text_.size() && (text_[next] & 0xC0) == 0x80) ++next;
-            text_.erase(cursor_, next - cursor_);
+            // Cursor does not move on Delete, so its visual column is preserved
+            // automatically — no pin needed (symmetric with Backspace).
+            const std::size_t clen = utf8_cluster_len(text_, cursor_);
+            text_.erase(cursor_, clen);
             NX_EMIT(text_changed)
         }
         break;
     case key::arrow_left:
-        if (cursor_ > 0) {
-            --cursor_;
-            while (cursor_ > 0 && (text_[cursor_] & 0xC0) == 0x80) --cursor_;
-        }
+        if (cursor_ > 0)
+            cursor_ = utf8_prev_cluster_start(text_, cursor_);
         break;
     case key::arrow_right:
-        if (cursor_ < text_.size()) {
-            ++cursor_;
-            while (cursor_ < text_.size() && (text_[cursor_] & 0xC0) == 0x80) ++cursor_;
-        }
+        if (cursor_ < text_.size())
+            cursor_ = utf8_advance(text_, cursor_, 1);
         break;
     case key::home:
         cursor_ = 0;
@@ -146,7 +206,7 @@ void line_edit::on_key_press(key_event & e)
         return;
     }
 
-    _adjust_scroll();
+    _adjust_scroll(pin_vis_col);
     update();
 }
 
@@ -167,20 +227,34 @@ void line_edit::on_mouse_press(mouse_event & e)
 
 // ── scroll adjustment ─────────────────────────────────────────────────────────
 
-void line_edit::_adjust_scroll()
+void line_edit::_adjust_scroll(std::optional<std::size_t> pin_vis_col)
 {
     const int w = size().width;
     if (w <= 0) return;
     const std::size_t view_cols = static_cast<std::size_t>(w);
 
     // cursor_ and scroll_off_ are byte offsets; compare in visual columns.
-    const std::size_t cursor_col = utf8::col_count(text_, 0, cursor_);
-    const std::size_t scroll_col = utf8::col_count(text_, 0, scroll_off_);
+    const std::size_t cursor_col = utf8_col_count(text_, 0, cursor_);
 
+    if (pin_vis_col.has_value()) {
+        // Pin mode — lock cursor to the requested screen column.
+        // new_scroll_col = cursor_col - pin_vis_col  (guaranteed >= 0 because
+        // cursor was visible before the operation that set the pin).
+        const std::size_t vc = *pin_vis_col;
+        if (cursor_col >= vc)
+            scroll_off_ = utf8_advance(text_, 0, cursor_col - vc);
+        else
+            scroll_off_ = 0;
+        return;
+    }
+
+    // Normal mode — ensure cursor stays within the visible window.
+    // Each arrow keypress at the boundary scrolls by exactly one grapheme,
+    // keeping the cursor at the edge while the content shifts.
+    const std::size_t scroll_col = utf8_col_count(text_, 0, scroll_off_);
     if (cursor_col >= scroll_col + view_cols) {
         // Cursor is past the right edge — scroll right.
-        const std::size_t new_scroll_col = cursor_col - view_cols + 1;
-        scroll_off_ = utf8::advance(text_, 0, new_scroll_col);
+        scroll_off_ = utf8_advance(text_, 0, cursor_col - view_cols + 1);
     } else if (cursor_col < scroll_col) {
         // Cursor is before the left edge — scroll left.
         scroll_off_ = cursor_;

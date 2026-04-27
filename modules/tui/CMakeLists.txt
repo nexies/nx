@@ -6,13 +6,13 @@ add_library(nx_tui
     src/graphics/display_buffer.cpp
     src/input/escape_parser.cpp
     src/input/input_reader.cpp
-    src/layouts/layout.cpp
     src/widgets/widget.cpp
     src/widgets/screen.cpp
     src/widgets/label.cpp
     src/widgets/button.cpp
     src/widgets/line_edit.cpp
     src/widgets/frame.cpp
+    src/widgets/box.cpp
 
     include/nx/tui/application.hpp
     include/nx/tui/terminal/terminal.hpp
@@ -34,19 +34,19 @@ add_library(nx_tui
     include/nx/tui/input/escape_parser.hpp
     include/nx/tui/input/input_reader.hpp
     include/nx/tui/input/event_filter.hpp
-    #include/nx/tui/detail/utf8.hpp
     include/nx/tui/types/size_policy.hpp
     include/nx/tui/types/style_option.hpp
     include/nx/tui/types/style_modifier.hpp
     include/nx/tui/types/text_align.hpp
-    include/nx/tui/layouts/layout.hpp
     include/nx/tui/widgets/widget.hpp
     include/nx/tui/widgets/screen.hpp
     include/nx/tui/widgets/label.hpp
     include/nx/tui/widgets/button.hpp
     include/nx/tui/widgets/line_edit.hpp
     include/nx/tui/widgets/frame.hpp
+    include/nx/tui/widgets/box.hpp
     include/nx/tui/types/border_style.hpp
+    include/nx/tui/types/margin.hpp
     include/nx/tui/terminal/guards.hpp
     include/nx/tui/terminal.hpp
 )
