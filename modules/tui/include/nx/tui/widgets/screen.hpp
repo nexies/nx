@@ -68,8 +68,9 @@ protected:
 private:
     // Recursively render w and its children.
     // global_x/global_y: position of w in buffer (0-based) coordinates.
+    // clip: the region within which this widget may write (in buffer coords).
     void
-    _render_widget(widget & w, int global_x, int global_y);
+    _render_widget(widget & w, int global_x, int global_y, rect<int> clip);
 
     // Compare back_ and front_, emit ANSI for changed cells, swap buffers.
     void

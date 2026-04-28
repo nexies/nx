@@ -17,15 +17,16 @@ public:
 
 private:
     buffer_type &  buffer_;
-    rect_type      rect_;
-    style_option   style_;           // static fields + modifiers
+    rect_type      rect_;      // local-coord space (origin + extent for modifiers)
+    rect_type      clip_;      // actual write region (subset of rect_)
+    style_option   style_;
 
-    // Returns the effective style for a cell at clip-local (col, row).
-    // If no source is set, returns the static style unchanged.
+    // Returns the effective style for a cell at local (col, row).
     [[nodiscard]] style_option _at(int col, int row) const noexcept;
 
     // Write a single character to the buffer at absolute (bx, by),
-    // using the effective style computed from clip-local (local_col, local_row).
+    // using the effective style computed from local (local_col, local_row).
+    // Skips writes outside clip_.
     void _write(int bx, int by, int local_col, int local_row,
                 const std::string & ch) const;
 
@@ -33,7 +34,11 @@ private:
 
 public:
     explicit painter(buffer_type & buffer);
-    painter(buffer_type & buffer, rect_type clip_rect);
+    // clip_rect = rect_ (no additional clipping)
+    painter(buffer_type & buffer, rect_type render_rect);
+    // render_rect: coordinate space for style modifiers (local origin).
+    // clip_rect:   restricts actual writes to a sub-region of render_rect.
+    painter(buffer_type & buffer, rect_type render_rect, rect_type clip_rect);
 
     // ── Static style ──────────────────────────────────────────────────────────
 

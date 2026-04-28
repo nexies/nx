@@ -1,6 +1,8 @@
 #include <nx/tui/graphics/painter.hpp>
 #include <nx/common/types/utf8.hpp>
 
+#include <algorithm>
+
 namespace nx::tui {
 
 // ── construction ──────────────────────────────────────────────────────────────
@@ -8,11 +10,19 @@ namespace nx::tui {
 painter::painter(buffer_type & buffer)
     : buffer_(buffer)
     , rect_(buffer.rect())
+    , clip_(buffer.rect())
 {}
 
-painter::painter(buffer_type & buffer, rect_type clip_rect)
+painter::painter(buffer_type & buffer, rect_type render_rect)
     : buffer_(buffer)
-    , rect_(clip_rect)
+    , rect_(render_rect)
+    , clip_(render_rect)
+{}
+
+painter::painter(buffer_type & buffer, rect_type render_rect, rect_type clip_rect)
+    : buffer_(buffer)
+    , rect_(render_rect)
+    , clip_(clip_rect)
 {}
 
 // ── static style ──────────────────────────────────────────────────────────────
@@ -66,6 +76,9 @@ style_option painter::_at(int col, int row) const noexcept
 
 void painter::_write(int bx, int by, int lc, int lr, const std::string & ch) const
 {
+    if (bx < clip_.x() || bx >= clip_.x() + clip_.width())  return;
+    if (by < clip_.y() || by >= clip_.y() + clip_.height()) return;
+
     auto   s  = _at(lc, lr);
     auto & px = buffer_.pixel_at(bx, by);
     px.character = ch;
@@ -108,9 +121,16 @@ void painter::draw_char(const point_type & pos, const std::string & ch) const
 
 void painter::fill(const std::string & ch) const
 {
-    for (int row = 0; row < rect_.height(); ++row) {
-        for (int col = 0; col < rect_.width(); ++col) {
-            _write(rect_.x() + col, rect_.y() + row, col, row, ch);
+    // Iterate over the intersection of render_rect and clip_ to avoid
+    // walking cells that would be rejected by _write's bounds check.
+    const int bx0 = std::max(rect_.x(), clip_.x());
+    const int by0 = std::max(rect_.y(), clip_.y());
+    const int bx1 = std::min(rect_.x() + rect_.width(),  clip_.x() + clip_.width());
+    const int by1 = std::min(rect_.y() + rect_.height(), clip_.y() + clip_.height());
+
+    for (int by = by0; by < by1; ++by) {
+        for (int bx = bx0; bx < bx1; ++bx) {
+            _write(bx, by, bx - rect_.x(), by - rect_.y(), ch);
         }
     }
 }

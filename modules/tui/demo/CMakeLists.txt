@@ -23,3 +23,8 @@ nx_configure_demo(key_check
         COMPONENT tui
         SOURCE key_check_demo.cpp
 )
+
+nx_configure_demo(scroll
+        COMPONENT tui
+        SOURCE scroll_demo.cpp
+)

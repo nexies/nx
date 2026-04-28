@@ -13,6 +13,7 @@ add_library(nx_tui
     src/widgets/line_edit.cpp
     src/widgets/frame.cpp
     src/widgets/box.cpp
+    src/widgets/scroll_area.cpp
 
     include/nx/tui/application.hpp
     include/nx/tui/terminal/terminal.hpp
@@ -45,6 +46,7 @@ add_library(nx_tui
     include/nx/tui/widgets/line_edit.hpp
     include/nx/tui/widgets/frame.hpp
     include/nx/tui/widgets/box.hpp
+    include/nx/tui/widgets/scroll_area.hpp
     include/nx/tui/types/border_style.hpp
     include/nx/tui/types/margin.hpp
     include/nx/tui/terminal/guards.hpp

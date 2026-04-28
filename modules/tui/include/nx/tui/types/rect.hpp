@@ -81,6 +81,23 @@ namespace nx::tui {
 
         // ── Mutation ──────────────────────────────────────────────────────────
 
+        [[nodiscard]] constexpr bool
+        empty() const noexcept
+        { return size_.width <= 0 || size_.height <= 0; }
+
+        // Returns the intersection of this rect and other.
+        // Returns an empty rect if they don't overlap.
+        [[nodiscard]] constexpr rect
+        intersect(const rect & other) const noexcept
+        {
+            const value_type x1 = std::max(x(), other.x());
+            const value_type y1 = std::max(y(), other.y());
+            const value_type x2 = std::min(x() + width(),  other.x() + other.width());
+            const value_type y2 = std::min(y() + height(), other.y() + other.height());
+            if (x2 <= x1 || y2 <= y1) return {};
+            return { x1, y1, x2 - x1, y2 - y1 };
+        }
+
         [[nodiscard]] rect
         translated(value_type dx, value_type dy) const noexcept
         { return { pos_.x + dx, pos_.y + dy, size_.width, size_.height }; }

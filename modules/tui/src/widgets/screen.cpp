@@ -45,11 +45,11 @@ void screen::_apply_layout()
 void screen::render()
 {
     back_.clear();
-    _render_widget(*this, 0, 0);
+    _render_widget(*this, 0, 0, rect<int>(0, 0, back_.cols(), back_.rows()));
     _flush_diff();
 }
 
-void screen::_render_widget(widget & w, int global_x, int global_y)
+void screen::_render_widget(widget & w, int global_x, int global_y, rect<int> clip)
 {
     if (!w.is_visible()) return;
 
@@ -58,22 +58,31 @@ void screen::_render_widget(widget & w, int global_x, int global_y)
     const auto sz = w.size();
     if (sz.width <= 0 || sz.height <= 0) return;
 
-    // Paint with the widget's own style only.  Style components not set
-    // (nullopt) are left as-is in the buffer, so parent pixels "show through"
-    // — a parent gradient naturally bleeds into children that don't specify
-    // their own background.
+    rect<int> widget_rect(global_x, global_y, sz.width, sz.height);
+    rect<int> eff_clip = widget_rect.intersect(clip);
+    if (eff_clip.empty()) return;
+
     {
-        rect<int> clip(global_x, global_y, sz.width, sz.height);
-        painter   p(back_, clip);
+        painter p(back_, widget_rect, eff_clip);
         p.apply_style(w.get_style());
         p.fill(" ");
         w.on_paint(p);
         w._clear_dirty();
     }
 
+    // Children clip = parent's eff_clip, optionally narrowed by the widget's
+    // own viewport (e.g. scroll_area clips children to its visible area).
+    rect<int> child_clip = eff_clip;
+    if (auto cc = w.children_clip()) {
+        rect<int> vp_global(global_x + cc->x(), global_y + cc->y(),
+                            cc->width(), cc->height());
+        child_clip = vp_global.intersect(eff_clip);
+    }
+
     for (auto * child : w.child_widgets()) {
         _render_widget(*child,
-                       global_x + child->pos().x, global_y + child->pos().y);
+                       global_x + child->pos().x, global_y + child->pos().y,
+                       child_clip);
     }
 }
 

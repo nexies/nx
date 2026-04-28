@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include <vector>
 
 #include <nx/core2/object/object.hpp>
@@ -120,6 +121,12 @@ public:
 
     NX_NODISCARD std::vector<widget *>
     child_widgets() const;
+
+    // ── Viewport clipping ─────────────────────────────────────────────────────
+    // If overridden, children are clipped to this rect in LOCAL widget coords.
+    // scroll_area uses this to prevent content from painting outside its viewport.
+    [[nodiscard]] virtual std::optional<rect<int>>
+    children_clip() const noexcept { return std::nullopt; }
 
     // ── Size hint ─────────────────────────────────────────────────────────────
     NX_PROPERTY(size_hint, READ size_hint)
