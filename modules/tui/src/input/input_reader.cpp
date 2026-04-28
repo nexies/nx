@@ -145,14 +145,15 @@ void input_reader::_reader_thread(nx::asio::io_context * ctx)
 void input_reader::_on_readable()
 {
 #if defined(NX_OS_WINDOWS)
-    HANDLE hIn = GetStdHandle(STD_INPUT_HANDLE);
+    static HANDLE hIn = GetStdHandle(STD_INPUT_HANDLE);
 
     DWORD count = 0;
     if (!GetNumberOfConsoleInputEvents(hIn, &count) || count == 0)
         return;
 
     // Stack-allocate a reasonable batch; loop if the buffer has more.
-    INPUT_RECORD records[64];
+    NX_THREAD_LOCAL INPUT_RECORD records[64];
+    memset(records, 0, sizeof(INPUT_RECORD) * 64);
     DWORD        read_count = 0;
     if (!ReadConsoleInputW(hIn, records, 64, &read_count))
         return;
