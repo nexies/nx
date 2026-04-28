@@ -65,3 +65,7 @@ nx_configure_component(nx_tui
 if (NX_BUILD_EXAMPLES)
     add_subdirectory(demo)
 endif()
+
+if (NX_BUILD_TESTS)
+    add_subdirectory(tests)
+endif()

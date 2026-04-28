@@ -22,6 +22,18 @@ namespace nx::tui {
         explicit constexpr point(size<T> s) noexcept
             : x { s.width }, y { s.height }
         {}
+
+        NX_NODISCARD constexpr bool
+        operator == (const point& p) const noexcept
+        {
+            return x == p.x && y == p.y;
+        }
+
+        NX_NODISCARD constexpr bool
+        operator != (const point& p) const noexcept
+        {
+            return !(*this == p);
+        }
     };
 
 } // namespace nx::tui

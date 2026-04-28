@@ -128,6 +128,11 @@ public:
     [[nodiscard]] virtual std::optional<rect<int>>
     children_clip() const noexcept { return std::nullopt; }
 
+    // ── Wheel interception ────────────────────────────────────────────────────
+    // Return true if this widget wants to consume wheel events even when a
+    // descendant is the hit-test target.  scroll_area overrides this.
+    [[nodiscard]] virtual bool _intercepts_wheel() const noexcept { return false; }
+
     // ── Size hint ─────────────────────────────────────────────────────────────
     NX_PROPERTY(size_hint, READ size_hint)
 

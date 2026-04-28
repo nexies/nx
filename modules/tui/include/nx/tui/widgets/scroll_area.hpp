@@ -30,6 +30,8 @@ public:
 
     explicit scroll_area(nx::core::object * parent = nullptr);
 
+    [[nodiscard]] bool _intercepts_wheel() const noexcept override { return true; }
+
     // ── Explicit content size ─────────────────────────────────────────────────
     // Set to override the automatic size derived from the child's size_hint().
 

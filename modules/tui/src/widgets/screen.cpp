@@ -237,7 +237,12 @@ void screen::dispatch_mouse(mouse_event e)
     switch (e.action) {
     case mouse_action::press:
         if (e.button == mouse_button::wheel_up || e.button == mouse_button::wheel_down) {
-            target->on_wheel(e);
+            // Bubble up until we find a widget that intercepts wheel events.
+            widget * w = target;
+            while (w) {
+                if (w->_intercepts_wheel()) { w->on_wheel(e); break; }
+                w = dynamic_cast<widget *>(w->parent());
+            }
         } else {
             if (target->get_focus_policy() != widget::focus_policy::no_focus) {
                 set_focused_widget(target);
