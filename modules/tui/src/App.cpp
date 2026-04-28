@@ -1,5 +1,6 @@
 #include <nx/tui/application.hpp>
 
+#include <nx/common/platform.hpp>
 #include <nx/asio/io_context.hpp>
 #include <nx/core2/thread/thread.hpp>
 
@@ -41,9 +42,13 @@ tui_application::exec()
     input_reader_ = std::make_unique<tui::input_reader>(this);
 
     nx::core::connect(input_reader_.get(), &input_reader::key_pressed,
-                  this, &tui_application::_on_key);
+                      this, &tui_application::_on_key);
     nx::core::connect(input_reader_.get(), &input_reader::mouse_input,
                       this, &tui_application::_on_mouse);
+#if defined(NX_OS_WINDOWS)
+    nx::core::connect(input_reader_.get(), &input_reader::window_resized,
+                      this, &tui_application::_on_window_resize);
+#endif
 
     // Resize the root screen to match the current terminal dimensions.
     // (screen_ is created in the constructor; we just adapt it to the real
@@ -70,9 +75,13 @@ tui_application::exec()
 
 
     nx::core::disconnect(input_reader_.get(), &input_reader::key_pressed,
-              this, &tui_application::_on_key);
+                         this, &tui_application::_on_key);
     nx::core::disconnect(input_reader_.get(), &input_reader::mouse_input,
-                      this, &tui_application::_on_mouse);
+                         this, &tui_application::_on_mouse);
+#if defined(NX_OS_WINDOWS)
+    nx::core::disconnect(input_reader_.get(), &input_reader::window_resized,
+                         this, &tui_application::_on_window_resize);
+#endif
 
     input_reader_.reset(nullptr);
     screen_.reset();
@@ -91,6 +100,7 @@ tui_application::exec()
 void
 tui_application::_arm_sigwinch()
 {
+#if defined(NX_POSIX)
     if (!sigwinch_set_) {
         sigwinch_set_ = std::make_unique<nx::asio::signal_set>(
             nx::core::thread::current_context());
@@ -100,6 +110,8 @@ tui_application::_arm_sigwinch()
         if (res)
             _on_sigwinch();
     });
+#endif
+    // Windows: no SIGWINCH equivalent; resize events are not yet implemented.
 }
 
 void

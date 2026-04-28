@@ -2,11 +2,23 @@
 #include <cmath>
 #include <fmt/format.h>
 
+#include <nx/common/platform.hpp>
 #include <nx/tui/types/color.hpp>
 #include <nx/tui/terminal/terminal.hpp>
 
 namespace
 {
+    // pow_f is not in the std namespace on MinGW; std::pow has a float
+    // overload on all platforms.
+    inline float pow_f(float base, float exp) noexcept
+    {
+#if defined(NX_OS_WINDOWS)
+        return static_cast<float>(std::pow(base, exp));
+#else
+        return pow_f(base, exp);
+#endif
+    }
+
     constexpr uint32_t g_8bit_mask         = 0b0000'0000'1111'1111;
     constexpr uint32_t g_true_red_shift    = 24;
     constexpr uint32_t g_true_green_shift  = 16;
@@ -239,10 +251,10 @@ color color::interpolate(float t, const color & a, const color & b)
 {
     auto interp = [t](uint8_t a_u, uint8_t b_u) -> uint8_t {
         constexpr float gamma = 2.2f;
-        const float af = std::powf(static_cast<float>(a_u), gamma);
-        const float bf = std::powf(static_cast<float>(b_u), gamma);
+        const float af = pow_f(static_cast<float>(a_u), gamma);
+        const float bf = pow_f(static_cast<float>(b_u), gamma);
         const float cf = af * (1.0f - t) + bf * t;
-        return static_cast<uint8_t>(std::powf(cf, 1.0f / gamma));
+        return static_cast<uint8_t>(pow_f(cf, 1.0f / gamma));
     };
     return rgb(interp(a.r(), b.r()), interp(a.g(), b.g()), interp(a.b(), b.b()));
 }

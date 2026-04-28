@@ -11,5 +11,6 @@
 #endif
 
 #if defined(NX_USE_BUNDLED_FMT)
+# define FMT_UNICODE 0
 # include "bundled/format.h"
 #endif

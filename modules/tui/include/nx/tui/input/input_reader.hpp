@@ -6,12 +6,14 @@
 #include <nx/asio/handle_notifier.hpp>
 
 #include <nx/tui/input/escape_parser.hpp>
+#include <nx/tui/types/size.hpp>
 
 namespace nx::tui {
 
 // ── input_reader ──────────────────────────────────────────────────────────────
 //
 // Asynchronously reads raw bytes from stdin and emits key / mouse events.
+// On Windows also emits window_resized when the console buffer changes size.
 //
 // Requires:
 //   - Terminal must be in raw mode before start() is called.
@@ -35,8 +37,9 @@ public:
     void start();
     void stop();
 
-    NX_SIGNAL(key_pressed,  key_event)
-    NX_SIGNAL(mouse_input,  mouse_event)
+    NX_SIGNAL(key_pressed,    key_event)
+    NX_SIGNAL(mouse_input,    mouse_event)
+    NX_SIGNAL(window_resized, window_size)
 
 private:
     void _arm();

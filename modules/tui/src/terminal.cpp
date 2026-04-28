@@ -1,22 +1,18 @@
 #include <nx/common/platform.hpp>
 
-#if  defined(NX_POSIX)
+#if defined(NX_POSIX)
 #include <sys/ioctl.h>
 #include <termios.h>
+#include <unistd.h>
 #elif defined(NX_OS_WINDOWS)
 #define WIN32_LEAN_AND_MEAN
-
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
-
 #include <windows.h>
-
 #else
 #error "Unsupported platform. Please reconfigure"
 #endif
-
-#include <unistd.h>
 
 #include <fmt/format.h>
 
@@ -198,8 +194,12 @@ void terminal::reset_screen_mode(mode /*m*/) { /* TODO */ }
 // ── Raw mode ──────────────────────────────────────────────────────────────────
 
 namespace {
-    termios g_saved_termios   {};
-    bool    g_raw_mode_active = false;
+    bool g_raw_mode_active = false;
+#if defined(NX_POSIX)
+    termios g_saved_termios {};
+#elif defined(NX_OS_WINDOWS)
+    DWORD g_saved_console_mode = 0;
+#endif
 } // anonymous namespace
 
 void terminal::enable_raw_mode()
@@ -207,15 +207,28 @@ void terminal::enable_raw_mode()
     if (g_raw_mode_active)
         return;
 
+#if defined(NX_POSIX)
     if (tcgetattr(STDIN_FILENO, &g_saved_termios) != 0)
         return;
 
     termios raw = g_saved_termios;
     cfmakeraw(&raw);
-    raw.c_cc[VMIN]  = 1;  // block until at least 1 byte available
-    raw.c_cc[VTIME] = 0;  // no timeout
-
+    raw.c_cc[VMIN]  = 1;
+    raw.c_cc[VTIME] = 0;
     tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
+
+#elif defined(NX_OS_WINDOWS)
+    HANDLE hIn = GetStdHandle(STD_INPUT_HANDLE);
+    if (hIn == INVALID_HANDLE_VALUE)
+        return;
+    if (!GetConsoleMode(hIn, &g_saved_console_mode))
+        return;
+    DWORD raw = (g_saved_console_mode
+        & ~(ENABLE_ECHO_INPUT | ENABLE_LINE_INPUT | ENABLE_PROCESSED_INPUT))
+        | ENABLE_VIRTUAL_TERMINAL_INPUT;
+    SetConsoleMode(hIn, raw);
+#endif
+
     g_raw_mode_active = true;
 }
 
@@ -224,7 +237,14 @@ void terminal::disable_raw_mode()
     if (!g_raw_mode_active)
         return;
 
+#if defined(NX_POSIX)
     tcsetattr(STDIN_FILENO, TCSAFLUSH, &g_saved_termios);
+#elif defined(NX_OS_WINDOWS)
+    HANDLE hIn = GetStdHandle(STD_INPUT_HANDLE);
+    if (hIn != INVALID_HANDLE_VALUE)
+        SetConsoleMode(hIn, g_saved_console_mode);
+#endif
+
     g_raw_mode_active = false;
 }
 
