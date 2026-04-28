@@ -1,5 +1,6 @@
 #include <nx/tui/widgets/label.hpp>
 #include <nx/tui/graphics/painter.hpp>
+#include <nx/common/types/utf8.hpp>
 
 namespace nx::tui {
 
@@ -38,10 +39,21 @@ void label::on_paint(painter & p)
     const int w = size().width;
     if (w <= 0 || text_.empty()) return;
 
-    // Truncate to fit width.
-    std::string visible = text_.size() > static_cast<std::size_t>(w)
-        ? text_.substr(0, static_cast<std::size_t>(w))
-        : text_;
+    // Truncate to `w` grapheme clusters, tracking the byte boundary as we go.
+    nx::utf8::view view(text_);
+    int grapheme_count = 0;
+    const char * end_byte = text_.data();
+
+    for (auto it = view.begin(); it != view.end(); ++it) {
+        if (grapheme_count >= w) break;
+        auto g = *it;
+        if (!g) break; // invalid UTF-8 — stop here
+        end_byte = g->bytes().data() + g->bytes().size();
+        ++grapheme_count;
+    }
+
+    std::string visible(text_.data(),
+                        static_cast<std::size_t>(end_byte - text_.data()));
 
     int x = 0;
     switch (align_) {
@@ -49,10 +61,10 @@ void label::on_paint(painter & p)
         x = 0;
         break;
     case text_align::center:
-        x = (w - static_cast<int>(visible.size())) / 2;
+        x = (w - grapheme_count) / 2;
         break;
     case text_align::right:
-        x = w - static_cast<int>(visible.size());
+        x = w - grapheme_count;
         break;
     }
     if (x < 0) x = 0;

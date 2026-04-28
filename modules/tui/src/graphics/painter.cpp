@@ -1,4 +1,5 @@
 #include <nx/tui/graphics/painter.hpp>
+#include <nx/common/types/utf8.hpp>
 
 namespace nx::tui {
 
@@ -80,31 +81,22 @@ void painter::draw_text(const point_type & pos, const std::string & text) const
     const int base_x = rect_.x() + pos.x;
     const int by     = rect_.y() + pos.y;
 
-    // Clip row.
     if (by < rect_.y() || by >= rect_.y() + rect_.height()) return;
 
     const int local_row = pos.y;
+    int       col       = 0;
 
-    int         col = 0;
-    std::size_t i   = 0;
-    while (i < text.size()) {
-        const auto c = static_cast<unsigned char>(text[i]);
-        std::size_t char_len;
-        if      (c < 0x80) char_len = 1;
-        else if (c < 0xE0) char_len = 2;
-        else if (c < 0xF0) char_len = 3;
-        else               char_len = 4;
-        if (i + char_len > text.size()) char_len = text.size() - i;
-
+    for (auto it = nx::utf8::view(text).begin(),
+              end = nx::utf8::view(text).end(); it != end; ++it) {
         const int bx = base_x + col;
         if (bx >= rect_.x() + rect_.width()) break;
 
-        if (bx >= rect_.x()) {
-            _write(bx, by, pos.x + col, local_row,
-                   std::string(text.data() + i, char_len));
-        }
+        auto g = *it;
+        if (!g) break; // invalid UTF-8 — stop
 
-        i += char_len;
+        if (bx >= rect_.x())
+            _write(bx, by, pos.x + col, local_row, std::string(g->bytes()));
+
         ++col;
     }
 }
