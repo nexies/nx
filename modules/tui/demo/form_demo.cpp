@@ -168,8 +168,12 @@ int main(int argc, char * argv[])
     title_lbl->set_text("  nx::tui  Form Demo  —  Tab/Shift+Tab: focus  Escape: quit");
     title_lbl->set_style(fg(color::cyan_bright));
 
+
+    auto login_box = new widget(root);
+    login_box->set_fixed_width(40);
+
     // Name row.
-    auto * name_row  = new h_box(root);
+    auto * name_row  = new h_box(login_box);
     name_row->set_fixed_height(1);
     name_row->set_spacing(2);
     name_row->set_margin(6);
@@ -184,7 +188,7 @@ int main(int argc, char * argv[])
     // new widget(name_row);
 
     // Email row.
-    auto * email_row  = new h_box(root);
+    auto * email_row  = new h_box(login_box);
     email_row->set_fixed_height(1);
     email_row->set_spacing(2);
     email_row->set_margin(6);
@@ -199,7 +203,7 @@ int main(int argc, char * argv[])
     // new widget(email_row);
 
     // Button row.
-    auto * btn_row = new h_box(root);
+    auto * btn_row = new h_box(login_box);
     btn_row->set_fixed_height(1);
     btn_row->set_spacing(2);
     btn_row->set_margin(6);
@@ -209,13 +213,14 @@ int main(int argc, char * argv[])
     submit_btn->set_fixed_width(12);
     submit_btn->set_style(fg(color::black) | bg(color::green));
 
+    // Spacer fills remaining width.
+    new widget(btn_row);
+
     auto * clear_btn = new button(btn_row);
     clear_btn->set_text("Clear");
     clear_btn->set_fixed_width(12);
     clear_btn->set_style(fg(color::black) | bg(color::yellow));
 
-    // Spacer fills remaining width.
-    new widget(btn_row);
 
     // Separator.
     auto * sep = new separator_line(root);
