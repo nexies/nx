@@ -156,7 +156,7 @@ int main(int argc, char * argv[])
 {
     tui_application app(argc, argv);
     auto * scr = app.main_screen();
-    scr->set_style(bg(color::black));
+    scr->set_style(bg(color::rgb(5, 5, 5)));
 
     // ── Widget tree ───────────────────────────────────────────────────────────
 

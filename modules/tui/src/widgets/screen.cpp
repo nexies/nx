@@ -68,6 +68,11 @@ void screen::_render_widget(widget & w, style_option inherited, int global_x, in
         rect<int> clip(global_x, global_y, sz.width, sz.height);
         painter   p(back_, clip);
         p.apply_style(effective);
+        // Flood-fill the widget's area with the effective background before
+        // on_paint runs.  This ensures that gaps between children (spacing,
+        // margins, unstyled containers) inherit the parent's background colour
+        // instead of showing the terminal default.
+        p.fill(" ");
         w.on_paint(p);
         w._clear_dirty();
     }
