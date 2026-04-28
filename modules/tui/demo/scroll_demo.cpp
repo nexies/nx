@@ -41,6 +41,7 @@ class scroll_controller : public nx::core::object {
     scroll_area * v_sa_;
     scroll_area * td_sa_;
     screen      * scr_;
+    int           last_render_calls_ = 0;
 
 public:
     NX_OBJECT(scroll_controller)
@@ -51,16 +52,25 @@ public:
         , status_(status), v_sa_(v_sa), td_sa_(td_sa), scr_(scr)
     {}
 
-    void update_status()
+    void _refresh_status()
     {
         const std::string txt =
             "  [Vertical] row=" + std::to_string(v_sa_->scroll_y()) +
             "   [2D] col=" + std::to_string(td_sa_->scroll_x()) +
             "  row=" + std::to_string(td_sa_->scroll_y()) +
+            "   render_calls=" + std::to_string(last_render_calls_) +
+            "   total_render_calls " + std::to_string(scr_->total_render_calls()) +
             "     Tab: next  Arrows/PgUp/PgDn/Home/End: scroll  Esc: quit";
         status_->set_text(txt);
-        scr_->render();
     }
+
+    // Called from scroll signals — update text, let the app render naturally.
+    void update_status() { _refresh_status(); }
+
+    // Called after every render() — cache the count but do NOT call set_text.
+    // Calling set_text here would call update() which keeps the screen perpetually
+    // dirty, causing renders on every mouse-move event.
+    void on_rendered()   { last_render_calls_ = scr_->render_calls(); }
 };
 
 // ── main ──────────────────────────────────────────────────────────────────────
@@ -91,20 +101,21 @@ int main(int argc, char * argv[])
 
     auto * left_frame = new frame(panels_row);
     left_frame->set_border_style(border_style::rounded);
-    left_frame->set_title("Vertical — 30 items");
+    left_frame->set_title("Vertical — 120 items");
     left_frame->set_border_color(color::cyan);
 
     auto * v_sa = new scroll_area(left_frame);
+    v_sa->set_content_height(120);
 
     auto * items_box = new v_box(v_sa);
 
-    for (int i = 0; i < 30; ++i) {
+    for (int i = 0; i < 120; ++i) {
         auto * row = new label(items_box);
         row->set_fixed_height(1);
         row->set_text("  Item " + std::to_string(i + 1)
-                      + "  — use wheel or arrow keys to scroll");
+                      + "  — use wheel or arrow keys to scroll 111222333444");
 
-        const float t = static_cast<float>(i) / 29.0f;
+        const float t = static_cast<float>(i) / 119.0f;
         row->set_style(fg(color::interpolate(t,
             color::rgb(20, 200, 220), color::rgb(220, 60, 120))));
     }
@@ -113,29 +124,29 @@ int main(int argc, char * argv[])
 
     auto * right_frame = new frame(panels_row);
     right_frame->set_border_style(border_style::rounded);
-    right_frame->set_title("2D \xe2\x80\x94 120 cols \xc3\x97 40 rows");
+    right_frame->set_title("2D \xe2\x80\x94 120 cols \xc3\x97 350 rows");
     right_frame->set_border_color(color::magenta);
 
     auto * td_sa = new scroll_area(right_frame);
     td_sa->set_content_width(120);
-    td_sa->set_content_height(40);
+    td_sa->set_content_height(350);
 
     auto * td_box = new v_box(td_sa);
 
-    for (int i = 0; i < 40; ++i) {
+    for (int i = 0; i < 350; ++i) {
         auto * row = new label(td_box);
         row->set_fixed_height(1);
 
         // Build a 120-char line: "Row NN | ABCDEF..."
         const std::string prefix = "Row " + std::to_string(i + 1) + " | ";
         std::string line = prefix;
-        line.reserve(120);
-        for (int c = static_cast<int>(line.size()); c < 120; ++c)
+        line.reserve(40);
+        for (int c = static_cast<int>(line.size()); c < 40; ++c)
             line += static_cast<char>('A' + (c + i) % 26);
 
         row->set_text(line);
         row->set_style(fg(color::interpolate(
-            static_cast<float>(i) / 39.0f,
+            static_cast<float>(i) / 349.0f,
             color::rgb(100, 220, 100),
             color::rgb(220, 100, 200)
         )));
@@ -155,6 +166,8 @@ int main(int argc, char * argv[])
                       &ctrl, &scroll_controller::update_status);
     nx::core::connect(td_sa, &scroll_area::scrolled,
                       &ctrl, &scroll_controller::update_status);
+    nx::core::connect(scr,   &screen::rendered,
+                      &ctrl, &scroll_controller::on_rendered);
 
     ctrl.update_status();
     scr->set_focused_widget(v_sa);

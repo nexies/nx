@@ -26,6 +26,8 @@ class screen : public widget {
     display_buffer front_;
     widget *       focus_        = nullptr;
     bool           full_repaint_ = true; // set by resize(), cleared after first _flush_diff
+    int            render_calls_ = 0;    // _render_widget calls in the last render() pass
+    int            total_render_calls_ = 0;
 
 public:
     NX_OBJECT(screen)
@@ -43,18 +45,31 @@ public:
     void
     render();
 
+    // Number of _render_widget calls in the last render() pass.
+    [[nodiscard]] int
+    render_calls() const noexcept { return render_calls_; }
+
+    // True if any widget in the tree has called update() since the last render().
+    // Use this in the event loop to skip render() when nothing changed.
+    [[nodiscard]] bool
+    is_dirty() const noexcept { return _subtree_dirty(); }
+
+    NX_NODISCARD int
+    total_render_calls() const noexcept { return total_render_calls_; }
+
     // ── Event dispatch ────────────────────────────────────────────────────────
 
-    void
+    bool
     dispatch_key_press(key_event e);
-    void
+    bool
     dispatch_key_release(key_event e);
-    void
+    bool
     dispatch_mouse(mouse_event e);
 
     // ── Focus ─────────────────────────────────────────────────────────────────
 
     NX_SIGNAL(focused_changed)
+    NX_SIGNAL(rendered)   // emitted at the end of every render() pass
     void set_focused_widget(widget * w);
 
     NX_PROPERTY(focused_widget,
@@ -70,7 +85,7 @@ private:
     // global_x/global_y: position of w in buffer (0-based) coordinates.
     // clip: the region within which this widget may write (in buffer coords).
     void
-    _render_widget(widget & w, int global_x, int global_y, rect<int> clip);
+    _render_widget(widget & w, int global_x, int global_y, rect<int> clip, bool force = false);
 
     // Compare back_ and front_, emit ANSI for changed cells, swap buffers.
     void

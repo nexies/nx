@@ -44,30 +44,55 @@ void screen::_apply_layout()
 
 void screen::render()
 {
-    back_.clear();
+    render_calls_ = 0;
+    // Seed back_ with the previous frame so that cells belonging to widgets
+    // we skip this pass already contain the correct content.
+    back_ = front_;
     _render_widget(*this, 0, 0, rect<int>(0, 0, back_.cols(), back_.rows()));
     _flush_diff();
+    total_render_calls_ += render_calls_;
+    NX_EMIT(rendered)
 }
 
-void screen::_render_widget(widget & w, int global_x, int global_y, rect<int> clip)
+void screen::_render_widget(widget & w, int global_x, int global_y, rect<int> clip, bool force)
 {
+    ++render_calls_;
     if (!w.is_visible()) return;
 
-    w._apply_layout();
+    // Nothing in this subtree needs repainting — back_ already holds the
+    // correct content for these cells (copied from front_ at render start).
+    if (!force && !w._dirty() && !w._subtree_dirty()) return;
 
     const auto sz = w.size();
-    if (sz.width <= 0 || sz.height <= 0) return;
+    if (sz.width <= 0 || sz.height <= 0) {
+        w._clear_dirty();
+        w._clear_subtree_dirty();
+        return;
+    }
 
     rect<int> widget_rect(global_x, global_y, sz.width, sz.height);
     rect<int> eff_clip = widget_rect.intersect(clip);
-    if (eff_clip.empty()) return;
+    if (eff_clip.empty()) {
+        // Widget is outside the visible area this frame.
+        // Keep dirty flags so it gets painted when it comes back into view.
+        return;
+    }
 
-    {
+    // Re-apply layout and repaint when this widget itself is dirty, or when
+    // forced by a dirty parent (e.g. scroll_area repositioned its content).
+    // _apply_layout is only called when the widget is dirty (its own state
+    // changed); force only triggers a visual repaint without re-layout.
+    // force_children propagates the force flag one level down so that children
+    // re-render even if their own dirty bits are clear.
+    bool force_children = false;
+    if (w._dirty() || force) {
+        if (w._dirty()) w._apply_layout();
         painter p(back_, widget_rect, eff_clip);
         p.apply_style(w.get_style());
         p.fill(" ");
         w.on_paint(p);
         w._clear_dirty();
+        force_children = true;
     }
 
     // Children clip = parent's eff_clip, optionally narrowed by the widget's
@@ -80,10 +105,22 @@ void screen::_render_widget(widget & w, int global_x, int global_y, rect<int> cl
     }
 
     for (auto * child : w.child_widgets()) {
-        _render_widget(*child,
-                       global_x + child->pos().x, global_y + child->pos().y,
-                       child_clip);
+        if (!child->is_visible()) continue;
+
+        const int  cx  = global_x + child->pos().x;
+        const int  cy  = global_y + child->pos().y;
+        const auto csz = child->size();
+
+        // Spatial cull: skip children entirely outside the clip region.
+        if (csz.width > 0 && csz.height > 0) {
+            const rect<int> cr(cx, cy, csz.width, csz.height);
+            if (cr.intersect(child_clip).empty()) continue;
+        }
+
+        _render_widget(*child, cx, cy, child_clip, force_children);
     }
+
+    w._clear_subtree_dirty();
 }
 
 void screen::_flush_diff()
@@ -159,9 +196,9 @@ void screen::_flush_diff()
     terminal::print("\033[0m");
     terminal::end_frame();
 
-    // Swap buffers; clear back for the next frame.
+    // Swap buffers. back_ now holds the previous frame — it will be
+    // overwritten by back_ = front_ at the start of the next render().
     std::swap(back_, front_);
-    back_.clear();
 }
 
 // ── event dispatch ────────────────────────────────────────────────────────────
@@ -180,16 +217,16 @@ static void _collect_focusable(widget & w, std::vector<widget *> & out)
     }
 }
 
-void screen::dispatch_key_press(key_event e)
+bool screen::dispatch_key_press(key_event e)
 {
     // Run widget-level filters on the focused widget before any processing.
-    if (focus_ && focus_->_run_filters_key(e)) return;
+    if (focus_ && focus_->_run_filters_key(e)) return false;
 
     // Tab / Shift+Tab — cycle focus among tab-focusable widgets.
     if (e.code == key::tab) {
         std::vector<widget *> focusable;
         _collect_focusable(*this, focusable);
-        if (focusable.empty()) return;
+        if (focusable.empty()) return false;
 
         const bool backward = e.modifiers.has(key_modifier::shift);
         const int  n        = static_cast<int>(focusable.size());
@@ -207,56 +244,57 @@ void screen::dispatch_key_press(key_event e)
         }
 
         set_focused_widget(focusable[idx]);
-        return;
+        return true;
     }
 
     if (focus_) {
-        focus_->on_key_press(e);
+        return send_event(focus_, e);
     }
+    return false;
 }
 
-void screen::dispatch_key_release(key_event e)
+bool screen::dispatch_key_release(key_event e)
 {
     if (focus_) {
-        focus_->on_key_release(e);
+        key_event rel = e;
+        rel = key_event(e.code, e.modifiers, e.character, key_event::type_release);
+        return send_event(focus_, rel);
     }
+    return false;
 }
 
-void screen::dispatch_mouse(mouse_event e)
+bool screen::dispatch_mouse(mouse_event e)
 {
     // Mouse positions from the input reader are 1-based; buffer is 0-based.
     const int qx = e.position.x - 1;
     const int qy = e.position.y - 1;
 
     auto * target = _widget_at(*this, 0, 0, qx, qy);
-    if (!target) return;
+    if (!target) return false;
 
     // Run widget-level filters before dispatching the mouse event.
-    if (target->_run_filters_mouse(e)) return;
+    if (target->_run_filters_mouse(e)) return false;
 
     switch (e.action) {
-    case mouse_action::press:
-        if (e.button == mouse_button::wheel_up || e.button == mouse_button::wheel_down) {
-            // Bubble up until we find a widget that intercepts wheel events.
-            widget * w = target;
-            while (w) {
-                if (w->_intercepts_wheel()) { w->on_wheel(e); break; }
-                w = dynamic_cast<widget *>(w->parent());
-            }
-        } else {
-            if (target->get_focus_policy() != widget::focus_policy::no_focus) {
-                set_focused_widget(target);
-            }
-            target->on_mouse_press(e);
+    case mouse_action::wheel: {
+        // Bubble up the parent chain until we find a widget that handles wheel.
+        widget * w = target;
+        while (w) {
+            if (w->_intercepts_wheel()) { w->on_wheel(e); return true; }
+            w = dynamic_cast<widget *>(w->parent());
         }
-        break;
-    case mouse_action::release:
-        target->on_mouse_release(e);
-        break;
-    case mouse_action::move:
-        target->on_mouse_move(e);
-        break;
+        return false;
     }
+    case mouse_action::press:
+        if (target->get_focus_policy() != widget::focus_policy::no_focus)
+            set_focused_widget(target);
+        return send_event(target, e);
+    case mouse_action::release:
+        return send_event(target, e);
+    case mouse_action::move:
+        return send_event(target, e);
+    }
+    return false;
 }
 
 // ── focus ─────────────────────────────────────────────────────────────────────

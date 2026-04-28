@@ -149,13 +149,16 @@ tui_application::_on_key(key_event e)
     for (auto * f : app_filters_)
         if (f->filter_key(e)) return;
 
-    if (e.code == key::escape) {
+    if (e.code == key::printable &&
+        e.modifiers.has(key_modifier::ctrl) &&
+        e.character == U'C') {
         this->quit();
         return;
     }
     if (screen_) {
         screen_->dispatch_key_press(e);
-        screen_->render();
+        if (screen_->is_dirty())
+            screen_->render();
     }
 }
 
@@ -168,7 +171,8 @@ tui_application::_on_mouse(mouse_event e)
 
     if (screen_) {
         screen_->dispatch_mouse(e);
-        screen_->render();
+        if (screen_->is_dirty())
+            screen_->render();
     }
 }
 

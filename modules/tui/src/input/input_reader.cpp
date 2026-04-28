@@ -2,6 +2,7 @@
 
 #if defined(NX_POSIX)
 #  include <unistd.h>
+#  include <sys/select.h>
 #elif defined(NX_OS_WINDOWS)
 #  define WIN32_LEAN_AND_MEAN
 #  ifndef NOMINMAX
@@ -214,8 +215,23 @@ void input_reader::_on_readable()
         for (int i = 0; i < n; ++i)
             if (auto e = parser_.feed(buf[i]))
                 _emit_event(*e);
-        if (auto e = parser_.flush())
-            _emit_event(*e);
+
+        // Only flush a pending lone ESC if no more bytes are immediately
+        // available in the OS buffer.  When rapid events (e.g. mouse wheel)
+        // arrive, an escape sequence can be split across two consecutive
+        // read() calls — the first batch ends with the bare \x1b that opens
+        // the next sequence.  Calling flush() in that case would incorrectly
+        // emit a key::escape event.  select() with a zero timeout tells us
+        // whether more bytes are already waiting; if so, _arm() will fire
+        // _on_readable() again immediately and process them in context.
+        fd_set fds;
+        FD_ZERO(&fds);
+        FD_SET(STDIN_FILENO, &fds);
+        ::timeval tv = {0, 0};
+        if (::select(STDIN_FILENO + 1, &fds, nullptr, nullptr, &tv) == 0) {
+            if (auto e = parser_.flush())
+                _emit_event(*e);
+        }
     }
 
     if (n >= 0)

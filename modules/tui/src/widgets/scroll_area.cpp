@@ -67,8 +67,11 @@ void scroll_area::scroll_to(int x, int y)
 {
     const int max_x = std::max(0, _effective_content_w() - _viewport_w());
     const int max_y = std::max(0, _effective_content_h() - _viewport_h());
-    scroll_x_ = std::clamp(x, 0, max_x);
-    scroll_y_ = std::clamp(y, 0, max_y);
+    const int new_x = std::clamp(x, 0, max_x);
+    const int new_y = std::clamp(y, 0, max_y);
+    if (new_x == scroll_x_ && new_y == scroll_y_) return;
+    scroll_x_ = new_x;
+    scroll_y_ = new_y;
     update();
     NX_EMIT(scrolled)
 }
@@ -193,6 +196,7 @@ void scroll_area::on_paint(painter & p)
 
 void scroll_area::on_wheel(mouse_event & e)
 {
+    e.accept();
     const int delta = (e.button == mouse_button::wheel_up) ? -3 : 3;
     scroll_by(0, delta);
 }

@@ -286,7 +286,7 @@ std::optional<input_event> escape_parser::_decode_mouse_sgr(char final_byte)
     if (pb & 0x40) {
         // Wheel
         ev.button = (pb & 0x01) ? mouse_button::wheel_down : mouse_button::wheel_up;
-        ev.action = mouse_action::press;
+        ev.action = mouse_action::wheel;
     } else {
         switch (pb & 0x03) {
         case 0:  ev.button = mouse_button::left;   break;

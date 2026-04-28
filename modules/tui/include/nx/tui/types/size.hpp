@@ -19,6 +19,14 @@ namespace nx::tui {
 
         value_type height {};
         value_type width  {};
+
+        [[nodiscard]] constexpr bool
+        operator==(const size & o) const noexcept
+        { return height == o.height && width == o.width; }
+
+        [[nodiscard]] constexpr bool
+        operator!=(const size & o) const noexcept
+        { return !(*this == o); }
     };
 
     template<typename T = int>

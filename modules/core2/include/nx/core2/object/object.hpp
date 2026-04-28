@@ -20,6 +20,7 @@
 #include <nx/core2/object/connection.hpp>
 #include <nx/core2/object/connection_info.hpp>
 #include <nx/core2/object/meta_object.hpp>
+#include <nx/core2/event/event.hpp>
 
 
 #include <string>
@@ -106,6 +107,16 @@ public:
     // Valid only during a slot call; null otherwise.
     NX_NODISCARD object *
     sender() const noexcept;
+
+    // ── Event dispatch ────────────────────────────────────────────────────────
+    //
+    // Lightweight, synchronous, virtual event delivery — no signal overhead.
+    // Override on_event() in subclasses to handle specific event types.
+    // send_event() is a static helper that calls target->on_event(e).
+
+    virtual bool on_event(event & e);
+
+    static bool send_event(object * target, event & e);
 
     // ── Built-in properties / signals ─────────────────────────────────────────
 

@@ -46,7 +46,8 @@ private:
     size_type                hint_         {};   // explicit size hint (0 = unset)
     bool                     visible_      = true;
     bool                     enabled_      = true;
-    bool                     dirty_        = true;
+    bool                     dirty_        = true;  // this widget's own content needs repaint
+    bool                     subtree_dirty_= true;  // this widget or any descendant needs repaint
     bool                     focused_      = false;
     focus_policy             focus_policy_ = focus_policy::no_focus;
     style_option             style_        {};
@@ -162,11 +163,20 @@ public:
     // ── Repaint ───────────────────────────────────────────────────────────────
 
     // Mark this widget as needing a repaint on the next render pass.
-    void update() noexcept { dirty_ = true; }
+    // Propagates subtree_dirty_ up the parent chain so screen knows rendering
+    // is needed without traversing the whole tree.
+    void update() noexcept;
 
     // ── Signals ───────────────────────────────────────────────────────────────
 
     NX_SIGNAL(geometry_changed)
+
+    // ── Event dispatch (nx::core::event virtual path) ─────────────────────────
+    //
+    // on_event dispatches to the on_key_press / on_mouse_press / etc. virtuals.
+    // Prefer using send_event(widget*, event&) over calling on_event directly.
+
+    bool on_event(nx::core::event & e) override;
 
 protected:
     // ── Explicit hint (read by subclass size_hint() overrides) ────────────────
@@ -201,6 +211,12 @@ private:
 
     void
     _clear_dirty() noexcept { dirty_ = false; }
+
+    NX_NODISCARD bool
+    _subtree_dirty() const noexcept { return subtree_dirty_; }
+
+    void
+    _clear_subtree_dirty() noexcept { subtree_dirty_ = false; }
 
     // Returns true if any filter consumed the event.
     bool _run_filters_key  (key_event   & e);

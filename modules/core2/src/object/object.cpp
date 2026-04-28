@@ -229,4 +229,19 @@ post_to_thread(thread * t, std::function<void()> task)
 
 } // namespace detail
 
+// ── event dispatch ────────────────────────────────────────────────────────────
+
+bool
+object::on_event(event &)
+{
+    return false;
+}
+
+bool
+object::send_event(object * target, event & e)
+{
+    if (!target) return false;
+    return target->on_event(e);
+}
+
 } // namespace nx::core

@@ -11,14 +11,15 @@ widget::widget(object * parent)
 
 void widget::set_geometry(const rect<int> & r)
 {
+    if (geometry_ == r) return;
+
     const auto old_size = geometry_.size();
     geometry_ = r;
-    dirty_ = true;
+    update();   // marks dirty_ + propagates subtree_dirty_ up
     const auto new_size = r.size();
     if (old_size.height != new_size.height || old_size.width != new_size.width) {
         on_resize(old_size, new_size);
     }
-    NX_EMIT(geometry_changed)
 }
 
 std::vector<widget *> widget::child_widgets() const
@@ -49,6 +50,22 @@ widget::size_type widget::minimum_size() const
     };
 }
 
+void widget::update() noexcept
+{
+    dirty_ = true;
+    // Walk up the parent chain marking subtree_dirty_ = true.
+    // Stop as soon as we hit an ancestor that's already marked — it means
+    // all further ancestors were already marked by a prior update() call.
+    object * p = this;
+    while (p) {
+        widget * w = dynamic_cast<widget *>(p);
+        if (!w) break;
+        if (w->subtree_dirty_) break;
+        w->subtree_dirty_ = true;
+        p = p->parent();
+    }
+}
+
 void widget::_apply_layout()               {}
 void widget::on_paint(painter &)           {}
 void widget::on_key_press(key_event &)     {}
@@ -60,6 +77,30 @@ void widget::on_wheel(mouse_event &)       {}
 void widget::on_resize(size_type, size_type) {}
 void widget::on_focus_in()  { focused_ = true;  update(); }
 void widget::on_focus_out() { focused_ = false; update(); }
+
+bool widget::on_event(nx::core::event & e)
+{
+    switch (e.type()) {
+    case key_event::type_press:
+        on_key_press(static_cast<key_event &>(e));
+        return e.is_accepted();
+    case key_event::type_release:
+        on_key_release(static_cast<key_event &>(e));
+        return e.is_accepted();
+    case mouse_event::TYPE: {
+        auto & me = static_cast<mouse_event &>(e);
+        switch (me.action) {
+        case mouse_action::press:   on_mouse_press(me);   break;
+        case mouse_action::release: on_mouse_release(me); break;
+        case mouse_action::move:    on_mouse_move(me);    break;
+        case mouse_action::wheel:   on_wheel(me);    break;
+        }
+        return e.is_accepted();
+    }
+    default:
+        return false;
+    }
+}
 
 // ── event filters ─────────────────────────────────────────────────────────────
 

@@ -36,7 +36,7 @@ class input_reader : public nx::core::object
 public:
     NX_OBJECT(input_reader)
 
-    explicit input_reader(nx::core::object * parent = nullptr);
+    explicit input_reader(nx::core::object * parent  = nullptr);
     ~input_reader() override;
 
     void start();

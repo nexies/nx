@@ -61,6 +61,14 @@ namespace nx::tui {
         // ── Queries ───────────────────────────────────────────────────────────
 
         [[nodiscard]] constexpr bool
+        operator==(const rect & o) const noexcept
+        { return pos_ == o.pos_ && size_ == o.size_; }
+
+        [[nodiscard]] constexpr bool
+        operator!=(const rect & o) const noexcept
+        { return !(*this == o); }
+
+        [[nodiscard]] constexpr bool
         contains(value_type px, value_type py) const noexcept
         {
             return px >= pos_.x && px <= pos_.x + size_.width

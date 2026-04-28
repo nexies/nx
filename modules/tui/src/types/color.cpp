@@ -15,7 +15,7 @@ namespace
 #if defined(NX_OS_WINDOWS)
         return static_cast<float>(std::pow(base, exp));
 #else
-        return pow_f(base, exp);
+        return powf(base, exp);
 #endif
     }
 
