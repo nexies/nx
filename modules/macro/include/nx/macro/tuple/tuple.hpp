@@ -18,9 +18,9 @@
 
 # define _nx_tuple(...) (__VA_ARGS__)
 
-# define _nx_tuple_unpack(t) _nx_expand t
+# define _nx_tuple_unpack(t) _nx_prescan(_nx_expand t)
 
-# define _nx_tuple_size(t) _nx_args_count t
+# define _nx_tuple_size(t)   _nx_prescan(_nx_args_count t)
 
 # define _nx_tuple_not_empty(t) _nx_bool(_nx_tuple_size(t))
 

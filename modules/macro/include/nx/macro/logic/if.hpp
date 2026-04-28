@@ -13,8 +13,11 @@
 #define _nx_logic_if_(c) \
     _nx_concat_2(_nx_logic_if_, c)
 
+#define _nx_logic_if__(...) \
+    _nx_logic_if_(__VA_ARGS__)
+
 #define _nx_logic_if(...) \
-    _nx_logic_if_(_nx_expand(__VA_ARGS__))
+    _nx_logic_if__(__VA_ARGS__)
 
 ///
 /// @param c

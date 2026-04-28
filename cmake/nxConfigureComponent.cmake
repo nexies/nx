@@ -63,6 +63,15 @@ function(nx_configure_component _target)
             $<INSTALL_INTERFACE:${NX_INSTALL_INCLUDEDIR}>
     )
 
+    # MSVC's traditional preprocessor doesn't conform to C99 variadic macro
+    # rules — __VA_ARGS__ is treated as a single token when forwarded to
+    # another macro.  /Zc:preprocessor enables the standard-conforming
+    # preprocessor (available since VS 2019 16.6) which is required for the
+    # nx macro system (_nx_tuple_unpack, _nx_args_count, etc.).
+    if(MSVC)
+        target_compile_options("${_target}" PUBLIC /Zc:preprocessor)
+    endif()
+
     if(_pub_inc AND CMAKE_VERSION VERSION_GREATER_EQUAL "3.23")
         target_sources("${_target}"
                 PUBLIC

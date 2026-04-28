@@ -358,7 +358,8 @@
         (0, ())             \
     )
 
-# define _nxpv2_bare_exists_arg(count, val) count
+# define _nxpv2_bare_exists_arg_1(...) _nxpv2_bare_exists_arg(__VA_ARGS__)
+# define _nxpv2_bare_exists_arg(count, ...) count
 # define _nxpv2_bare_value_tup_arg(count, val) val
 
 # define _nxpv2_tokenize(arg) \
@@ -398,7 +399,7 @@
     _nx_tuple_get(_nxpv2_##name, args)
 
 # define _nxpv2_exists_arg(args, name) \
-    _nxpv2_bare_exists_arg _nxpv2_get_arg(args, name)
+    _nxpv2_bare_exists_arg_1( _nx_tuple_unpack(_nxpv2_get_arg(args, name)) )
 
 # define _nxpv2_get_value_tup(args, name) \
     _nxpv2_bare_value_tup_arg _nxpv2_get_arg(args, name)
@@ -409,7 +410,7 @@
 # define _nxpv2_get_value(args, name)                                    \
     _nx_logic_if(_nxpv2_has_value(args, name))(                          \
         _nx_apply(_nx_tuple_get, 0, _nxpv2_get_value_tup(args, name)),   \
-        _nx_expand( )                                                    \
+        _nx_empty()                                                      \
     )
 
 // # define _tmp_nxpv2_args \
@@ -675,14 +676,14 @@
 // = _nxpv2_member_type(field) (the MEMBER case).  The correct instantiation
 // is pinned by the static_cast in _nxpv2_meta_setter below, which lives
 // inside the registrar constructor — a complete-class context.
-# define _nxpv2_gen_setter_body(prop_name, type_expr, field_ref, args)      \
+# define _nxpv2_gen_setter_body(prop_name, type_expr, field_ref, args)       \
     template <typename _nxpv2_setter_val_>                                   \
     void _nxpv2_add_prefix(_nxpv2_default_write_prefix, prop_name)(          \
         const _nxpv2_setter_val_ & _value)                                   \
     {                                                                        \
         field_ref = _value;                                                  \
-        _nx_logic_if(_nxpv2_exists_arg(args, NOTIFY))(                      \
-            NX_EMIT(_nxpv2_get_notify(prop_name, args));,                   \
+        _nx_logic_if(_nxpv2_exists_arg(args, NOTIFY))(                       \
+            NX_EMIT(_nxpv2_get_notify(prop_name, args)),                     \
             _nx_empty()                                                      \
         )                                                                    \
     }

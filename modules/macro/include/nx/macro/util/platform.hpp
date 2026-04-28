@@ -12,6 +12,16 @@
 
 #define _nx_expand_args(...) ( __VA_ARGS__ )
 
+// Identity macro used as an extra indirection layer for MSVC/MinGW.
+// When a function-like macro M and a parenthesised argument list (a,b,c)
+// arrive as separate tokens after argument substitution, MSVC does not
+// re-scan "M (a,b,c)" as a call.  Wrapping in _nx_prescan forces the
+// inner expression to be evaluated in argument-prescan context, where
+// all preprocessors do recognise function-like macro calls.
+//
+// Usage:  _nx_prescan(SOME_MACRO t)   where t = (a,b,c)
+#define _nx_prescan(x) x
+
 #define NX_EVAL(x) x
 
 #define _nx_concat_1(x) x
