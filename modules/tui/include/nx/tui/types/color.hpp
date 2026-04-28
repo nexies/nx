@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <string>
+#include <ostream>
 
 namespace nx::tui {
 
@@ -64,11 +65,11 @@ namespace nx::tui {
         [[nodiscard]] std::string to_ansi(bool background = false) const;
 
         // ── Comparison ────────────────────────────────────────────────────────
-        [[nodiscard]] constexpr bool
+        [[nodiscard]] bool
         operator==(const color & o) const noexcept
         { return r() == o.r() && g() == o.g() && b() == o.b(); }
 
-        [[nodiscard]] constexpr bool
+        [[nodiscard]] bool
         operator!=(const color & o) const noexcept
         { return !(*this == o); }
 

@@ -91,7 +91,7 @@ int main(int argc, char * argv[])
 {
     tui_application app(argc, argv);
     auto * scr = app.main_screen();
-    scr->set_style(bg(color::black) | fg(color::white));
+    scr->set_style(h_gradient_bg(color::black, color::rgb(100, 30, 50)));
 
     // ── Widget tree ───────────────────────────────────────────────────────────
 
@@ -101,8 +101,7 @@ int main(int argc, char * argv[])
     // Title.
     auto * title_lbl = new label(root);
     title_lbl->set_text("  nx::tui  Frame Demo  —  Tab: focus  Escape: quit");
-    title_lbl->set_style(h_gradient_bg(color::cyan_bright, color::black)
-                       | h_gradient_fg(color::black,       color::white));
+    title_lbl->set_style(h_gradient_fg(color::black,       color::white));
 
     // Border style showcase row.
     auto * styles_row = new h_box(root);

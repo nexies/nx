@@ -208,7 +208,7 @@ std::string color::name() const
 const color color::default_color   { color_type::palette1,  0  };
 const color color::black           {
     terminal::get_color_support() == color_type::true_color ?
-    rgb(0, 0, 0) : color(color_type::palette16, 0)  };
+    rgb(1, 1, 1) : color(color_type::palette16, 0)  };
 const color color::red             { color_type::palette16, 1  };
 const color color::green           { color_type::palette16, 2  };
 const color color::yellow          { color_type::palette16, 3  };

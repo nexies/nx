@@ -64,32 +64,50 @@ input_reader::~input_reader()
 
 void input_reader::start()
 {
-    if (!notifier_) {
 #if defined(NX_OS_WINDOWS)
-        auto stdin_handle = static_cast<nx::asio::native_handle_t>(
-            GetStdHandle(STD_INPUT_HANDLE));
+    if (reader_thread_.joinable())
+        return; // already running
+
+    stop_event_ = CreateEventW(nullptr, /*manualReset=*/TRUE, /*initial=*/FALSE, nullptr);
+
+    nx::asio::io_context * ctx = &nx::core::thread::current_context();
+    reader_thread_ = std::thread([this, ctx] { _reader_thread(ctx); });
 #else
-        auto stdin_handle = static_cast<nx::asio::native_handle_t>(STDIN_FILENO);
-#endif
+    if (!notifier_) {
         notifier_ = std::make_unique<nx::asio::handle_notifier>(
             nx::core::thread::current_context(),
-            stdin_handle,
+            static_cast<nx::asio::native_handle_t>(STDIN_FILENO),
             nx::asio::io_interest::read);
     }
     _arm();
+#endif
 }
 
 void input_reader::stop()
 {
+#if defined(NX_OS_WINDOWS)
+    if (stop_event_) {
+        SetEvent(static_cast<HANDLE>(stop_event_));
+    }
+    if (reader_thread_.joinable()) {
+        reader_thread_.join();
+    }
+    if (stop_event_) {
+        CloseHandle(static_cast<HANDLE>(stop_event_));
+        stop_event_ = nullptr;
+    }
+#else
     if (notifier_) {
         notifier_->cancel();
         notifier_.reset();
     }
+#endif
     (void)parser_.flush(); // discard any incomplete sequence
 }
 
 void input_reader::_arm()
 {
+#if !defined(NX_OS_WINDOWS)
     if (!notifier_)
         return;
 
@@ -98,7 +116,31 @@ void input_reader::_arm()
         if (ev != nx::asio::io_event::none)
             _on_readable();
     });
+#endif
 }
+
+#if defined(NX_OS_WINDOWS)
+void input_reader::_reader_thread(nx::asio::io_context * ctx)
+{
+    HANDLE hIn   = GetStdHandle(STD_INPUT_HANDLE);
+    HANDLE hStop = static_cast<HANDLE>(stop_event_);
+    HANDLE handles[2] = { hIn, hStop };
+
+    for (;;) {
+        DWORD result = WaitForMultipleObjects(2, handles, /*waitAll=*/FALSE, INFINITE);
+
+        if (result == WAIT_OBJECT_0 + 1 || result == WAIT_FAILED)
+            break; // stop event or error
+
+        // Console input is ready — post _on_readable to the io_context thread.
+        ctx->post([this] { _on_readable(); });
+
+        // Throttle: wait until the main thread has processed before re-checking,
+        // so we don't flood the queue. A simple sleep is sufficient here.
+        Sleep(1);
+    }
+}
+#endif
 
 void input_reader::_on_readable()
 {
@@ -106,18 +148,14 @@ void input_reader::_on_readable()
     HANDLE hIn = GetStdHandle(STD_INPUT_HANDLE);
 
     DWORD count = 0;
-    if (!GetNumberOfConsoleInputEvents(hIn, &count) || count == 0) {
-        _arm();
+    if (!GetNumberOfConsoleInputEvents(hIn, &count) || count == 0)
         return;
-    }
 
     // Stack-allocate a reasonable batch; loop if the buffer has more.
     INPUT_RECORD records[64];
     DWORD        read_count = 0;
-    if (!ReadConsoleInputW(hIn, records, 64, &read_count)) {
-        _arm();
+    if (!ReadConsoleInputW(hIn, records, 64, &read_count))
         return;
-    }
 
     for (DWORD i = 0; i < read_count; ++i) {
         const INPUT_RECORD & rec = records[i];
@@ -166,8 +204,6 @@ void input_reader::_on_readable()
     // Flush a pending lone ESC after draining the batch.
     if (auto e = parser_.flush())
         _emit_event(*e);
-
-    _arm();
 
 #else
     uint8_t buf[64];

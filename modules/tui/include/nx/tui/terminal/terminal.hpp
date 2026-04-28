@@ -9,6 +9,7 @@
 #include <nx/tui/types/point.hpp>
 
 #include <cstdio>
+#include <string>
 
 namespace nx::tui {
 
@@ -19,7 +20,9 @@ namespace nx::tui {
 
 class terminal
 {
-    inline static FILE * ostream_ = stderr;
+    inline static FILE *      ostream_       = stderr;
+    inline static std::string s_frame_buf_;
+    inline static bool        s_frame_active_ = false;
 
 public:
     enum class mode {
@@ -39,16 +42,52 @@ public:
         graph_256color_320x200,
     };
 
+    // ── Frame buffering ───────────────────────────────────────────────────────
+    // Accumulate all terminal output in memory and flush it in a single write,
+    // eliminating visible line-by-line rendering on Windows console.
+    static void begin_frame();
+    static void end_frame();
+
     // ── Output ────────────────────────────────────────────────────────────────
 
+    // Compile-time format string (type-safe, zero-overhead when not buffering).
     template<typename... Args>
     static void print(fmt::format_string<Args...> fmt_str, Args &&... args)
     {
-        fmt::print(ostream_, fmt_str, std::forward<Args>(args)...);
+        if (s_frame_active_)
+            fmt::vformat_to(std::back_inserter(s_frame_buf_), fmt_str,
+                            fmt::make_format_args(args...));
+        else
+            fmt::print(ostream_, fmt_str, std::forward<Args>(args)...);
     }
 
-    static void print(std::string_view text)  { fmt::print(ostream_, "{}", text); }
-    static void print(char ch)                { fmt::print(ostream_, "{}", ch);   }
+    // Runtime format string (used by terminal.cpp for string_view ANSI constants
+    // that carry format placeholders, e.g. cursor_pos "\x1b[{};{}H").
+    template<typename... Args>
+    static void print(fmt::string_view fmt_str, Args &&... args)
+    {
+        if (s_frame_active_)
+            fmt::vformat_to(std::back_inserter(s_frame_buf_), fmt_str,
+                            fmt::make_format_args(args...));
+        else
+            fmt::vprint(ostream_, fmt_str, fmt::make_format_args(args...));
+    }
+
+    static void print(std::string_view text)
+    {
+        if (s_frame_active_)
+            s_frame_buf_.append(text.data(), text.size());
+        else
+            fmt::print(ostream_, "{}", text);
+    }
+
+    static void print(char ch)
+    {
+        if (s_frame_active_)
+            s_frame_buf_.push_back(ch);
+        else
+            fmt::print(ostream_, "{}", ch);
+    }
 
     static void        set_output(FILE * stream);
     [[nodiscard]] static FILE * get_output_stream();

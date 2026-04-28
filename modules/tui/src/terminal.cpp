@@ -28,7 +28,7 @@ namespace
 {
     window_size fallback_size ()
     {
-
+        return window_size{{10, 10}, {100, 100}};
     }
 }
 
@@ -66,6 +66,8 @@ namespace {
     {
 #if defined(__EMSCRIPTEN__)
         return color_type::true_color;
+#elif defined (NX_OS_WINDOWS)
+        return color_type::true_color;
 #endif
         const char * p;
         std::string COLORTERM = (p = std::getenv("COLORTERM")) ? p : "";  // NOLINT
@@ -98,17 +100,34 @@ void terminal::set_color_support(color_type type)
 void terminal::set_output(FILE * stream) { ostream_ = stream; }
 FILE * terminal::get_output_stream()     { return ostream_; }
 
+// ── Frame buffering ───────────────────────────────────────────────────────────
+
+void terminal::begin_frame()
+{
+    s_frame_buf_.clear();
+    s_frame_active_ = true;
+}
+
+void terminal::end_frame()
+{
+    s_frame_active_ = false;
+    if (!s_frame_buf_.empty()) {
+        std::fwrite(s_frame_buf_.data(), 1, s_frame_buf_.size(), ostream_);
+        std::fflush(ostream_);
+    }
+}
+
 // ── Cursor movement ───────────────────────────────────────────────────────────
 
-void terminal::move_cursor_home()                { fmt::print(ostream_, ansi::g_cursor_home_cmd); }
-void terminal::move_cursor(int row, int col)     { fmt::print(ostream_, ansi::g_cursor_pos_cmd, row, col); }
-void terminal::move_cursor_up(int rows)          { fmt::print(ostream_, ansi::g_cursor_up_cmd, rows); }
-void terminal::move_cursor_down(int rows)        { fmt::print(ostream_, ansi::g_cursor_down_cmd, rows); }
-void terminal::move_cursor_right(int cols)       { fmt::print(ostream_, ansi::g_cursor_right_cmd, cols); }
-void terminal::move_cursor_left(int cols)        { fmt::print(ostream_, ansi::g_cursor_left_cmd, cols); }
-void terminal::move_cursor_next_line_begin(int n){ fmt::print(ostream_, ansi::g_cursor_next_begin_cmd, n); }
-void terminal::move_cursor_prev_line_begin(int n){ fmt::print(ostream_, ansi::g_cursor_prev_begin_cmd, n); }
-void terminal::move_cursor_to_column(int col)   { fmt::print(ostream_, ansi::g_cursor_to_column_cmd, col); }
+void terminal::move_cursor_home()                { print(ansi::g_cursor_home_cmd); }
+void terminal::move_cursor(int row, int col)     { print(ansi::g_cursor_pos_cmd, row, col); }
+void terminal::move_cursor_up(int rows)          { print(ansi::g_cursor_up_cmd, rows); }
+void terminal::move_cursor_down(int rows)        { print(ansi::g_cursor_down_cmd, rows); }
+void terminal::move_cursor_right(int cols)       { print(ansi::g_cursor_right_cmd, cols); }
+void terminal::move_cursor_left(int cols)        { print(ansi::g_cursor_left_cmd, cols); }
+void terminal::move_cursor_next_line_begin(int n){ print(ansi::g_cursor_next_begin_cmd, n); }
+void terminal::move_cursor_prev_line_begin(int n){ print(ansi::g_cursor_prev_begin_cmd, n); }
+void terminal::move_cursor_to_column(int col)   { print(ansi::g_cursor_to_column_cmd, col); }
 
 point<int> terminal::get_cursor_pos()
 {
@@ -118,32 +137,32 @@ point<int> terminal::get_cursor_pos()
     return { x, y };
 }
 
-void terminal::scroll_up()     { fmt::print(ostream_, ansi::g_scroll_up_cmd); }
-void terminal::save_cursor()   { fmt::print(ostream_, ansi::g_save_cursor_cmd); }
-void terminal::restore_cursor(){ fmt::print(ostream_, ansi::g_restore_cursor_cmd); }
+void terminal::scroll_up()     { print(ansi::g_scroll_up_cmd); }
+void terminal::save_cursor()   { print(ansi::g_save_cursor_cmd); }
+void terminal::restore_cursor(){ print(ansi::g_restore_cursor_cmd); }
 
 // ── Erase ─────────────────────────────────────────────────────────────────────
 
-void terminal::erase_in_display()    { fmt::print(ostream_, ansi::g_erase_in_display_cmd); }
-void terminal::erase_to_screen_end() { fmt::print(ostream_, ansi::g_erase_to_screen_end_cmd); }
-void terminal::erase_to_screen_begin(){ fmt::print(ostream_, ansi::g_erase_to_screen_begin_cmd); }
-void terminal::erase_screen()        { fmt::print(ostream_, ansi::g_erase_screen_cmd); }
-void terminal::erase_saved_lines()   { fmt::print(ostream_, ansi::g_erase_saved_lines_cmd); }
-void terminal::erase_in_line()       { fmt::print(ostream_, ansi::g_erase_in_line_cmd); }
-void terminal::erase_to_line_end()   { fmt::print(ostream_, ansi::g_erase_to_line_end_cmd); }
-void terminal::erase_to_line_begin() { fmt::print(ostream_, ansi::g_erase_to_line_start_cmd); }
-void terminal::erase_line()          { fmt::print(ostream_, ansi::g_erase_line_cmd); }
+void terminal::erase_in_display()    { print(ansi::g_erase_in_display_cmd); }
+void terminal::erase_to_screen_end() { print(ansi::g_erase_to_screen_end_cmd); }
+void terminal::erase_to_screen_begin(){ print(ansi::g_erase_to_screen_begin_cmd); }
+void terminal::erase_screen()        { print(ansi::g_erase_screen_cmd); }
+void terminal::erase_saved_lines()   { print(ansi::g_erase_saved_lines_cmd); }
+void terminal::erase_in_line()       { print(ansi::g_erase_in_line_cmd); }
+void terminal::erase_to_line_end()   { print(ansi::g_erase_to_line_end_cmd); }
+void terminal::erase_to_line_begin() { print(ansi::g_erase_to_line_start_cmd); }
+void terminal::erase_line()          { print(ansi::g_erase_line_cmd); }
 
 // ── Text style ────────────────────────────────────────────────────────────────
 
-void terminal::enable_dim(bool e)          { fmt::print(ostream_, e ? ansi::g_set_dim_cmd          : ansi::g_reset_dim_cmd); }
-void terminal::enable_italic(bool e)       { fmt::print(ostream_, e ? ansi::g_set_italic_cmd       : ansi::g_reset_italic_cmd); }
-void terminal::enable_underline(bool e)    { fmt::print(ostream_, e ? ansi::g_set_underline_cmd    : ansi::g_reset_underline_cmd); }
-void terminal::enable_blinking(bool e)     { fmt::print(ostream_, e ? ansi::g_set_blinking_cmd     : ansi::g_reset_blinking_cmd); }
-void terminal::enable_inverse(bool e)      { fmt::print(ostream_, e ? ansi::g_set_inverse_cmd      : ansi::g_reset_inverse_cmd); }
-void terminal::enable_hidden(bool e)       { fmt::print(ostream_, e ? ansi::g_set_hidden_cmd       : ansi::g_reset_hidden_cmd); }
-void terminal::enable_line_wrap(bool e)    { fmt::print(ostream_, e ? ansi::g_set_screen_mode_line_wrap_cmd : ansi::g_reset_screen_mode_line_wrap_cmd); }
-void terminal::enable_strike_through(bool e){ fmt::print(ostream_, e ? ansi::g_set_strike_through_cmd : ansi::g_reset_strike_through_cmd); }
+void terminal::enable_dim(bool e)          { print(e ? ansi::g_set_dim_cmd          : ansi::g_reset_dim_cmd); }
+void terminal::enable_italic(bool e)       { print(e ? ansi::g_set_italic_cmd       : ansi::g_reset_italic_cmd); }
+void terminal::enable_underline(bool e)    { print(e ? ansi::g_set_underline_cmd    : ansi::g_reset_underline_cmd); }
+void terminal::enable_blinking(bool e)     { print(e ? ansi::g_set_blinking_cmd     : ansi::g_reset_blinking_cmd); }
+void terminal::enable_inverse(bool e)      { print(e ? ansi::g_set_inverse_cmd      : ansi::g_reset_inverse_cmd); }
+void terminal::enable_hidden(bool e)       { print(e ? ansi::g_set_hidden_cmd       : ansi::g_reset_hidden_cmd); }
+void terminal::enable_line_wrap(bool e)    { print(e ? ansi::g_set_screen_mode_line_wrap_cmd : ansi::g_reset_screen_mode_line_wrap_cmd); }
+void terminal::enable_strike_through(bool e){ print(e ? ansi::g_set_strike_through_cmd : ansi::g_reset_strike_through_cmd); }
 
 void terminal::set_pixel_style(pixel_style style)
 {
@@ -178,15 +197,15 @@ void terminal::set_background_color(color c) { print(c.to_ansi(true)); }
 
 void terminal::set_cursor_visible(bool visible)
 {
-    fmt::print(ostream_, visible ? ansi::g_set_cursor_visible_cmd : ansi::g_set_cursor_invisible_cmd);
+    print(visible ? ansi::g_set_cursor_visible_cmd : ansi::g_set_cursor_invisible_cmd);
 }
 
 // ── Screen / buffer ───────────────────────────────────────────────────────────
 
-void terminal::save_screen()      { fmt::print(ostream_, ansi::g_save_screen_cmd); }
-void terminal::restore_screen()   { fmt::print(ostream_, ansi::g_restore_screen_cmd); }
-void terminal::enable_alt_buffer() { fmt::print(ostream_, ansi::g_enable_alt_buffer_cmd); }
-void terminal::disable_alt_buffer(){ fmt::print(ostream_, ansi::g_disable_alt_buffer_cmd); }
+void terminal::save_screen()      { print(ansi::g_save_screen_cmd); }
+void terminal::restore_screen()   { print(ansi::g_restore_screen_cmd); }
+void terminal::enable_alt_buffer() { print(ansi::g_enable_alt_buffer_cmd); }
+void terminal::disable_alt_buffer(){ print(ansi::g_disable_alt_buffer_cmd); }
 
 void terminal::set_screen_mode(mode /*m*/)   { /* TODO */ }
 void terminal::reset_screen_mode(mode /*m*/) { /* TODO */ }
@@ -198,7 +217,10 @@ namespace {
 #if defined(NX_POSIX)
     termios g_saved_termios {};
 #elif defined(NX_OS_WINDOWS)
-    DWORD g_saved_console_mode = 0;
+    DWORD g_saved_input_mode   = 0;
+    DWORD g_saved_stdout_mode  = 0;
+    DWORD g_saved_stderr_mode  = 0;
+    UINT  g_saved_output_cp    = 0;
 #endif
 } // anonymous namespace
 
@@ -221,12 +243,28 @@ void terminal::enable_raw_mode()
     HANDLE hIn = GetStdHandle(STD_INPUT_HANDLE);
     if (hIn == INVALID_HANDLE_VALUE)
         return;
-    if (!GetConsoleMode(hIn, &g_saved_console_mode))
+    if (!GetConsoleMode(hIn, &g_saved_input_mode))
         return;
-    DWORD raw = (g_saved_console_mode
+    DWORD raw_in = (g_saved_input_mode
         & ~(ENABLE_ECHO_INPUT | ENABLE_LINE_INPUT | ENABLE_PROCESSED_INPUT))
         | ENABLE_VIRTUAL_TERMINAL_INPUT;
-    SetConsoleMode(hIn, raw);
+    SetConsoleMode(hIn, raw_in);
+
+    // Enable VT escape-sequence processing on both stdout and stderr so ANSI
+    // codes are interpreted on whichever handle ostream_ points to.
+    HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    if (hOut != INVALID_HANDLE_VALUE && GetConsoleMode(hOut, &g_saved_stdout_mode))
+        SetConsoleMode(hOut, g_saved_stdout_mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
+
+    HANDLE hErr = GetStdHandle(STD_ERROR_HANDLE);
+    if (hErr != INVALID_HANDLE_VALUE && GetConsoleMode(hErr, &g_saved_stderr_mode))
+        SetConsoleMode(hErr, g_saved_stderr_mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
+
+    // Switch the console output codepage to UTF-8 so that multi-byte sequences
+    // (box-drawing, CJK, emoji) are rendered as single glyphs rather than as
+    // individual bytes interpreted by the legacy codepage.
+    g_saved_output_cp = GetConsoleOutputCP();
+    SetConsoleOutputCP(CP_UTF8);
 #endif
 
     g_raw_mode_active = true;
@@ -242,7 +280,15 @@ void terminal::disable_raw_mode()
 #elif defined(NX_OS_WINDOWS)
     HANDLE hIn = GetStdHandle(STD_INPUT_HANDLE);
     if (hIn != INVALID_HANDLE_VALUE)
-        SetConsoleMode(hIn, g_saved_console_mode);
+        SetConsoleMode(hIn, g_saved_input_mode);
+    HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    if (hOut != INVALID_HANDLE_VALUE)
+        SetConsoleMode(hOut, g_saved_stdout_mode);
+    HANDLE hErr = GetStdHandle(STD_ERROR_HANDLE);
+    if (hErr != INVALID_HANDLE_VALUE)
+        SetConsoleMode(hErr, g_saved_stderr_mode);
+    if (g_saved_output_cp != 0)
+        SetConsoleOutputCP(g_saved_output_cp);
 #endif
 
     g_raw_mode_active = false;

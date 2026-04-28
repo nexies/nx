@@ -328,6 +328,19 @@
 
 # define _nxpv2_WRITEONLY       11
 
+
+# ifdef NX_OS_WINDOWS
+// ── Windows SDK collision aliases ─────────────────────────────────────────────
+// Windows headers (winnt.h) define CONST → `const`, VOID → `void`.
+// With a standards-conforming preprocessor, macro arguments are fully
+// expanded before ## paste, so `CONST` in an argument position becomes `const`
+// before _nxpv2_##name runs, yielding `_nxpv2_const` instead of `_nxpv2_CONST`.
+// Adding lowercase aliases with the same numeric values makes the tokenisation
+// and index lookups work correctly for the expanded forms.
+# define _nxpv2_const           7   // CONST → const (Windows SDK, winnt.h)
+
+# endif
+
 /// ---=== ARGUMENTS STORAGE SYSTEM ===---
 
 /* TYPE */

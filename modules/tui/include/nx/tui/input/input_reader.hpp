@@ -1,12 +1,17 @@
 #pragma once
 
 #include <memory>
+#include <nx/common/platform.hpp>
 
 #include <nx/core2/object/object.hpp>
 #include <nx/asio/handle_notifier.hpp>
 
 #include <nx/tui/input/escape_parser.hpp>
 #include <nx/tui/types/size.hpp>
+
+#if defined(NX_OS_WINDOWS)
+#  include <thread>
+#endif
 
 namespace nx::tui {
 
@@ -46,8 +51,18 @@ private:
     void _on_readable();
     void _emit_event(const input_event & ev);
 
+#if defined(NX_OS_WINDOWS)
+    // On Windows, console handles can't be added to IOCP.
+    // A dedicated thread blocks on WaitForMultipleObjects and posts to the context.
+    void _reader_thread(nx::asio::io_context * ctx);
+
+    std::thread  reader_thread_;
+    void       * stop_event_ = nullptr;   // HANDLE (MANUAL_RESET event)
+#else
     std::unique_ptr<nx::asio::handle_notifier> notifier_;
-    escape_parser                              parser_;
+#endif
+
+    escape_parser parser_;
 };
 
 } // namespace nx::tui

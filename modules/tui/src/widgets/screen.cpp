@@ -45,47 +45,42 @@ void screen::_apply_layout()
 void screen::render()
 {
     back_.clear();
-    _render_widget(*this, {}, 0, 0);  // root: no inherited style
+    _render_widget(*this, 0, 0);
     _flush_diff();
 }
 
-void screen::_render_widget(widget & w, style_option inherited, int global_x, int global_y)
+void screen::_render_widget(widget & w, int global_x, int global_y)
 {
     if (!w.is_visible()) return;
 
-    // Apply layout to reposition children before painting.
     w._apply_layout();
 
     const auto sz = w.size();
     if (sz.width <= 0 || sz.height <= 0) return;
 
-    // Effective style = parent's inherited style overridden by widget's own.
-    // This is what both the painter and the widget's children will see.
-    const style_option effective = inherited | w.get_style();
-
-    // Paint this widget using a painter clipped to its global rect.
+    // Paint with the widget's own style only.  Style components not set
+    // (nullopt) are left as-is in the buffer, so parent pixels "show through"
+    // — a parent gradient naturally bleeds into children that don't specify
+    // their own background.
     {
         rect<int> clip(global_x, global_y, sz.width, sz.height);
         painter   p(back_, clip);
-        p.apply_style(effective);
-        // Flood-fill the widget's area with the effective background before
-        // on_paint runs.  This ensures that gaps between children (spacing,
-        // margins, unstyled containers) inherit the parent's background colour
-        // instead of showing the terminal default.
+        p.apply_style(w.get_style());
         p.fill(" ");
         w.on_paint(p);
         w._clear_dirty();
     }
 
-    // Recurse into children, passing the effective style as their inherited.
     for (auto * child : w.child_widgets()) {
-        _render_widget(*child, effective,
+        _render_widget(*child,
                        global_x + child->pos().x, global_y + child->pos().y);
     }
 }
 
 void screen::_flush_diff()
 {
+    terminal::begin_frame();
+
     const int cols = back_.cols();
     const int rows = back_.rows();
 
@@ -153,7 +148,7 @@ void screen::_flush_diff()
 
     // Reset terminal state after diff so subsequent raw prints look normal.
     terminal::print("\033[0m");
-    fflush(terminal::get_output_stream());
+    terminal::end_frame();
 
     // Swap buffers; clear back for the next frame.
     std::swap(back_, front_);

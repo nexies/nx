@@ -69,7 +69,7 @@ function(nx_configure_component _target)
     # preprocessor (available since VS 2019 16.6) which is required for the
     # nx macro system (_nx_tuple_unpack, _nx_args_count, etc.).
     if(MSVC)
-        target_compile_options("${_target}" PUBLIC /Zc:preprocessor)
+        target_compile_options("${_target}" PUBLIC /Zc:preprocessor /bigobj)
     endif()
 
     if(_pub_inc AND CMAKE_VERSION VERSION_GREATER_EQUAL "3.23")
