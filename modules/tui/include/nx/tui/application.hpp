@@ -21,6 +21,7 @@
 #include <nx/tui/widgets/screen.hpp>
 #include <nx/tui/input/input_reader.hpp>
 #include <nx/tui/input/event_filter.hpp>
+#include <nx/tui/animation/animation_manager.hpp>
 
 #include <memory>
 #include <optional>
@@ -63,6 +64,10 @@ public:
 
     [[nodiscard]] screen * main_screen() const noexcept { return screen_.get(); }
 
+    // ── Animation ─────────────────────────────────────────────────────────────
+
+    [[nodiscard]] animation_manager & animations() noexcept { return *anim_manager_; }
+
     // ── Static access ─────────────────────────────────────────────────────────
 
     NX_NODISCARD static tui_application *
@@ -83,6 +88,7 @@ private:
     std::unique_ptr<nx::asio::signal_set> sigwinch_set_;
     std::unique_ptr<screen>               screen_;
     std::unique_ptr<input_reader>         input_reader_;
+    std::unique_ptr<animation_manager>    anim_manager_;
 
     std::optional<alt_screen_guard> alt_screen_;
     std::optional<cursor_guard>     cursor_;

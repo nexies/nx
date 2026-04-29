@@ -12,11 +12,15 @@ using namespace nx::tui;
 tui_application::tui_application()
     : nx::core::application()
     , screen_(std::make_unique<screen>(this))
+    , anim_manager_(std::make_unique<animation_manager>(
+          nx::core::thread::current_context()))
 {}
 
 tui_application::tui_application(int argc, char * argv[])
     : nx::core::application(argc, argv)
     , screen_(std::make_unique<screen>(this))
+    , anim_manager_(std::make_unique<animation_manager>(
+          nx::core::thread::current_context()))
 {}
 
 tui_application::~tui_application() = default;
@@ -61,6 +65,12 @@ tui_application::exec()
     // Wire resize signal → screen resize.
     nx::core::connect(this,  &tui_application::window_resized,
                       this,  &tui_application::_on_window_resize);
+
+    // Hook animation ticks into the render loop.
+    anim_manager_->add_on_tick([this]() {
+        if (screen_ && screen_->is_dirty())
+            screen_->render();
+    });
 
     // Render the initial frame now — the alt buffer is already active, so
     // terminal I/O works synchronously.  Running this before the event loop

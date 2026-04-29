@@ -60,6 +60,12 @@ public:
     void
     remove_connections_to(void * receiver);
 
+    // Removes all connections matching sender_key + receiver (any slot).
+    // Returns the number of entries removed (used for sender-tracking refcount).
+    int
+    remove_connections_by_key_and_receiver(detail::sender_key_t sender_key,
+                                           void * receiver);
+
     NX_NODISCARD bool
     has_connection(detail::connection_id_t id) const;
 

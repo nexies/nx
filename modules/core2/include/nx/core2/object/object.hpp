@@ -32,10 +32,23 @@ namespace nx::core {
 class thread;
 
     template<typename Sender, typename SigFn,
-    typename Receiver, typename SlotFn>
+             typename Receiver, typename SlotFn,
+             typename = typename std::enable_if_t<std::is_member_function_pointer_v<std::decay_t<SlotFn>>, int>>
     bool
     connect(Sender *, SigFn, Receiver *, SlotFn,
-        connection_type = connection_type::auto_t, connection_flags = connection_flag::none);
+            connection_type = connection_type::auto_t,
+            connection_flags = connection_flag::none);
+
+    template<typename Sender, typename SigFn, typename Callable,
+             typename = typename std::enable_if_t<!std::is_member_function_pointer_v<std::decay_t<Callable>>, int>>
+    bool
+    connect(Sender *, SigFn, object *, Callable &&,
+            connection_type = connection_type::auto_t,
+            connection_flags = connection_flag::none);
+
+    template<typename Sender, typename SigFn>
+    bool
+    disconnect(Sender *, SigFn, object *, std::nullptr_t);
 
     template<typename Sender, typename SigFn,
              typename Receiver, typename SlotFn>
@@ -55,10 +68,21 @@ class object {
     friend class connection_info;
 
     template<typename Sender, typename SigFn,
-             typename Receiver, typename SlotFn>
+             typename Receiver, typename SlotFn,
+             typename>
     friend bool
     connect(Sender *, SigFn, Receiver *, SlotFn,
             connection_type, connection_flags);
+
+    template<typename Sender, typename SigFn, typename Callable,
+             typename>
+    friend bool
+    connect(Sender *, SigFn, object *, Callable &&,
+            connection_type, connection_flags);
+
+    template<typename Sender, typename SigFn>
+    friend bool
+    disconnect(Sender *, SigFn, object *, std::nullptr_t);
 
     template<typename Sender, typename SigFn,
              typename Receiver, typename SlotFn>

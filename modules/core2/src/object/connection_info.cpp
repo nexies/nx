@@ -132,6 +132,40 @@ connection_info::remove_connections_to(void * receiver)
     }
 }
 
+int
+connection_info::remove_connections_by_key_and_receiver(
+    detail::sender_key_t sender_key, void * receiver)
+{
+    std::lock_guard lock { mutex_ };
+
+    auto it = by_sender_.find(sender_key);
+    if (it == by_sender_.end())
+        return 0;
+
+    auto & list = it->second;
+    int count = 0;
+    auto entry_it = list.begin();
+    while (entry_it != list.end()) {
+        if (entry_it->receiver == receiver) {
+            const auto id = entry_it->id;
+            entry_it = list.erase(entry_it);
+            ++count;
+
+            if (receiver) {
+                auto rit = by_receiver_.find(receiver);
+                if (rit != by_receiver_.end()) {
+                    rit->second.erase(id);
+                    if (rit->second.empty())
+                        by_receiver_.erase(rit);
+                }
+            }
+        } else {
+            ++entry_it;
+        }
+    }
+    return count;
+}
+
 bool
 connection_info::has_connection(detail::connection_id_t id) const
 {

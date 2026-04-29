@@ -1,6 +1,8 @@
 add_library(nx_tui
     src/App.cpp
     src/terminal.cpp
+    src/animation/animator.cpp
+    src/animation/animation_manager.cpp
     src/types/color.cpp
     src/graphics/painter.cpp
     src/graphics/display_buffer.cpp

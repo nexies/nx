@@ -40,7 +40,8 @@ void post_to_thread(thread * t, std::function<void()> task);
 // ──────────────────────────────────────────────────────────────────────────────
 
 template<typename Sender, typename SigFn,
-         typename Receiver, typename SlotFn>
+         typename Receiver, typename SlotFn,
+         typename>
 bool
 connect(Sender *         sender,
         SigFn            signal,
@@ -100,6 +101,70 @@ connect(Sender *         sender,
     return true;
 }
 
+// ── connect (lambda / callable overload) ─────────────────────────────────────
+//
+// Connects a signal to a callable (lambda, functor, etc.).
+// `context` is an object whose lifetime governs the connection — when it is
+// destroyed, the connection is automatically removed.  Pass nullptr to create
+// a context-free (potentially dangling) connection.
+//
+// Use connection_flag::single_shot to auto-disconnect after the first call.
+// Use disconnect(sender, signal, context, nullptr) to remove all callable
+// connections from this (sender, signal, context) triple.
+
+template<typename Sender, typename SigFn, typename Callable,
+         typename>
+bool
+connect(Sender *         sender,
+        SigFn            signal,
+        object *         context,
+        Callable &&      slot,
+        connection_type  type,
+        connection_flags flags)
+{
+    static_assert(std::is_base_of_v<object, Sender>,
+                  "connect(): Sender must derive from nx::core::object");
+
+    using sig_traits   = detail::function_traits<std::decay_t<SigFn>>;
+    using args_tuple_t = typename sig_traits::args_tuple;
+
+    const auto sig_id  = detail::get_function_id(signal);
+    const auto slot_id = detail::get_function_id(slot); // before forward/move
+    const auto conn_id = detail::make_connection_id();
+    const auto sk      = detail::make_sender_key(sender, sig_id);
+
+    // Capture callable by value so it outlives this call site.
+    detail::connection_handler_t handler =
+        [fn = std::forward<Callable>(slot)](const void * args_ptr) mutable
+        {
+            const auto & args = *static_cast<const args_tuple_t *>(args_ptr);
+            std::apply([&fn](auto &&... a) {
+                fn(std::forward<decltype(a)>(a)...);
+            }, args);
+        };
+
+    thread * ctx_thread = context ? context->get_thread() : nullptr;
+
+    detail::connection_entry entry;
+    entry.id              = conn_id;
+    entry.sender_key      = sk;
+    entry.receiver        = static_cast<void *>(context);
+    entry.slot_id         = slot_id;
+    entry.type            = type;
+    entry.flags           = flags;
+    entry.handler         = std::move(handler);
+    entry.receiver_thread = ctx_thread;
+
+    auto * sender_info = static_cast<object *>(sender)->_nx_connection_info();
+    if (!sender_info->add_connection(std::move(entry)))
+        return false;
+
+    if (context)
+        context->_nx_connection_info()->add_sender(static_cast<object *>(sender));
+
+    return true;
+}
+
 // Convenience overloads
 
 template<typename Sender, typename SigFn, typename Receiver, typename SlotFn>
@@ -145,6 +210,29 @@ disconnect(Sender * sender, SigFn signal, Receiver * receiver, SlotFn slot)
             ->remove_sender(static_cast<object *>(sender));
 
     return true;
+}
+
+// ── disconnect (remove all callable connections for a context) ────────────────
+//
+// Removes every callable connection on (sender, signal) → context.
+// Pass nullptr as the last argument when you don't have the original callable.
+
+template<typename Sender, typename SigFn>
+bool
+disconnect(Sender * sender, SigFn signal, object * context, std::nullptr_t)
+{
+    const auto sig_id = detail::get_function_id(signal);
+    const auto sk     = detail::make_sender_key(sender, sig_id);
+
+    auto * sender_info = static_cast<object *>(sender)->_nx_connection_info();
+    const int count = sender_info->remove_connections_by_key_and_receiver(
+        sk, static_cast<void *>(context));
+
+    if (context) {
+        for (int i = 0; i < count; ++i)
+            context->_nx_connection_info()->remove_sender(static_cast<object *>(sender));
+    }
+    return count > 0;
 }
 
 // ──────────────────────────────────────────────────────────────────────────────

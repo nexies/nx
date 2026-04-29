@@ -28,3 +28,8 @@ nx_configure_demo(scroll
         COMPONENT tui
         SOURCE scroll_demo.cpp
 )
+
+nx_configure_demo(animation
+        COMPONENT tui
+        SOURCE animation_demo.cpp
+)
