@@ -337,17 +337,17 @@ int main(int argc, char * argv[])
     // Wire up
     scr->set_focused_widget(btn1);
 
-    demo_controller ctrl(bar, msg, pct_lbl);
+    auto ctrl = new demo_controller (bar, msg, pct_lbl, &app);
 
     nx::core::connect(btn1, &animated_button::clicked,
-                      &ctrl, &demo_controller::on_btn1);
+                      ctrl, &demo_controller::on_btn1);
     nx::core::connect(btn2, &animated_button::clicked,
-                      &ctrl, &demo_controller::on_btn2);
+                      ctrl, &demo_controller::on_btn2);
     nx::core::connect(btn3, &animated_button::clicked,
-                      &ctrl, &demo_controller::on_btn3);
+                      ctrl, &demo_controller::on_btn3);
 
     // Update percentage label every animation tick.
-    app.animations().add_on_tick([&ctrl]() { ctrl.on_tick(); });
+    app.animations().add_on_tick([&ctrl]() { ctrl->on_tick(); });
 
     return app.exec();
 }

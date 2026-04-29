@@ -26,6 +26,9 @@ namespace nx::core
         constexpr void
         accept() noexcept { is_accepted_ = true; }
 
+        constexpr void
+        ignore() noexcept { is_accepted_ = false; }
+
         NX_NODISCARD constexpr bool
         is_accepted() const noexcept { return is_accepted_; }
 
