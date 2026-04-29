@@ -94,8 +94,10 @@ private:
 
     // Hit-test: returns the deepest visible widget under (qx, qy) in buffer
     // coords.  wx/wy are the global position of the root widget passed in.
+    // out_gx/out_gy receive the global origin of the returned widget.
     widget *
-    _widget_at(widget & w, int wx, int wy, int qx, int qy);
+    _widget_at(widget & w, int wx, int wy, int qx, int qy,
+               int & out_gx, int & out_gy);
 };
 
 } // namespace nx::tui

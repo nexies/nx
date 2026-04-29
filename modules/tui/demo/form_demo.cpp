@@ -204,14 +204,14 @@ int main(int argc, char * argv[])
 
     // Button row.
     auto * btn_row = new h_box(root);
-    btn_row->set_fixed_height(1);
+    btn_row->set_fixed_height(3);
     btn_row->set_spacing(2);
     // btn_row->set_margin(6);
 
     auto * submit_btn = new button(btn_row);
     submit_btn->set_text("Submit");
     submit_btn->set_fixed_width(12);
-    submit_btn->set_style(fg(color::black) | bg(color::green));
+    // submit_btn->set_style(fg(color::black) | bg(color::green));
 
     // Spacer fills remaining width.
     new widget(btn_row);
@@ -219,7 +219,7 @@ int main(int argc, char * argv[])
     auto * clear_btn = new button(btn_row);
     clear_btn->set_text("Clear");
     clear_btn->set_fixed_width(12);
-    clear_btn->set_style(fg(color::black) | bg(color::yellow));
+    // clear_btn->set_style(fg(color::black) | bg(color::yellow));
 
 
     // Separator.

@@ -269,26 +269,31 @@ bool screen::dispatch_mouse(mouse_event e)
     const int qx = e.position.x - 1;
     const int qy = e.position.y - 1;
 
-    auto * target = _widget_at(*this, 0, 0, qx, qy);
+    int target_gx = 0, target_gy = 0;
+    auto * target = _widget_at(*this, 0, 0, qx, qy, target_gx, target_gy);
 
     // Fire enter/leave when the deepest widget under the cursor changes.
     if (target != hovered_) {
         if (hovered_) {
             mouse_event leave;
             leave.action   = mouse_action::leave;
-            leave.position = e.position;
+            leave.position = { qx - target_gx, qy - target_gy };
             send_event(hovered_, leave);
         }
         hovered_ = target;
         if (hovered_) {
             mouse_event enter;
             enter.action   = mouse_action::enter;
-            enter.position = e.position;
+            enter.position = { qx - target_gx, qy - target_gy };
             send_event(hovered_, enter);
         }
     }
 
     if (!target) return false;
+
+    // Translate event position from 1-based global to 0-based widget-local
+    // before dispatching, so widget handlers always receive local coordinates.
+    e.position = { qx - target_gx, qy - target_gy };
 
     // Run widget-level filters before dispatching the mouse event.
     if (target->_run_filters_mouse(e)) return false;
@@ -343,7 +348,8 @@ void screen::set_focused_widget(widget * w)
 
 // ── hit testing ──────────────────────────────────────────────────────────────
 
-widget * screen::_widget_at(widget & w, int wx, int wy, int qx, int qy)
+widget * screen::_widget_at(widget & w, int wx, int wy, int qx, int qy,
+                             int & out_gx, int & out_gy)
 {
     if (!w.is_visible()) return nullptr;
 
@@ -355,14 +361,15 @@ widget * screen::_widget_at(widget & w, int wx, int wy, int qx, int qy)
     // Check children in reverse order (last-painted = top-most).
     auto children = w.child_widgets();
     for (int i = static_cast<int>(children.size()) - 1; i >= 0; --i) {
-        auto * child  = children[i];
-        int    cx     = wx + child->pos().x;
-        int    cy     = wy + child->pos().y;
-        if (auto * found = _widget_at(*child, cx, cy, qx, qy)) {
+        auto * child = children[i];
+        const int cx = wx + child->pos().x;
+        const int cy = wy + child->pos().y;
+        if (auto * found = _widget_at(*child, cx, cy, qx, qy, out_gx, out_gy))
             return found;
-        }
     }
 
+    out_gx = wx;
+    out_gy = wy;
     return &w;
 }
 

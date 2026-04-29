@@ -3,6 +3,7 @@
 #include <nx/tui/input/key_event.hpp>
 #include <nx/tui/input/mouse_event.hpp>
 #include <nx/tui/types/style_option.hpp>
+#include <nx/tui/animation/easing.hpp>
 
 #include <nx/common/types/utf8.hpp>
 
@@ -105,18 +106,32 @@ void line_edit::on_paint(painter & p)
         p.draw_text({ 0, 0 }, text_.substr(start, end - start));
     }
 
-    // Draw cursor when focused (inverted cell at cursor column).
+    // Draw cursor when focused: smooth fade between normal and inverted using
+    // cursor_alpha_ (0 = invisible, 1 = fully inverted).
     if (has_focus()) {
         const int cur_col = static_cast<int>(utf8_col_count(text_, scroll_off_, cursor_));
         if (cur_col >= 0 && cur_col < w) {
-            std::string cur_ch = " ";
-            if (cursor_ < text_.size()) {
-                const std::size_t clen = utf8_cluster_len(text_, cursor_);
-                cur_ch = std::string(text_.data() + cursor_, clen);
+            const float alpha = cursor_alpha_.value();
+            if (alpha > 0.01f) {
+                std::string cur_ch = " ";
+                if (cursor_ < text_.size()) {
+                    const std::size_t clen = utf8_cluster_len(text_, cursor_);
+                    cur_ch = std::string(text_.data() + cursor_, clen);
+                }
+
+                // Interpolate between normal fg/bg and inverted fg/bg.
+                color fg_c = p.current_color();
+                color bg_c = p.current_background_color();
+                if (fg_c == color::default_color) fg_c = color::rgb(200, 200, 220);
+                if (bg_c == color::default_color) bg_c = color::rgb( 18,  18,  24);
+
+                const color c_fg = color::interpolate(alpha, fg_c, bg_c);
+                const color c_bg = color::interpolate(alpha, bg_c, fg_c);
+
+                painter cur_p = p;
+                cur_p.apply_style(fg(c_fg) | bg(c_bg));
+                cur_p.draw_char({ cur_col, 0 }, cur_ch);
             }
-            painter cur_p = p;
-            cur_p.apply_style(inverted());
-            cur_p.draw_char({ cur_col, 0 }, cur_ch);
         }
     }
 }
@@ -216,13 +231,42 @@ void line_edit::on_mouse_press(mouse_event & e)
 {
     if (e.button != mouse_button::left) return;
 
-    const int local_col = e.position.x - 1;
+    const int local_col = e.position.x;
     const std::size_t target =
         scroll_off_ + static_cast<std::size_t>(local_col < 0 ? 0 : local_col);
     cursor_ = std::min(target, text_.size());
 
     _adjust_scroll();
     update();
+}
+
+// ── Focus / blink ─────────────────────────────────────────────────────────────
+
+void line_edit::on_focus_in()
+{
+    widget::on_focus_in();
+    _blink_next();
+    update();
+}
+
+void line_edit::on_focus_out()
+{
+    widget::on_focus_out();
+    // Remove any pending blink callback and snap cursor to hidden.
+    nx::core::disconnect(&cursor_alpha_.raw(), &animator::finished, this, nullptr);
+    cursor_alpha_.set(0.0f);
+    update();
+}
+
+void line_edit::_blink_next()
+{
+    if (!has_focus()) return;
+    const float target = cursor_alpha_.value() > 0.5f ? 0.0f : 1.0f;
+    cursor_alpha_.animate_to(target, 500, easing::ease_in_out);
+    nx::core::connect(&cursor_alpha_.raw(), &animator::finished, this,
+                      [this]() { _blink_next(); },
+                      nx::core::connection_type::auto_t,
+                      nx::core::connection_flag::single_shot);
 }
 
 // ── scroll adjustment ─────────────────────────────────────────────────────────

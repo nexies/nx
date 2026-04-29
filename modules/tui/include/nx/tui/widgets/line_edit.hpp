@@ -1,6 +1,7 @@
 #pragma once
 
 #include <nx/tui/widgets/widget.hpp>
+#include <nx/tui/animation/animated_value.hpp>
 
 #include <optional>
 #include <string>
@@ -28,6 +29,10 @@ class line_edit : public widget {
     std::size_t cursor_     = 0;
     std::size_t scroll_off_ = 0;
 
+    // Cursor blink: oscillates 0→1→0 while focused; used to interpolate
+    // the cursor cell between normal and inverted colors.
+    animated_value<float> cursor_alpha_ { this, 0.0f };
+
 public:
     NX_OBJECT(line_edit)
 
@@ -48,12 +53,12 @@ protected:
     void on_paint(painter & p)           override;
     void on_key_press(key_event & e)     override;
     void on_mouse_press(mouse_event & e) override;
+    void on_focus_in()                   override;
+    void on_focus_out()                  override;
 
 private:
-    // Keep scroll_off_ so that the cursor is always visible.
-    // When pin_vis_col is given, the cursor is locked to that screen column
-    // by adjusting scroll_off_ (used for Backspace to keep cursor in place).
     void _adjust_scroll(std::optional<std::size_t> pin_vis_col = std::nullopt);
+    void _blink_next();
 };
 
 } // namespace nx::tui
