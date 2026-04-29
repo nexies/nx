@@ -270,6 +270,24 @@ bool screen::dispatch_mouse(mouse_event e)
     const int qy = e.position.y - 1;
 
     auto * target = _widget_at(*this, 0, 0, qx, qy);
+
+    // Fire enter/leave when the deepest widget under the cursor changes.
+    if (target != hovered_) {
+        if (hovered_) {
+            mouse_event leave;
+            leave.action   = mouse_action::leave;
+            leave.position = e.position;
+            send_event(hovered_, leave);
+        }
+        hovered_ = target;
+        if (hovered_) {
+            mouse_event enter;
+            enter.action   = mouse_action::enter;
+            enter.position = e.position;
+            send_event(hovered_, enter);
+        }
+    }
+
     if (!target) return false;
 
     // Run widget-level filters before dispatching the mouse event.
@@ -302,9 +320,25 @@ bool screen::dispatch_mouse(mouse_event e)
 void screen::set_focused_widget(widget * w)
 {
     if (focus_ == w) return;
-    if (focus_) focus_->on_focus_out();
+    widget * old_focus = focus_;
+    if (old_focus) old_focus->on_focus_out();
     focus_ = w;
     if (focus_) focus_->on_focus_in();
+
+    // Mark ancestors of both the old and new focused widget dirty so that
+    // containers whose appearance depends on child focus (e.g. frame title)
+    // get repainted.  on_focus_in/out already propagated subtree_dirty_ up;
+    // we just need dirty_ set on each ancestor so on_paint is actually called.
+    auto mark_ancestors = [](widget * start) {
+        if (!start) return;
+        auto * p = dynamic_cast<widget *>(start->parent());
+        while (p) {
+            p->update();
+            p = dynamic_cast<widget *>(p->parent());
+        }
+    };
+    mark_ancestors(old_focus);
+    mark_ancestors(focus_);
 }
 
 // ── hit testing ──────────────────────────────────────────────────────────────

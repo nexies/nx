@@ -155,6 +155,7 @@ void terminal::erase_line()          { print(ansi::g_erase_line_cmd); }
 
 // ── Text style ────────────────────────────────────────────────────────────────
 
+void terminal::enable_bold(bool e)         { print(e ? ansi::g_set_bold_cmd         : ansi::g_reset_bold_cmd); }
 void terminal::enable_dim(bool e)          { print(e ? ansi::g_set_dim_cmd          : ansi::g_reset_dim_cmd); }
 void terminal::enable_italic(bool e)       { print(e ? ansi::g_set_italic_cmd       : ansi::g_reset_italic_cmd); }
 void terminal::enable_underline(bool e)    { print(e ? ansi::g_set_underline_cmd    : ansi::g_reset_underline_cmd); }
@@ -167,6 +168,7 @@ void terminal::enable_strike_through(bool e){ print(e ? ansi::g_set_strike_throu
 void terminal::set_pixel_style(pixel_style style)
 {
     if (!style) return;
+    if (style.has(pixel_style_flag::bold))           enable_bold(true);
     if (style.has(pixel_style_flag::blink))          enable_blinking(true);
     if (style.has(pixel_style_flag::dim))            enable_dim(true);
     if (style.has(pixel_style_flag::inverted))       enable_inverse(true);
@@ -179,6 +181,7 @@ void terminal::set_pixel_style(pixel_style style)
 void terminal::reset_pixel_style(pixel_style style)
 {
     if (!style) return;
+    if (style.has(pixel_style_flag::bold))           enable_bold(false);
     if (style.has(pixel_style_flag::blink))          enable_blinking(false);
     if (style.has(pixel_style_flag::dim))            enable_dim(false);
     if (style.has(pixel_style_flag::inverted))       enable_inverse(false);

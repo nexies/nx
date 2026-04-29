@@ -169,14 +169,14 @@ int main(int argc, char * argv[])
     title_lbl->set_style(fg(color::cyan_bright));
 
 
-    auto login_box = new widget(root);
-    login_box->set_fixed_width(40);
+    // auto login_box = new widget(root);
+    // login_box->set_fixed_width(40);
 
     // Name row.
-    auto * name_row  = new h_box(login_box);
+    auto * name_row  = new h_box(root);
     name_row->set_fixed_height(1);
     name_row->set_spacing(2);
-    name_row->set_margin(6);
+    // name_row->set_margin(6);
 
     auto * name_lbl  = new label(name_row);
     name_lbl->set_text("Name:");
@@ -188,10 +188,10 @@ int main(int argc, char * argv[])
     // new widget(name_row);
 
     // Email row.
-    auto * email_row  = new h_box(login_box);
+    auto * email_row  = new h_box(root);
     email_row->set_fixed_height(1);
     email_row->set_spacing(2);
-    email_row->set_margin(6);
+    // email_row->set_margin(6);
 
     auto * email_lbl  = new label(email_row);
     email_lbl->set_text("Email:");
@@ -203,10 +203,10 @@ int main(int argc, char * argv[])
     // new widget(email_row);
 
     // Button row.
-    auto * btn_row = new h_box(login_box);
+    auto * btn_row = new h_box(root);
     btn_row->set_fixed_height(1);
     btn_row->set_spacing(2);
-    btn_row->set_margin(6);
+    // btn_row->set_margin(6);
 
     auto * submit_btn = new button(btn_row);
     submit_btn->set_text("Submit");

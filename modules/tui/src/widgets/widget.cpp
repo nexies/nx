@@ -70,13 +70,23 @@ void widget::_apply_layout()               {}
 void widget::on_paint(painter &)           {}
 void widget::on_key_press(key_event &)     {}
 void widget::on_key_release(key_event &)   {}
-void widget::on_mouse_press(mouse_event &) {}
+void widget::on_mouse_press(mouse_event &)  {}
 void widget::on_mouse_release(mouse_event &) {}
-void widget::on_mouse_move(mouse_event &)  {}
-void widget::on_wheel(mouse_event &)       {}
+void widget::on_mouse_move(mouse_event &)   {}
+void widget::on_wheel(mouse_event &)        {}
+void widget::on_mouse_enter(mouse_event &)  { hovered_ = true;  update(); }
+void widget::on_mouse_leave(mouse_event &)  { hovered_ = false; update(); }
 void widget::on_resize(size_type, size_type) {}
 void widget::on_focus_in()  { focused_ = true;  update(); }
 void widget::on_focus_out() { focused_ = false; update(); }
+
+bool widget::has_focused_descendant() const noexcept
+{
+    if (focused_) return true;
+    for (auto * child : child_widgets())
+        if (child->has_focused_descendant()) return true;
+    return false;
+}
 
 bool widget::on_event(nx::core::event & e)
 {
@@ -93,7 +103,9 @@ bool widget::on_event(nx::core::event & e)
         case mouse_action::press:   on_mouse_press(me);   break;
         case mouse_action::release: on_mouse_release(me); break;
         case mouse_action::move:    on_mouse_move(me);    break;
-        case mouse_action::wheel:   on_wheel(me);    break;
+        case mouse_action::wheel:   on_wheel(me);         break;
+        case mouse_action::enter:   on_mouse_enter(me);   break;
+        case mouse_action::leave:   on_mouse_leave(me);   break;
         }
         return e.is_accepted();
     }

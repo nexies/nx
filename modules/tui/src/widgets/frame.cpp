@@ -128,9 +128,12 @@ void frame::on_paint(painter & p)
         if (static_cast<int>(display.size()) > max_title_cols) {
             rendered = display.substr(0, static_cast<std::size_t>(max_title_cols));
         }
-        // Draw title starting at column 2.
+        // Draw title starting at column 2, bold when focused (or a child is focused).
         p.set_color(saved_color);
+        if (has_focused_descendant()) p.enable_style(pixel_style_flag::bold);
         p.draw_text({ 2, 0 }, rendered);
+        if (has_focused_descendant()) p.disable_style(pixel_style_flag::bold);
+
         // Redraw the surrounding dashes in border color.
         if (border_color_ != color::default_color) {
             p.set_color(border_color_);

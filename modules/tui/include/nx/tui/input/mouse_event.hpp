@@ -19,7 +19,9 @@ enum class mouse_action : uint8_t {
     press,
     release,
     move,
-    wheel
+    wheel,
+    enter,
+    leave,
 };
 
 struct mouse_event : public nx::core::event

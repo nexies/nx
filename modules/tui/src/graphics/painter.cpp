@@ -81,10 +81,10 @@ void painter::_write(int bx, int by, int lc, int lr, const std::string & ch) con
 
     auto   s  = _at(lc, lr);
     auto & px = buffer_.pixel_at(bx, by);
-    px.character = ch;
-    if (s.foreground.has_value())  px.foreground_color = *s.foreground;
-    if (s.background.has_value())  px.background_color = *s.background;
-    if (s.decorations.has_value()) px.style            = *s.decorations;
+    px.character        = ch;
+    px.foreground_color = s.foreground.value_or(color::default_color);
+    px.background_color = s.background.value_or(color::default_color);
+    px.style            = s.decorations.value_or(pixel_style_flag::none);
 }
 
 // ── draw operations ───────────────────────────────────────────────────────────

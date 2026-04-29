@@ -16,6 +16,7 @@ namespace nx::tui {
         underline_double  = 0x0020,
         strike_through    = 0x0040,
         auto_merge        = 0x0080,
+        bold              = 0x0100,
     };
 
     NX_FLAGS(pixel_style_flag, pixel_style)

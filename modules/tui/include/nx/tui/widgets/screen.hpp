@@ -25,6 +25,7 @@ class screen : public widget {
     display_buffer back_;
     display_buffer front_;
     widget *       focus_        = nullptr;
+    widget *       hovered_      = nullptr;
     bool           full_repaint_ = true; // set by resize(), cleared after first _flush_diff
     int            render_calls_ = 0;    // _render_widget calls in the last render() pass
     int            total_render_calls_ = 0;

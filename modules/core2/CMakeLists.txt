@@ -28,9 +28,6 @@ set(nx_core2_sources
     src/loop/loop.cpp
     src/timer/timer.cpp
     src/app/application.cpp
-
-
-
 )
 
 add_library(nx_core2

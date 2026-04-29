@@ -134,6 +134,7 @@ public:
 
     // ── Text style ────────────────────────────────────────────────────────────
 
+    static void enable_bold(bool enable);
     static void enable_dim(bool enable);
     static void enable_italic(bool enable);
     static void enable_underline(bool enable);

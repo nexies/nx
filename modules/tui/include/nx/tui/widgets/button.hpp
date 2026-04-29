@@ -14,6 +14,7 @@ namespace nx::tui {
 
 class button : public widget {
     std::string text_;
+    bool pressed_ = false;
 
 public:
     NX_OBJECT(button)
@@ -22,10 +23,20 @@ public:
 
     // ── Text ──────────────────────────────────────────────────────────────────
 
-    void                    set_text(std::string t);
-    [[nodiscard]] const std::string & text() const noexcept { return text_; }
+    void
+    set_text(std::string t);
+
+    [[nodiscard]] const std::string &
+    text() const noexcept { return text_; }
 
     NX_PROPERTY(text, READ text, WRITE set_text)
+
+    // Pressed
+    NX_NODISCARD constexpr bool
+    is_pressed() const noexcept { return pressed_; }
+
+    NX_PROPERTY(pressed, MEMBER pressed_, READ is_pressed)
+
 
     // ── Signals ───────────────────────────────────────────────────────────────
 
@@ -35,10 +46,13 @@ public:
 
     [[nodiscard]] size_type size_hint() const override;
 
+
+
 protected:
     void on_paint(painter & p)       override;
     void on_key_press(key_event & e) override;
     void on_mouse_press(mouse_event & e) override;
+    void on_mouse_release(mouse_event& e) override;
 };
 
 } // namespace nx::tui

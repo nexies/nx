@@ -77,6 +77,8 @@ struct style_option {
     style_option s; s.decorations = d; return s;
 }
 
+
+[[nodiscard]] inline style_option bold()      noexcept { return decoration(pixel_style_flag::bold);      }
 [[nodiscard]] inline style_option italic()    noexcept { return decoration(pixel_style_flag::italic);    }
 [[nodiscard]] inline style_option underline() noexcept { return decoration(pixel_style_flag::underline); }
 [[nodiscard]] inline style_option inverted()  noexcept { return decoration(pixel_style_flag::inverted);  }

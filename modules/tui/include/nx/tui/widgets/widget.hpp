@@ -49,6 +49,7 @@ private:
     bool                     dirty_        = true;  // this widget's own content needs repaint
     bool                     subtree_dirty_= true;  // this widget or any descendant needs repaint
     bool                     focused_      = false;
+    bool                     hovered_      = false;
     focus_policy             focus_policy_ = focus_policy::no_focus;
     style_option             style_        {};
     std::vector<event_filter *> filters_   {};
@@ -160,6 +161,13 @@ public:
     NX_NODISCARD bool
     has_focus() const noexcept { return focused_; }
 
+    NX_NODISCARD bool
+    is_hovered() const noexcept { return hovered_; }
+
+    // Returns true if this widget or any of its descendants currently has focus.
+    NX_NODISCARD bool
+    has_focused_descendant() const noexcept;
+
     // ── Repaint ───────────────────────────────────────────────────────────────
 
     // Mark this widget as needing a repaint on the next render pass.
@@ -199,6 +207,8 @@ protected:
     virtual void on_mouse_release(mouse_event & e);
     virtual void on_mouse_move(mouse_event & e);
     virtual void on_wheel(mouse_event & e);
+    virtual void on_mouse_enter(mouse_event & e);
+    virtual void on_mouse_leave(mouse_event & e);
 
     virtual void on_resize(size_type old_size, size_type new_size);
     virtual void on_focus_in();

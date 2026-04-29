@@ -103,6 +103,7 @@ int main(int argc, char * argv[])
     left_frame->set_border_style(border_style::rounded);
     left_frame->set_title("Vertical — 120 items");
     left_frame->set_border_color(color::cyan);
+    left_frame->set_focus_policy(widget::focus_policy::click_focus);
 
     auto * v_sa = new scroll_area(left_frame);
     v_sa->set_content_height(120);
@@ -126,6 +127,7 @@ int main(int argc, char * argv[])
     right_frame->set_border_style(border_style::rounded);
     right_frame->set_title("2D \xe2\x80\x94 120 cols \xc3\x97 350 rows");
     right_frame->set_border_color(color::magenta);
+    right_frame->set_focus_policy(widget::focus_policy::click_focus);
 
     auto * td_sa = new scroll_area(right_frame);
     td_sa->set_content_width(120);

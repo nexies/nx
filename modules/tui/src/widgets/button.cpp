@@ -32,7 +32,7 @@ void button::set_text(std::string t)
 
 void button::on_paint(painter & p)
 {
-    if (has_focus()) {
+    if (is_pressed()) {
         p.apply_style(inverted());
     }
 
@@ -53,14 +53,32 @@ void button::on_key_press(key_event & e)
 {
     if (e.code == key::enter || e.code == key::printable && e.character == U' ') {
         NX_EMIT(clicked)
+        e.accept();
+        update();
     }
 }
+
 
 void button::on_mouse_press(mouse_event & e)
 {
     if (e.button == mouse_button::left) {
         NX_EMIT(clicked)
+        pressed_ = true;
+        e.accept();
+        update();
     }
 }
 
+void button::on_mouse_release(mouse_event& e)
+{
+    if (e.button == mouse_button::left)
+    {
+        e.accept();
+        pressed_ = false;
+        update();
+    }
+
+
+    widget::on_mouse_release(e);
+}
 } // namespace nx::tui
