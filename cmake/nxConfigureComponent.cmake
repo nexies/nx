@@ -81,6 +81,7 @@ function(nx_configure_component _target)
     # /bigobj           — modules with many template instantiations exceed default limit
     if(MSVC)
         target_compile_options("${_target}" PUBLIC /Zc:preprocessor /bigobj)
+        set_target_properties("${_target}" PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
     endif()
 
     # ── FILE_SET (CMake >= 3.23) ───────────────────────────────────────────

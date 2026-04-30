@@ -18,8 +18,8 @@ set(nx_logging_headers
 set(nx_logging_sources
         src/pattern_formatter.cpp
         src/registry.cpp
-        tests/test_logger_manual_macros.cpp
-        tests/test_logger_manual.cpp
+#        tests/test_logger_manual_macros.cpp
+#        tests/test_logger_manual.cpp
 )
 
 add_library(nx_logging
