@@ -358,7 +358,7 @@ namespace detail {
 // Suppresses "unused variable" warnings with the method described in
 // https://herbsutter.com/2009/10/18/mailbag-shutting-up-compiler-warnings/.
 // (void)var does not work on many Intel compilers.
-template <typename... T> FMT_CONSTEXPR void ignore_unused(const T&...) {}
+template <typename... T> constexpr void ignore_unused(const T&...) {}
 
 constexpr auto is_constant_evaluated(bool default_value = false) noexcept
     -> bool {

@@ -88,4 +88,21 @@
 #    define NX_LOG_LOGGER_CRITICAL(lg, ...) (void)0
 #endif
 
+
+#define nxTrace(...)    NX_LOG_LOGGER_TRACE(::nx::logging::get_default_logger(), __VA_ARGS__)
+#define nxDebug(...)    NX_LOG_LOGGER_DEBUG(::nx::logging::get_default_logger(), __VA_ARGS__)
+#define nxInfo(...)     NX_LOG_LOGGER_INFO(::nx::logging::get_default_logger(), __VA_ARGS__)
+#define nxWarning(...)  NX_LOG_LOGGER_WARN(::nx::logging::get_default_logger(), __VA_ARGS__)
+#define nxError(...)    NX_LOG_LOGGER_ERROR(::nx::logging::get_default_logger(), __VA_ARGS__)
+#define nxCritical(...) NX_LOG_LOGGER_CRITICAL(::nx::logging::get_default_logger(), __VA_ARGS__)
+
+#define nx_trace(...)    NX_LOG_LOGGER_TRACE(::nx::logging::get_default_logger(), __VA_ARGS__)
+#define nx_debug(...)    NX_LOG_LOGGER_DEBUG(::nx::logging::get_default_logger(), __VA_ARGS__)
+#define nx_info(...)     NX_LOG_LOGGER_INFO(::nx::logging::get_default_logger(), __VA_ARGS__)
+#define nx_warning(...)  NX_LOG_LOGGER_WARN(::nx::logging::get_default_logger(), __VA_ARGS__)
+#define nx_error(...)    NX_LOG_LOGGER_ERROR(::nx::logging::get_default_logger(), __VA_ARGS__)
+#define nx_critical(...) NX_LOG_LOGGER_CRITICAL(::nx::logging::get_default_logger(), __VA_ARGS__)
+
+
+
 #endif // NX_LOGGING_MACROS_HPP

@@ -49,9 +49,9 @@ add_library(nx_common
 )
 
 target_include_directories(nx_common PUBLIC
-        include/nx/common/format
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/nx/common/format>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/nx/common/format>
 )
-
 
 nx_configure_component(nx_common
         NAME common
@@ -59,3 +59,23 @@ nx_configure_component(nx_common
 )
 
 add_subdirectory(tests)
+
+# Bundled fmt (v12) uses two C++20 features broken in older MSVC:
+#
+#   FMT_USE_CONSTEVAL — safety net for VS2022+ where fmt would enable consteval.
+#     VS2019 < 16.10 is already auto-disabled by fmt at base.h:129-130, but
+#     VS2022 enables consteval and has its own constexpr downcast issues.
+#
+#   FMT_USE_NONTYPE_TEMPLATE_ARGS — MSVC defines __cpp_nontype_template_args in
+#     C++17 mode but structural-type NTTPs are broken on older VS builds.
+#
+# The static_cast downcast bug in constexpr context (base.h:2468, 2477) is
+# patched directly in the bundled fmt source with an FMT_MSC_VERSION guard.
+if(MSVC)
+    target_compile_definitions(nx_common PUBLIC
+            FMT_USE_CONSTEVAL=0
+            FMT_USE_CONSTEXPR=0
+            FMT_USE_NONTYPE_TEMPLATE_ARGS=0
+    )
+endif()
+
