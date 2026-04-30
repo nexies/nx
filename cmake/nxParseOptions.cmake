@@ -4,7 +4,7 @@ nx_push_log_scope(options)
 
 ## DOCS
 if(NX_BUILD_DOCS)
-    nx_log(WARNING "Build docs option is not implemented")
+#    nx_log(WARNING "Build docs option is not implemented")
 endif()
 
 ## TESTS
