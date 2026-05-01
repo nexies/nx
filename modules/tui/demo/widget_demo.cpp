@@ -30,7 +30,7 @@
 #include <nx/tui/types/size_policy.hpp>
 #include <nx/tui/widgets/widget.hpp>
 #include <nx/tui/widgets/screen.hpp>
-#include <nx/tui/widgets/box.hpp>
+#include <../include/nx/tui/layout/box.hpp>
 #include <nx/tui/graphics/painter.hpp>
 #include <nx/tui/terminal/terminal.hpp>
 

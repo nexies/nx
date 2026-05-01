@@ -50,6 +50,7 @@ private:
     bool                     subtree_dirty_= true;  // this widget or any descendant needs repaint
     bool                     focused_      = false;
     bool                     hovered_      = false;
+    bool                     transparent_  = false; // skip pre-paint clear; widget draws only specific cells
     focus_policy             focus_policy_ = focus_policy::no_focus;
     style_option             style_        {};
     std::vector<event_filter *> filters_   {};
@@ -155,6 +156,14 @@ public:
 
     void
     set_style(style_option s) { style_ = std::move(s); update(); }
+
+    // ── Transparency ──────────────────────────────────────────────────────────
+    // When true, the renderer skips the pre-paint clear so the widget can draw
+    // over lower layers without erasing them.  Use for overlay widgets in a_box
+    // or any widget that intentionally paints only specific cells.
+
+    void set_transparent(bool t) noexcept { transparent_ = t; }
+    [[nodiscard]] bool is_transparent() const noexcept { return transparent_; }
 
     // ── Focus state ───────────────────────────────────────────────────────────
 

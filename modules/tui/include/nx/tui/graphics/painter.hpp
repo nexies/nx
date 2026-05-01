@@ -66,6 +66,15 @@ public:
 
     // Fill the entire clip rect with ch using the effective per-cell style.
     void fill(const std::string & ch = " ") const;
+
+    // Clear the clip rect to background.
+    //   keep_background = false (default): write " " with the current background
+    //     color — fully erases previous content.
+    //   keep_background = true: write " " but preserve each cell's existing
+    //     background_color — useful in transparent overlay widgets that want
+    //     to clear stale characters without discarding the background painted
+    //     by a lower layer.
+    void clear(bool keep_background = false) const;
 };
 
 } // namespace nx::tui

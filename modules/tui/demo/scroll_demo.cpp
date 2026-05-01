@@ -26,7 +26,7 @@
 #include <nx/tui/widgets/scroll_area.hpp>
 #include <nx/tui/widgets/frame.hpp>
 #include <nx/tui/widgets/label.hpp>
-#include <nx/tui/widgets/box.hpp>
+#include <../include/nx/tui/layout/box.hpp>
 #include <nx/tui/types/style_option.hpp>
 #include <nx/tui/types/style_modifier.hpp>
 

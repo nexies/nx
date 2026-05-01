@@ -39,7 +39,7 @@
 #include <nx/tui/widgets/button.hpp>
 #include <nx/tui/widgets/line_edit.hpp>
 #include <nx/tui/widgets/widget.hpp>
-#include <nx/tui/widgets/box.hpp>
+#include <../include/nx/tui/layout/box.hpp>
 #include <nx/tui/graphics/painter.hpp>
 #include <nx/tui/types/style_option.hpp>
 

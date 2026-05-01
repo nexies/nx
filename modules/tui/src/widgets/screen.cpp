@@ -89,7 +89,7 @@ void screen::_render_widget(widget & w, int global_x, int global_y, rect<int> cl
         if (w._dirty()) w._apply_layout();
         painter p(back_, widget_rect, eff_clip);
         p.apply_style(w.get_style());
-        p.fill(" ");
+        if (!w.is_transparent()) p.clear();
         w.on_paint(p);
         w._clear_dirty();
         force_children = true;

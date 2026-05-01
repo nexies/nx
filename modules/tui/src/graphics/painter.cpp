@@ -81,9 +81,20 @@ void painter::_write(int bx, int by, int lc, int lr, const std::string & ch) con
 
     auto   s  = _at(lc, lr);
     auto & px = buffer_.pixel_at(bx, by);
+
+    color new_bg = s.background.value_or(color::default_color);
+
+    // Alpha blend: true-color backgrounds with non-zero alpha are semi-transparent.
+    // (alpha=0 → fully opaque, alpha=255 → fully transparent, values between → blend)
+    if (new_bg != color::default_color &&
+        new_bg.type() == color_type::true_color &&
+        new_bg.a() > 0 && new_bg.a() < 255) {
+        new_bg = color::blend(new_bg, px.background_color);
+    }
+
     px.character        = ch;
     px.foreground_color = s.foreground.value_or(color::default_color);
-    px.background_color = s.background.value_or(color::default_color);
+    px.background_color = new_bg;
     px.style            = s.decorations.value_or(pixel_style_flag::none);
 }
 
@@ -131,6 +142,33 @@ void painter::fill(const std::string & ch) const
     for (int by = by0; by < by1; ++by) {
         for (int bx = bx0; bx < bx1; ++bx) {
             _write(bx, by, bx - rect_.x(), by - rect_.y(), ch);
+        }
+    }
+}
+
+void painter::clear(bool keep_background) const
+{
+    const int bx0 = std::max(rect_.x(), clip_.x());
+    const int by0 = std::max(rect_.y(), clip_.y());
+    const int bx1 = std::min(rect_.x() + rect_.width(),  clip_.x() + clip_.width());
+    const int by1 = std::min(rect_.y() + rect_.height(), clip_.y() + clip_.height());
+
+    if (!keep_background) {
+        // Standard clear: write space with the current background color.
+        fill(" ");
+    } else {
+        // Erase characters only — preserve each cell's existing background_color.
+        // Useful in transparent overlay widgets that want to clear stale text
+        // without overwriting the background painted by a lower layer.
+        auto s = _at(0, 0); // sample effective foreground / decorations
+        for (int by = by0; by < by1; ++by) {
+            for (int bx = bx0; bx < bx1; ++bx) {
+                auto & px = buffer_.pixel_at(bx, by);
+                px.character        = " ";
+                px.foreground_color = s.foreground.value_or(color::default_color);
+                px.style            = s.decorations.value_or(pixel_style_flag::none);
+                // background_color intentionally left unchanged
+            }
         }
     }
 }

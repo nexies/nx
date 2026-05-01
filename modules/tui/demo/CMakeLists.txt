@@ -33,3 +33,8 @@ nx_configure_demo(animation
         COMPONENT tui
         SOURCE animation_demo.cpp
 )
+
+nx_configure_demo(layout
+        COMPONENT tui
+        SOURCE layout_demo.cpp
+)

@@ -86,12 +86,13 @@ void frame::on_paint(painter & p)
         p.set_color(border_color_);
     }
 
-    // Fill inner area first (inherits painter's current fg/bg/style).
-    // Temporarily reset to saved color so the fill uses content style.
+    // Fill inner area (transparent frames skip this so lower layers show through).
     p.set_color(saved_color);
-    for (int row = 1; row < h - 1; ++row) {
-        for (int col = 1; col < w - 1; ++col) {
-            p.draw_char({ col, row }, " ");
+    if (!is_transparent()) {
+        for (int row = 1; row < h - 1; ++row) {
+            for (int col = 1; col < w - 1; ++col) {
+                p.draw_char({ col, row }, " ");
+            }
         }
     }
 

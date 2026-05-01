@@ -14,7 +14,7 @@
 #include <nx/tui/animation/animation.hpp>
 #include <nx/tui/widgets/screen.hpp>
 #include <nx/tui/widgets/widget.hpp>
-#include <nx/tui/widgets/box.hpp>
+#include <../include/nx/tui/layout/box.hpp>
 #include <nx/tui/widgets/label.hpp>
 #include <nx/tui/widgets/frame.hpp>
 #include <nx/tui/graphics/painter.hpp>

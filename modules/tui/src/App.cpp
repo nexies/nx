@@ -156,8 +156,12 @@ void
 tui_application::_on_key(key_event e)
 {
     // App-level filters run first.
-    for (auto * f : app_filters_)
-        if (f->filter_key(e)) return;
+    for (auto * f : app_filters_) {
+        if (f->filter_key(e)) {
+            if (screen_ && screen_->is_dirty()) screen_->render();
+            return;
+        }
+    }
 
     if (e.code == key::printable &&
         e.modifiers.has(key_modifier::ctrl) &&
@@ -176,8 +180,12 @@ void
 tui_application::_on_mouse(mouse_event e)
 {
     // App-level filters run first.
-    for (auto * f : app_filters_)
-        if (f->filter_mouse(e)) return;
+    for (auto * f : app_filters_) {
+        if (f->filter_mouse(e)) {
+            if (screen_ && screen_->is_dirty()) screen_->render();
+            return;
+        }
+    }
 
     if (screen_) {
         screen_->dispatch_mouse(e);

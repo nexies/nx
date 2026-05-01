@@ -25,7 +25,7 @@ class button : public widget {
     std::string text_;
 
     // ── Palette ───────────────────────────────────────────────────────────────
-    color base_bg_     = color::black;
+    color base_bg_     = color::default_color;
     color hover_bg_    = color::rgb( 81,  81,  98);  // base + 15 % white
     color press_bg_    = color::rgb(112, 112, 126);  // base + 30 % white
     color base_fg_     = color::rgb(220, 220, 240);

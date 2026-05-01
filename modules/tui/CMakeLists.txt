@@ -14,7 +14,13 @@ add_library(nx_tui
     src/widgets/button.cpp
     src/widgets/line_edit.cpp
     src/widgets/frame.cpp
-    src/widgets/box.cpp
+        src/layout/layout.cpp
+        src/layout/box.cpp
+        src/layout/stack.cpp
+        src/layout/free_layout.cpp
+        src/layout/flow_layout.cpp
+        src/layout/grid_layout.cpp
+        src/layout/tab_layout.cpp
     src/widgets/scroll_area.cpp
 
     include/nx/tui/application.hpp
@@ -47,12 +53,19 @@ add_library(nx_tui
     include/nx/tui/widgets/button.hpp
     include/nx/tui/widgets/line_edit.hpp
     include/nx/tui/widgets/frame.hpp
-    include/nx/tui/widgets/box.hpp
+    include/nx/tui/layout/layout.hpp
+    include/nx/tui/layout/box.hpp
+    include/nx/tui/layout/stack.hpp
+    include/nx/tui/layout/free_layout.hpp
+    include/nx/tui/layout/flow.hpp
+    include/nx/tui/layout/grid.hpp
+    include/nx/tui/layout/tab_layout.hpp
     include/nx/tui/widgets/scroll_area.hpp
     include/nx/tui/types/border_style.hpp
     include/nx/tui/types/margin.hpp
     include/nx/tui/terminal/guards.hpp
     include/nx/tui/terminal.hpp
+    include/nx/tui/layout.hpp
 )
 
 target_link_libraries(nx_tui PUBLIC
