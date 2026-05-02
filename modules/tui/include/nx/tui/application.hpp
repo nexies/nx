@@ -22,6 +22,7 @@
 #include <nx/tui/input/input_reader.hpp>
 #include <nx/tui/input/event_filter.hpp>
 #include <nx/tui/animation/animation_manager.hpp>
+#include <nx/tui/types/theme.hpp>
 
 #include <memory>
 #include <optional>
@@ -68,6 +69,15 @@ public:
 
     [[nodiscard]] animation_manager & animations() noexcept { return *anim_manager_; }
 
+    // ── Theme ─────────────────────────────────────────────────────────────────
+
+    [[nodiscard]] const theme & get_theme() const noexcept { return theme_; }
+    [[nodiscard]]       theme & get_theme()       noexcept { return theme_; }
+    void set_theme(theme t) noexcept {
+        theme_ = std::move(t);
+        if (screen_) screen_->update();
+    }
+
     // ── Static access ─────────────────────────────────────────────────────────
 
     NX_NODISCARD static tui_application *
@@ -83,6 +93,8 @@ private:
     void _on_mouse(mouse_event e);
     void _on_window_resize(window_size ws);
 
+
+    theme                                  theme_  { theme::dark() };
 
     std::vector<event_filter *>           app_filters_;
     std::unique_ptr<nx::asio::signal_set> sigwinch_set_;

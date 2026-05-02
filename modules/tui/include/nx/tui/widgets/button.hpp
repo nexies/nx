@@ -4,7 +4,9 @@
 #include <nx/tui/animation/animated_value.hpp>
 #include <nx/tui/types/color.hpp>
 #include <nx/tui/types/border_style.hpp>
+#include <nx/tui/types/theme_role.hpp>
 
+#include <optional>
 #include <string>
 
 namespace nx::tui {
@@ -24,16 +26,19 @@ namespace nx::tui {
 class button : public widget {
     std::string text_;
 
-    // ── Palette ───────────────────────────────────────────────────────────────
-    color base_bg_     = color::default_color;
-    color hover_bg_    = color::rgb( 81,  81,  98);  // base + 15 % white
-    color press_bg_    = color::rgb(112, 112, 126);  // base + 30 % white
-    color base_fg_     = color::rgb(220, 220, 240);
-    color accent_      = color::rgb(255, 180,  60);
+    // ── Color overrides (nullopt = derive from application theme) ────────────
+    std::optional<color> base_bg_override_;
+    std::optional<color> hover_bg_override_;
+    std::optional<color> press_bg_override_;
+    std::optional<color> base_fg_override_;
+    std::optional<color> accent_override_;
+
+    // Whether animated values have been initialised from the theme at least once.
+    bool colors_initialized_ = false;
 
     // ── Animation state ───────────────────────────────────────────────────────
-    animated_value<color> bg_     { this, base_bg_  };
-    animated_value<color> border_ { this, base_fg_  };
+    animated_value<color> bg_     { this, color::default_color };
+    animated_value<color> border_ { this, color::default_color };
 
     border_style border_style_ = border_style::rounded;
 
@@ -51,11 +56,12 @@ public:
 
     // ── Palette ───────────────────────────────────────────────────────────────
 
-    // Set base bg and fg; hover/press variants are computed automatically
-    // (15 % and 30 % white mix respectively).
-    void set_base_color(color bg, color fg = color::rgb(220, 220, 240));
+    // Override base bg and fg; hover/press variants are computed automatically
+    // (15 % and 30 % white mix).  Calling this disables theme-based colors.
+    // Pass color::default_color to re-enable theme lookup for that slot.
+    void set_base_color(color bg, color fg = color::default_color);
 
-    void set_accent_color(color c) { accent_ = c; }
+    void set_accent_color(color c) { accent_override_ = c; }
     void set_border_style(border_style s) { border_style_ = s; update(); }
 
     // ── Signals ───────────────────────────────────────────────────────────────
@@ -77,7 +83,17 @@ protected:
 
 private:
     void _do_click();
-    [[nodiscard]] color _target_bg() const noexcept;
+
+    // Resolve colors — use explicit override if set, otherwise read from theme.
+    [[nodiscard]] color _resolve_idle_bg()   const noexcept;
+    [[nodiscard]] color _resolve_hover_bg()  const noexcept;
+    [[nodiscard]] color _resolve_press_bg()  const noexcept;
+    [[nodiscard]] color _resolve_idle_fg()   const noexcept;
+    [[nodiscard]] color _resolve_accent()    const noexcept;
+    [[nodiscard]] color _target_bg()         const noexcept;
+
+    // Initialise animated values from the theme on first paint.
+    void _init_colors() noexcept;
 };
 
 } // namespace nx::tui

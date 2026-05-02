@@ -1,4 +1,5 @@
 #include <nx/tui/graphics/painter.hpp>
+#include <nx/tui/application.hpp>
 #include <nx/common/types/utf8.hpp>
 
 #include <algorithm>
@@ -82,7 +83,12 @@ void painter::_write(int bx, int by, int lc, int lr, const std::string & ch) con
     auto   s  = _at(lc, lr);
     auto & px = buffer_.pixel_at(bx, by);
 
-    color new_bg = s.background.value_or(color::default_color);
+    color new_bg;
+    if (s.background.has_value()) {
+        new_bg = s.background.value();
+    } else {
+        new_bg = style_.background.value_or(color::default_color);
+    }
 
     // Alpha blend: true-color backgrounds with non-zero alpha are semi-transparent.
     // (alpha=0 → fully opaque, alpha=255 → fully transparent, values between → blend)
@@ -176,6 +182,43 @@ void painter::clear(bool keep_background) const
 painter::point_type painter::_project_point(const point_type & pos) const
 {
     return { pos.x + rect_.x(), pos.y + rect_.y() };
+}
+
+// ── theme access ──────────────────────────────────────────────────────────────
+
+const style_option & painter::theme_style(theme_role r) const noexcept
+{
+    static const style_option empty;
+    if (auto * app = tui_application::instance())
+        return app->get_theme().get_style(r);
+    return empty;
+}
+
+color painter::theme_color(theme_role r) const noexcept
+{
+    if (auto * app = tui_application::instance())
+        return app->get_theme().get_color(r);
+    return color::default_color;
+}
+
+color painter::theme_bg(theme_role r) const noexcept
+{
+    if (auto * app = tui_application::instance())
+        return app->get_theme().get_bg(r);
+    return color::default_color;
+}
+
+void painter::apply_theme_as_base(theme_role fg_role, theme_role bg_role) noexcept
+{
+    // Only fills in fields not already set by an explicit widget style.
+    if (!style_.foreground) {
+        const color c = theme_color(fg_role);
+        if (c != color::default_color) style_.foreground = c;
+    }
+    if (!style_.background) {
+        const color c = theme_bg(bg_role);
+        if (c != color::default_color) style_.background = c;
+    }
 }
 
 } // namespace nx::tui

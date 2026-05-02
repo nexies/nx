@@ -3,6 +3,7 @@
 #include <nx/tui/input/key_event.hpp>
 #include <nx/tui/input/mouse_event.hpp>
 #include <nx/tui/types/style_option.hpp>
+#include <nx/tui/types/theme_role.hpp>
 #include <nx/tui/animation/easing.hpp>
 
 #include <nx/common/types/utf8.hpp>
@@ -92,6 +93,9 @@ void line_edit::set_text(std::string t)
 
 void line_edit::on_paint(painter & p)
 {
+    // Apply theme defaults for fg/bg unless the widget has an explicit style.
+    p.apply_theme_as_base(theme_role::foreground, theme_role::background);
+
     p.fill(" ");
 
     const int w = size().width;
@@ -102,9 +106,8 @@ void line_edit::on_paint(painter & p)
     const std::size_t start     = scroll_off_;
     const std::size_t end       = utf8_advance(text_, start, view_cols);
 
-    if (start < text_.size()) {
+    if (start < text_.size())
         p.draw_text({ 0, 0 }, text_.substr(start, end - start));
-    }
 
     // Draw cursor when focused: smooth fade between normal and inverted using
     // cursor_alpha_ (0 = invisible, 1 = fully inverted).
@@ -119,11 +122,14 @@ void line_edit::on_paint(painter & p)
                     cur_ch = std::string(text_.data() + cursor_, clen);
                 }
 
-                // Interpolate between normal fg/bg and inverted fg/bg.
+                // fg/bg from painter (already resolved to theme defaults).
                 color fg_c = p.current_color();
                 color bg_c = p.current_background_color();
-                if (fg_c == color::default_color) fg_c = color::rgb(200, 200, 220);
-                if (bg_c == color::default_color) bg_c = color::rgb( 18,  18,  24);
+                // Last-resort fallbacks when no app/theme available.
+                if (fg_c == color::default_color)
+                    fg_c = p.theme_color(theme_role::foreground);
+                if (bg_c == color::default_color)
+                    bg_c = p.theme_bg(theme_role::background);
 
                 const color c_fg = color::interpolate(alpha, fg_c, bg_c);
                 const color c_bg = color::interpolate(alpha, bg_c, fg_c);

@@ -163,6 +163,10 @@ tui_application::_on_key(key_event e)
         }
     }
 
+    if (e.code == key::escape) {
+        this->quit();
+        return;
+    }
     if (e.code == key::printable &&
         e.modifiers.has(key_modifier::ctrl) &&
         e.character == U'C') {

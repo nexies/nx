@@ -3,6 +3,7 @@
 #include <nx/tui/input/key_event.hpp>
 #include <nx/tui/input/mouse_event.hpp>
 #include <nx/tui/input/key.hpp>
+#include <nx/tui/types/theme_role.hpp>
 
 #include <algorithm>
 
@@ -127,19 +128,24 @@ void scroll_area::_draw_vscrollbar(painter & p) const
 
     if (vp_h <= 0 || ct_h <= 0) return;
 
+    const color track_fg = p.theme_color(theme_role::scrollbar);
+    const color thumb_fg = p.theme_color(theme_role::scrollbar_thumb);
+    const color thumb_bg = p.theme_bg   (theme_role::scrollbar_thumb);
+
     // Reserve 1 cell each for ▲ and ▼ arrows (needs at least 3 rows).
-    const bool arrows     = (vp_h >= 3);
-    const int  track_y    = arrows ? 1 : 0;
-    const int  track_len  = vp_h - (arrows ? 2 : 0);
+    const bool arrows    = (vp_h >= 3);
+    const int  track_y   = arrows ? 1 : 0;
+    const int  track_len = vp_h - (arrows ? 2 : 0);
 
     if (arrows) {
-        p.draw_char({ bar_x, 0 },         "▲");
-        p.draw_char({ bar_x, vp_h - 1 },  "▼");
+        p.set_color(track_fg);
+        p.draw_char({ bar_x, 0 },        "▲");
+        p.draw_char({ bar_x, vp_h - 1 }, "▼");
     }
 
     if (track_len <= 0) return;
 
-    const int thumb_len = std::max(1, track_len * vp_h / ct_h);
+    const int thumb_len  = std::max(1, track_len * vp_h / ct_h);
     const int max_scroll = ct_h - vp_h;
     const int thumb_top  = max_scroll > 0
         ? (scroll_y_ * (track_len - thumb_len)) / max_scroll
@@ -147,7 +153,15 @@ void scroll_area::_draw_vscrollbar(painter & p) const
 
     for (int i = 0; i < track_len; ++i) {
         const bool in_thumb = (i >= thumb_top && i < thumb_top + thumb_len);
-        p.draw_char({ bar_x, track_y + i }, in_thumb ? "█" : "▒");
+        if (in_thumb) {
+            p.set_color(thumb_fg);
+            p.set_background_color(thumb_bg);
+            p.draw_char({ bar_x, track_y + i }, "█");
+            p.set_background_color(color::default_color);
+        } else {
+            p.set_color(track_fg);
+            p.draw_char({ bar_x, track_y + i }, "▒");
+        }
     }
 }
 
@@ -159,13 +173,18 @@ void scroll_area::_draw_hscrollbar(painter & p) const
 
     if (vp_w <= 0 || ct_w <= 0) return;
 
+    const color track_fg = p.theme_color(theme_role::scrollbar);
+    const color thumb_fg = p.theme_color(theme_role::scrollbar_thumb);
+    const color thumb_bg = p.theme_bg   (theme_role::scrollbar_thumb);
+
     const bool arrows    = (vp_w >= 3);
     const int  track_x   = arrows ? 1 : 0;
     const int  track_len = vp_w - (arrows ? 2 : 0);
 
     if (arrows) {
+        p.set_color(track_fg);
         p.draw_char({ 0,         bar_y }, "◄");
-        p.draw_char({ vp_w - 1, bar_y }, "►");
+        p.draw_char({ vp_w - 1,  bar_y }, "►");
     }
 
     if (track_len <= 0) return;
@@ -178,12 +197,22 @@ void scroll_area::_draw_hscrollbar(painter & p) const
 
     for (int i = 0; i < track_len; ++i) {
         const bool in_thumb = (i >= thumb_left && i < thumb_left + thumb_len);
-        p.draw_char({ track_x + i, bar_y }, in_thumb ? "█" : "▒");
+        if (in_thumb) {
+            p.set_color(thumb_fg);
+            p.set_background_color(thumb_bg);
+            p.draw_char({ track_x + i, bar_y }, "█");
+            p.set_background_color(color::default_color);
+        } else {
+            p.set_color(track_fg);
+            p.draw_char({ track_x + i, bar_y }, "▒");
+        }
     }
 }
 
 void scroll_area::on_paint(painter & p)
 {
+    p.apply_theme_as_base(theme_role::foreground, theme_role::background);
+
     if (_needs_v_scrollbar()) _draw_vscrollbar(p);
     if (_needs_h_scrollbar()) _draw_hscrollbar(p);
 

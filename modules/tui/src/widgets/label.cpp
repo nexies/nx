@@ -1,5 +1,6 @@
 #include <nx/tui/widgets/label.hpp>
 #include <nx/tui/graphics/painter.hpp>
+#include <nx/tui/types/theme_role.hpp>
 #include <nx/common/types/utf8.hpp>
 
 namespace nx::tui {
@@ -34,6 +35,7 @@ void label::set_alignment(text_align a)
 
 void label::on_paint(painter & p)
 {
+    p.apply_theme_as_base(theme_role::foreground, theme_role::background);
     p.fill(" ");
 
     const int w = size().width;

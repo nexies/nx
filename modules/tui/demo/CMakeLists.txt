@@ -38,3 +38,18 @@ nx_configure_demo(layout
         COMPONENT tui
         SOURCE layout_demo.cpp
 )
+
+nx_configure_demo(theme
+        COMPONENT tui
+        SOURCE theme_demo.cpp
+)
+
+nx_configure_demo(tab
+        COMPONENT tui
+        SOURCE tab_demo.cpp
+)
+
+nx_configure_demo(tier1
+        COMPONENT tui
+        SOURCE tier1_demo.cpp
+)

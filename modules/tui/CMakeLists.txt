@@ -4,6 +4,7 @@ add_library(nx_tui
     src/animation/animator.cpp
     src/animation/animation_manager.cpp
     src/types/color.cpp
+    src/types/theme.cpp
     src/graphics/painter.cpp
     src/graphics/display_buffer.cpp
     src/input/escape_parser.cpp
@@ -22,6 +23,13 @@ add_library(nx_tui
         src/layout/grid_layout.cpp
         src/layout/tab_layout.cpp
     src/widgets/scroll_area.cpp
+    src/widgets/tab_bar.cpp
+    src/widgets/tab_widget.cpp
+    src/widgets/separator.cpp
+    src/widgets/check_box.cpp
+    src/widgets/radio_button.cpp
+    src/widgets/progress_bar.cpp
+    src/widgets/spinner.cpp
 
     include/nx/tui/application.hpp
     include/nx/tui/terminal/terminal.hpp
@@ -33,6 +41,8 @@ add_library(nx_tui
     include/nx/tui/graphics/painter.hpp
     include/nx/tui/graphics/pixel.hpp
     include/nx/tui/types/color.hpp
+    include/nx/tui/types/theme_role.hpp
+    include/nx/tui/types/theme.hpp
     include/nx/tui/types/point.hpp
     include/nx/tui/types/rect.hpp
     include/nx/tui/types/size.hpp
@@ -61,6 +71,13 @@ add_library(nx_tui
     include/nx/tui/layout/grid.hpp
     include/nx/tui/layout/tab_layout.hpp
     include/nx/tui/widgets/scroll_area.hpp
+    include/nx/tui/widgets/tab_bar.hpp
+    include/nx/tui/widgets/tab_widget.hpp
+    include/nx/tui/widgets/separator.hpp
+    include/nx/tui/widgets/check_box.hpp
+    include/nx/tui/widgets/radio_button.hpp
+    include/nx/tui/widgets/progress_bar.hpp
+    include/nx/tui/widgets/spinner.hpp
     include/nx/tui/types/border_style.hpp
     include/nx/tui/types/margin.hpp
     include/nx/tui/terminal/guards.hpp

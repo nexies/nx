@@ -3,6 +3,7 @@
 #include <nx/tui/terminal/terminal.hpp>
 #include <nx/tui/input/key_event.hpp>
 #include <nx/tui/input/mouse_event.hpp>
+#include <nx/tui/types/theme_role.hpp>
 
 #include <cstdio>
 #include <vector>
@@ -42,13 +43,20 @@ void screen::_apply_layout()
 
 // ── render ────────────────────────────────────────────────────────────────────
 
+void screen::on_paint(painter & p)
+{
+    p.apply_theme_as_base(theme_role::foreground, theme_role::background);
+    p.fill(" ");
+}
+
 void screen::render()
 {
     render_calls_ = 0;
     // Seed back_ with the previous frame so that cells belonging to widgets
     // we skip this pass already contain the correct content.
     back_ = front_;
-    _render_widget(*this, 0, 0, rect<int>(0, 0, back_.cols(), back_.rows()));
+    const bool force = full_repaint_;
+    _render_widget(*this, 0, 0, rect<int>(0, 0, back_.cols(), back_.rows()), force);
     _flush_diff();
     total_render_calls_ += render_calls_;
     NX_EMIT(rendered)
@@ -89,6 +97,10 @@ void screen::_render_widget(widget & w, int global_x, int global_y, rect<int> cl
         if (w._dirty()) w._apply_layout();
         painter p(back_, widget_rect, eff_clip);
         p.apply_style(w.get_style());
+        // Apply the theme as a fallback so that widgets with no explicit
+        // background (e.g. layout containers) clear to the theme background
+        // rather than default_color.
+        p.apply_theme_as_base(theme_role::foreground, theme_role::background);
         if (!w.is_transparent()) p.clear();
         w.on_paint(p);
         w._clear_dirty();

@@ -18,6 +18,7 @@ public:
 
     explicit v_box(nx::core::object * parent = nullptr);
 
+    [[nodiscard]] size_type size_hint()    const override;
     [[nodiscard]] size_type minimum_size() const override;
 
 protected:
@@ -38,6 +39,7 @@ public:
 
     explicit h_box(nx::core::object * parent = nullptr);
 
+    [[nodiscard]] size_type size_hint()    const override;
     [[nodiscard]] size_type minimum_size() const override;
 
 protected:

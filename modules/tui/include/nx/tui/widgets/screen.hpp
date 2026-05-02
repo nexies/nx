@@ -80,6 +80,7 @@ protected:
     // Sizes all direct children to fill the screen so that a root layout
     // widget (v_box, h_box) naturally takes the full terminal area.
     void _apply_layout() override;
+    void on_paint(painter & p) override;
 
 private:
     // Recursively render w and its children.

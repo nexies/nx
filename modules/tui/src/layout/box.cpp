@@ -177,6 +177,31 @@ v_box::v_box(nx::core::object * parent)
     : layout(parent)
 {}
 
+widget::size_type v_box::size_hint() const
+{
+    // If an explicit hint was set, honour it.
+    const auto eh = explicit_hint();
+    if (eh.height > 0 && eh.width > 0) return eh;
+
+    // Natural size = sum of children's preferred heights (+ spacing + margins).
+    int h = 0, w = 0, n = 0;
+    for (auto * c : child_widgets()) {
+        if (!c->is_visible()) continue;
+        auto sh = c->size_hint();
+        h += sh.height;
+        w  = std::max(w, sh.width);
+        ++n;
+    }
+    h += spacing_ * std::max(0, n - 1);
+    h += margin_.top  + margin_.bottom;
+    w += margin_.left + margin_.right;
+
+    return {
+        eh.height > 0 ? eh.height : h,
+        eh.width  > 0 ? eh.width  : w
+    };
+}
+
 widget::size_type v_box::minimum_size() const
 {
     int min_h = 0, min_w = 0, n = 0;
@@ -204,6 +229,29 @@ void v_box::_apply_layout()
 h_box::h_box(nx::core::object * parent)
     : layout(parent)
 {}
+
+widget::size_type h_box::size_hint() const
+{
+    const auto eh = explicit_hint();
+    if (eh.height > 0 && eh.width > 0) return eh;
+
+    int h = 0, w = 0, n = 0;
+    for (auto * c : child_widgets()) {
+        if (!c->is_visible()) continue;
+        auto sh = c->size_hint();
+        w += sh.width;
+        h  = std::max(h, sh.height);
+        ++n;
+    }
+    w += spacing_ * std::max(0, n - 1);
+    h += margin_.top  + margin_.bottom;
+    w += margin_.left + margin_.right;
+
+    return {
+        eh.height > 0 ? eh.height : h,
+        eh.width  > 0 ? eh.width  : w
+    };
+}
 
 widget::size_type h_box::minimum_size() const
 {
