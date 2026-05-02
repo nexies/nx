@@ -24,6 +24,13 @@ namespace nx::asio
     void handle_notifier::impl::async_wait(HandlerType callback)
     {
         handler_ = std::move(callback);
+#if defined(NX_OS_WINDOWS)
+        // The IOCP backend uses one-shot NT thread-pool waits (WT_EXECUTEONLYONCE).
+        // Each call to async_wait() — including the first — arms (or re-arms) the
+        // wait via modify() so the next signal on the handle produces a completion.
+        if (installed())
+            modify(handle(), interest());
+#endif
     }
 
     void handle_notifier::impl::on_event(backend_event & event)

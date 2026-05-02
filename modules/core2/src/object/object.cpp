@@ -229,6 +229,20 @@ post_to_thread(thread * t, std::function<void()> task)
 
 } // namespace detail
 
+// ── property access ───────────────────────────────────────────────────────────
+
+nx::result<std::any>
+object::get_property(std::string_view name)
+{
+    return object::static_meta_object().property_registry().static_get(name, this);
+}
+
+nx::result<void>
+object::set_property(std::string_view name, const std::any & value)
+{
+    return object::static_meta_object().property_registry().static_set(name, this, value);
+}
+
 // ── event dispatch ────────────────────────────────────────────────────────────
 
 bool

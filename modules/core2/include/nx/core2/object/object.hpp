@@ -23,7 +23,9 @@
 #include <nx/core2/event/event.hpp>
 
 
+#include <any>
 #include <string>
+#include <string_view>
 #include <type_traits>
 #include <vector>
 
@@ -144,7 +146,26 @@ public:
 
     // ── Built-in properties / signals ─────────────────────────────────────────
 
-    NX_OBJECT(object)
+    // Manual expansion of NX_OBJECT(object) — object is the root of the hierarchy
+    // so the virtual declarations must live here; all derived classes use
+    // NX_OBJECT(T) which generates the override implementations.
+    using _nx_self_t      = object;
+    using meta_object_type = ::nx::core::detail::meta_object<object>;
+    NX_NODISCARD static constexpr const char * static_class_name() noexcept { return "object"; }
+    NX_NODISCARD static meta_object_type & static_meta_object() noexcept
+    { static meta_object_type meta("object"); return meta; }
+
+    // Virtual property access. Overridden in every NX_OBJECT(T) subclass so
+    // the concrete class's own meta_property_registry is queried.
+    //
+    // NOTE: each class's registry only contains properties declared in *that*
+    // class.  Full inheritance chain search is deferred until C++26 static
+    // reflection (std::meta::bases_of) becomes available.
+    NX_NODISCARD virtual nx::result<std::any>
+    get_property(std::string_view name);
+
+    virtual nx::result<void>
+    set_property(std::string_view name, const std::any & value);
 
     NX_PROPERTY(object_name, TYPE std::string, READ, WRITE, NOTIFY)
 

@@ -248,9 +248,11 @@ void terminal::enable_raw_mode()
         return;
     if (!GetConsoleMode(hIn, &g_saved_input_mode))
         return;
+    // Use native Win32 input events — no VT translation needed.
+    // ENABLE_EXTENDED_FLAGS is required for ENABLE_MOUSE_INPUT to report scroll.
     DWORD raw_in = (g_saved_input_mode
         & ~(ENABLE_ECHO_INPUT | ENABLE_LINE_INPUT | ENABLE_PROCESSED_INPUT))
-        | ENABLE_VIRTUAL_TERMINAL_INPUT;
+        | ENABLE_MOUSE_INPUT | ENABLE_EXTENDED_FLAGS;
     SetConsoleMode(hIn, raw_in);
 
     // Enable VT escape-sequence processing on both stdout and stderr so ANSI
@@ -305,14 +307,24 @@ void terminal::disable_raw_mode()
 
 void terminal::enable_mouse_tracking()
 {
+#if defined(NX_OS_WINDOWS)
+    // On Windows, mouse input is controlled by ENABLE_MOUSE_INPUT in the
+    // console mode, which is already set in enable_raw_mode().  ANSI tracking
+    // sequences are not needed.
+#else
     fmt::print(ostream_, ansi::g_enable_mouse_any_cmd);   // report all motion
     fmt::print(ostream_, ansi::g_enable_mouse_sgr_cmd);   // SGR encoding
     fflush(ostream_);
+#endif
 }
 
 void terminal::disable_mouse_tracking()
 {
+#if defined(NX_OS_WINDOWS)
+    // Nothing to do — raw mode is disabled in disable_raw_mode().
+#else
     fmt::print(ostream_, ansi::g_disable_mouse_sgr_cmd);
     fmt::print(ostream_, ansi::g_disable_mouse_any_cmd);
     fflush(ostream_);
+#endif
 }

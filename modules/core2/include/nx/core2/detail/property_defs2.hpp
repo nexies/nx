@@ -112,7 +112,8 @@
 ///
 ///     NOTIFY  (bare):
 ///       Generate  NX_SIGNAL(<name>_changed);  on the class and register it.
-///       The signal carries the new value as its argument.
+///       The signal is no-argument: observers call the getter themselves if
+///       they need the new value.  This works with both TYPE and MEMBER storage.
 ///
 ///     NOTIFY <signal>:
 ///       Use existing signal <signal> and register it.
@@ -653,6 +654,9 @@
 //   bare NOTIFY  → NX_SIGNAL(<name>_changed)   — no argument: avoids copies of
 //                                                 complex types and is safe across
 //                                                 threads (observer calls getter).
+//                                                 Works with both TYPE and MEMBER
+//                                                 storage because no type parameter
+//                                                 is required.
 //   NOTIFY sig   → nothing  (existing signal — registered in meta only)
 //   no NOTIFY    → nothing
 // ----------------------------------------------------------------
@@ -664,14 +668,7 @@
     _nx_logic_if(_nxpv2_exists_arg(args, NOTIFY))(                          \
         _nx_logic_if(_nxpv2_has_value(args, NOTIFY))(                       \
             _nx_empty(),                                                     \
-            _nx_logic_if(_nxpv2_exists_arg(args, MEMBER))(                  \
-                static_assert(false,                                         \
-                    "NX_PROPERTY: bare NOTIFY with MEMBER is not supported " \
-                    "because the member type cannot be deduced while the "   \
-                    "class is incomplete. Pre-declare the signal and use "   \
-                    "NOTIFY <signal_name> instead."),                        \
-                _nxpv2_gen_signal(prop_name)                                \
-            )                                                                \
+            _nxpv2_gen_signal(prop_name)                                    \
         ),                                                                   \
         _nx_empty()                                                          \
     )

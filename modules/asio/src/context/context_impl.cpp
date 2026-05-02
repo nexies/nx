@@ -191,7 +191,7 @@ namespace nx::asio
 
     void io_context::impl::unregister_reactor_handle(native_handle_t handle, void * token, io_interest interest)
     {
-        backend_->remove(handle, this, interest);
+        backend_->remove(handle, token, interest);
         backend_->wake();
     }
 

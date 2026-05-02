@@ -18,35 +18,150 @@
 #if defined(NX_OS_WINDOWS)
 namespace {
 
-// Translate a Windows virtual key code to the corresponding VT escape sequence.
-// Returns nullptr if the key has no VT equivalent (handled via uChar instead).
-const char * vk_to_vt(WORD vk) noexcept
+using namespace nx::tui;
+
+// ── key translation ───────────────────────────────────────────────────────────
+
+key vk_to_key(WORD vk) noexcept
 {
     switch (vk) {
-    case VK_UP:     return "\x1b[A";
-    case VK_DOWN:   return "\x1b[B";
-    case VK_RIGHT:  return "\x1b[C";
-    case VK_LEFT:   return "\x1b[D";
-    case VK_HOME:   return "\x1b[H";
-    case VK_END:    return "\x1b[F";
-    case VK_INSERT: return "\x1b[2~";
-    case VK_DELETE: return "\x1b[3~";
-    case VK_PRIOR:  return "\x1b[5~";
-    case VK_NEXT:   return "\x1b[6~";
-    case VK_F1:     return "\x1bOP";
-    case VK_F2:     return "\x1bOQ";
-    case VK_F3:     return "\x1bOR";
-    case VK_F4:     return "\x1bOS";
-    case VK_F5:     return "\x1b[15~";
-    case VK_F6:     return "\x1b[17~";
-    case VK_F7:     return "\x1b[18~";
-    case VK_F8:     return "\x1b[19~";
-    case VK_F9:     return "\x1b[20~";
-    case VK_F10:    return "\x1b[21~";
-    case VK_F11:    return "\x1b[23~";
-    case VK_F12:    return "\x1b[24~";
-    default:        return nullptr;
+    case VK_UP:     return key::arrow_up;
+    case VK_DOWN:   return key::arrow_down;
+    case VK_LEFT:   return key::arrow_left;
+    case VK_RIGHT:  return key::arrow_right;
+    case VK_HOME:   return key::home;
+    case VK_END:    return key::end;
+    case VK_INSERT: return key::insert;
+    case VK_DELETE: return key::delete_key;
+    case VK_PRIOR:  return key::page_up;
+    case VK_NEXT:   return key::page_down;
+    case VK_F1:     return key::f1;
+    case VK_F2:     return key::f2;
+    case VK_F3:     return key::f3;
+    case VK_F4:     return key::f4;
+    case VK_F5:     return key::f5;
+    case VK_F6:     return key::f6;
+    case VK_F7:     return key::f7;
+    case VK_F8:     return key::f8;
+    case VK_F9:     return key::f9;
+    case VK_F10:    return key::f10;
+    case VK_F11:    return key::f11;
+    case VK_F12:    return key::f12;
+    case VK_RETURN: return key::enter;
+    case VK_ESCAPE: return key::escape;
+    case VK_BACK:   return key::backspace;
+    case VK_TAB:    return key::tab;
+    default:        return key::none;
     }
+}
+
+key_modifiers control_state_to_modifiers(DWORD cs) noexcept
+{
+    key_modifiers m;
+    if (cs & SHIFT_PRESSED)                         m |= key_modifier::shift;
+    if (cs & (LEFT_ALT_PRESSED  | RIGHT_ALT_PRESSED))  m |= key_modifier::alt;
+    if (cs & (LEFT_CTRL_PRESSED | RIGHT_CTRL_PRESSED)) m |= key_modifier::ctrl;
+    return m;
+}
+
+std::optional<key_event> translate_key(const KEY_EVENT_RECORD & r) noexcept
+{
+    if (!r.bKeyDown)
+        return std::nullopt;
+
+    const key_modifiers mods = control_state_to_modifiers(r.dwControlKeyState);
+
+    // Printable Unicode character — takes priority over VK.
+    const wchar_t wch = r.uChar.UnicodeChar;
+    if (wch >= 0x20 && wch != 0x7F) {
+        // Ignore if this is just a modifier key generating a char (e.g. AltGr combos
+        // that produce a printable char are fine; pure Ctrl+letter gives wch < 0x20).
+        return key_event { key::printable, mods, static_cast<char32_t>(wch) };
+    }
+
+    // Control characters: map common ones explicitly.
+    if (wch == '\r' || r.wVirtualKeyCode == VK_RETURN)  return key_event { key::enter,     mods };
+    if (wch == 0x1B || r.wVirtualKeyCode == VK_ESCAPE)  return key_event { key::escape,    mods };
+    if (wch == '\t' || r.wVirtualKeyCode == VK_TAB)     return key_event { key::tab,       mods };
+    if (wch == 0x7F || r.wVirtualKeyCode == VK_BACK)    return key_event { key::backspace, mods };
+
+    // For wch in [0x01..0x1A] (Ctrl+A..Ctrl+Z) emit as printable with ctrl mod.
+    if (wch >= 0x01 && wch <= 0x1A) {
+        const char32_t letter = L'a' + (wch - 1);
+        return key_event { key::printable, mods | key_modifier::ctrl, letter };
+    }
+
+    // Navigation / function keys (wch == 0).
+    const key k = vk_to_key(r.wVirtualKeyCode);
+    if (k != key::none)
+        return key_event { k, mods };
+
+    return std::nullopt;
+}
+
+// ── mouse translation ─────────────────────────────────────────────────────────
+
+std::optional<mouse_event> translate_mouse(const MOUSE_EVENT_RECORD & r,
+                                           DWORD & prev_buttons) noexcept
+{
+    mouse_event me;
+
+    // Coordinates: dwMousePosition is character-cell, 0-based.
+    // mouse_event.position is col,row 1-based — add 1.
+    me.position = { static_cast<int>(r.dwMousePosition.X) + 1,
+                    static_cast<int>(r.dwMousePosition.Y) + 1 };
+
+    me.modifiers = control_state_to_modifiers(r.dwControlKeyState);
+
+    // ── Wheel ────────────────────────────────────────────────────────────────
+    if (r.dwEventFlags & MOUSE_WHEELED) {
+        const SHORT delta = static_cast<SHORT>(HIWORD(r.dwButtonState));
+        me.action = mouse_action::wheel;
+        me.button = (delta > 0) ? mouse_button::wheel_up : mouse_button::wheel_down;
+        return me;
+    }
+
+    if (r.dwEventFlags & MOUSE_HWHEELED) {
+        // Horizontal wheel — ignore for now.
+        return std::nullopt;
+    }
+
+    // ── Move ─────────────────────────────────────────────────────────────────
+    if (r.dwEventFlags & MOUSE_MOVED) {
+        me.action = mouse_action::move;
+        me.button = mouse_button::none;
+        return me;
+    }
+
+    // ── Button press / release ────────────────────────────────────────────────
+    // Diff the current button state against the previous one.
+    const DWORD cur = r.dwButtonState & 0x1F; // lower 5 bits are the buttons
+    const DWORD changed = cur ^ (prev_buttons & 0x1F);
+    prev_buttons = r.dwButtonState;
+
+    if (changed == 0) {
+        // Windows sometimes fires a button event with no change (e.g. double-click
+        // intermediate). Treat as a move to avoid phantom presses.
+        me.action = mouse_action::move;
+        me.button = mouse_button::none;
+        return me;
+    }
+
+    // Find the first changed bit and report it.
+    // FROM_LEFT_1ST_BUTTON_PRESSED = 0x0001  (left)
+    // RIGHTMOST_BUTTON_PRESSED     = 0x0002  (right)
+    // FROM_LEFT_2ND_BUTTON_PRESSED = 0x0004  (middle)
+    if (changed & FROM_LEFT_1ST_BUTTON_PRESSED)
+        me.button = mouse_button::left;
+    else if (changed & RIGHTMOST_BUTTON_PRESSED)
+        me.button = mouse_button::right;
+    else if (changed & FROM_LEFT_2ND_BUTTON_PRESSED)
+        me.button = mouse_button::middle;
+    else
+        return std::nullopt; // unsupported button
+
+    me.action = (cur & changed) ? mouse_action::press : mouse_action::release;
+    return me;
 }
 
 } // anonymous namespace
@@ -65,83 +180,45 @@ input_reader::~input_reader()
 
 void input_reader::start()
 {
-#if defined(NX_OS_WINDOWS)
-    if (reader_thread_.joinable())
+    if (notifier_)
         return; // already running
 
-    stop_event_ = CreateEventW(nullptr, /*manualReset=*/TRUE, /*initial=*/FALSE, nullptr);
-
-    nx::asio::io_context * ctx = &nx::core::thread::current_context();
-    reader_thread_ = std::thread([this, ctx] { _reader_thread(ctx); });
+#if defined(NX_OS_WINDOWS)
+    notifier_ = std::make_unique<nx::asio::handle_notifier>(
+        nx::core::thread::current_context(),
+        GetStdHandle(STD_INPUT_HANDLE),
+        nx::asio::io_interest::read);
 #else
-    if (!notifier_) {
-        notifier_ = std::make_unique<nx::asio::handle_notifier>(
-            nx::core::thread::current_context(),
-            static_cast<nx::asio::native_handle_t>(STDIN_FILENO),
-            nx::asio::io_interest::read);
-    }
-    _arm();
+    notifier_ = std::make_unique<nx::asio::handle_notifier>(
+        nx::core::thread::current_context(),
+        static_cast<nx::asio::native_handle_t>(STDIN_FILENO),
+        nx::asio::io_interest::read);
 #endif
+    _arm();
 }
 
 void input_reader::stop()
 {
-#if defined(NX_OS_WINDOWS)
-    if (stop_event_) {
-        SetEvent(static_cast<HANDLE>(stop_event_));
-    }
-    if (reader_thread_.joinable()) {
-        reader_thread_.join();
-    }
-    if (stop_event_) {
-        CloseHandle(static_cast<HANDLE>(stop_event_));
-        stop_event_ = nullptr;
-    }
-#else
     if (notifier_) {
         notifier_->cancel();
         notifier_.reset();
     }
-#endif
+#if !defined(NX_OS_WINDOWS)
     (void)parser_.flush(); // discard any incomplete sequence
+#endif
 }
 
 void input_reader::_arm()
 {
-#if !defined(NX_OS_WINDOWS)
     if (!notifier_)
         return;
 
-    notifier_->async_wait([this](nx::asio::native_handle_t /*fd*/,
+    notifier_->async_wait([this](nx::asio::native_handle_t /*handle*/,
                                  nx::asio::io_event        ev) {
         if (ev != nx::asio::io_event::none)
             _on_readable();
     });
-#endif
 }
-
-#if defined(NX_OS_WINDOWS)
-void input_reader::_reader_thread(nx::asio::io_context * ctx)
-{
-    HANDLE hIn   = GetStdHandle(STD_INPUT_HANDLE);
-    HANDLE hStop = static_cast<HANDLE>(stop_event_);
-    HANDLE handles[2] = { hIn, hStop };
-
-    for (;;) {
-        DWORD result = WaitForMultipleObjects(2, handles, /*waitAll=*/FALSE, INFINITE);
-
-        if (result == WAIT_OBJECT_0 + 1 || result == WAIT_FAILED)
-            break; // stop event or error
-
-        // Console input is ready — post _on_readable to the io_context thread.
-        ctx->post([this] { _on_readable(); });
-
-        // Throttle: wait until the main thread has processed before re-checking,
-        // so we don't flood the queue. A simple sleep is sufficient here.
-        Sleep(1);
-    }
-}
-#endif
 
 void input_reader::_on_readable()
 {
@@ -164,30 +241,14 @@ void input_reader::_on_readable()
 
         switch (rec.EventType) {
         case KEY_EVENT: {
-            // Only handle key-down events to avoid duplicate emissions.
-            if (!rec.Event.KeyEvent.bKeyDown)
-                break;
+            if (auto ke = translate_key(rec.Event.KeyEvent))
+                _emit_event(*ke);
+            break;
+        }
 
-            // First try a direct Unicode character (covers printable chars,
-            // control chars, and keys with ENABLE_VIRTUAL_TERMINAL_INPUT).
-            const wchar_t wch = rec.Event.KeyEvent.uChar.UnicodeChar;
-            if (wch != 0) {
-                // Convert from UTF-16 to UTF-8 and feed each byte to the parser.
-                char utf8[4];
-                const int len = WideCharToMultiByte(
-                    CP_UTF8, 0, &wch, 1, utf8, sizeof(utf8), nullptr, nullptr);
-                for (int j = 0; j < len; ++j)
-                    if (auto e = parser_.feed(static_cast<uint8_t>(utf8[j])))
-                        _emit_event(*e);
-            } else {
-                // No Unicode char — synthesize a VT sequence from the VK code.
-                const char * seq = vk_to_vt(rec.Event.KeyEvent.wVirtualKeyCode);
-                if (seq) {
-                    for (const char * p = seq; *p; ++p)
-                        if (auto e = parser_.feed(static_cast<uint8_t>(*p)))
-                            _emit_event(*e);
-                }
-            }
+        case MOUSE_EVENT: {
+            if (auto me = translate_mouse(rec.Event.MouseEvent, prev_button_state_))
+                _emit_event(*me);
             break;
         }
 
@@ -197,15 +258,13 @@ void input_reader::_on_readable()
             break;
         }
 
-        // MOUSE_EVENT and FOCUS_EVENT are not handled yet.
         default:
             break;
         }
     }
 
-    // Flush a pending lone ESC after draining the batch.
-    if (auto e = parser_.flush())
-        _emit_event(*e);
+    // Re-arm the one-shot NT thread-pool wait for the next event.
+    _arm();
 
 #else
     uint8_t buf[64];

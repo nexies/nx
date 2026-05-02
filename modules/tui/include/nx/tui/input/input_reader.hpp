@@ -9,34 +9,31 @@
 #include <nx/tui/input/escape_parser.hpp>
 #include <nx/tui/types/size.hpp>
 
-#if defined(NX_OS_WINDOWS)
-#  include <thread>
-#endif
-
 namespace nx::tui {
 
 // ── input_reader ──────────────────────────────────────────────────────────────
 //
-// Asynchronously reads raw bytes from stdin and emits key / mouse events.
-// On Windows also emits window_resized when the console buffer changes size.
+// Asynchronously reads input and emits key / mouse / resize events.
+//
+// On POSIX:   watches stdin via a handle_notifier; raw bytes are decoded by
+//             escape_parser (VT/SGR protocol).
+//
+// On Windows: watches the console input handle via a handle_notifier backed
+//             by RegisterWaitForSingleObject in the IOCP backend; events are
+//             translated directly from INPUT_RECORD (no escape parsing).
+//
+// Both platforms share the same start()/stop()/_arm() flow.
 //
 // Requires:
 //   - Terminal must be in raw mode before start() is called.
-//   - Must be started and stopped from the thread that owns the object
-//     (the thread whose io_context will drive the async reads).
-//
-// Usage:
-//   input_reader reader;
-//   nx::core::connect(&reader, &input_reader::key_pressed,
-//                     [](key_event e) { ... });
-//   reader.start();
+//   - Must be started and stopped from the thread that owns the object.
 
 class input_reader : public nx::core::object
 {
 public:
     NX_OBJECT(input_reader)
 
-    explicit input_reader(nx::core::object * parent  = nullptr);
+    explicit input_reader(nx::core::object * parent = nullptr);
     ~input_reader() override;
 
     void start();
@@ -51,18 +48,13 @@ private:
     void _on_readable();
     void _emit_event(const input_event & ev);
 
-#if defined(NX_OS_WINDOWS)
-    // On Windows, console handles can't be added to IOCP.
-    // A dedicated thread blocks on WaitForMultipleObjects and posts to the context.
-    void _reader_thread(nx::asio::io_context * ctx);
-
-    std::thread  reader_thread_;
-    void       * stop_event_ = nullptr;   // HANDLE (MANUAL_RESET event)
-#else
     std::unique_ptr<nx::asio::handle_notifier> notifier_;
-#endif
 
+#if defined(NX_OS_WINDOWS)
+    unsigned long prev_button_state_ = 0; // DWORD: tracks button state for press/release diff
+#else
     escape_parser parser_;
+#endif
 };
 
 } // namespace nx::tui

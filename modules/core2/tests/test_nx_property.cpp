@@ -174,6 +174,7 @@ struct obj_const_default : nx::core::object {
     NX_PROPERTY(max_size, TYPE int, READ, CONST, DEFAULT 256)
 };
 
+    // DEPRECATED:
 // ─── Note: bare NOTIFY + MEMBER → compile-time error ─────────────────────────
 //
 // The following is intentionally NOT compiled. It should produce a static_assert
