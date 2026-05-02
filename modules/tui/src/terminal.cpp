@@ -249,9 +249,12 @@ void terminal::enable_raw_mode()
     if (!GetConsoleMode(hIn, &g_saved_input_mode))
         return;
     // Use native Win32 input events — no VT translation needed.
+    // ENABLE_QUICK_EDIT_MODE must be cleared: if left active it intercepts left
+    // mouse button clicks for text selection and suppresses MOUSE_EVENT records.
     // ENABLE_EXTENDED_FLAGS is required for ENABLE_MOUSE_INPUT to report scroll.
     DWORD raw_in = (g_saved_input_mode
-        & ~(ENABLE_ECHO_INPUT | ENABLE_LINE_INPUT | ENABLE_PROCESSED_INPUT))
+        & ~(ENABLE_ECHO_INPUT | ENABLE_LINE_INPUT | ENABLE_PROCESSED_INPUT
+            | ENABLE_QUICK_EDIT_MODE))
         | ENABLE_MOUSE_INPUT | ENABLE_EXTENDED_FLAGS;
     SetConsoleMode(hIn, raw_in);
 

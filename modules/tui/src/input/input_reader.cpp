@@ -113,6 +113,12 @@ std::optional<mouse_event> translate_mouse(const MOUSE_EVENT_RECORD & r,
 
     me.modifiers = control_state_to_modifiers(r.dwControlKeyState);
 
+    // Always compute and update button state first so prev_buttons stays in sync
+    // even when we return early (wheel, move).
+    const DWORD cur     = r.dwButtonState & 0x1F; // lower 5 bits are the buttons
+    const DWORD changed = cur ^ (prev_buttons & 0x1F);
+    prev_buttons = r.dwButtonState;
+
     // ── Wheel ────────────────────────────────────────────────────────────────
     if (r.dwEventFlags & MOUSE_WHEELED) {
         const SHORT delta = static_cast<SHORT>(HIWORD(r.dwButtonState));
@@ -134,11 +140,6 @@ std::optional<mouse_event> translate_mouse(const MOUSE_EVENT_RECORD & r,
     }
 
     // ── Button press / release ────────────────────────────────────────────────
-    // Diff the current button state against the previous one.
-    const DWORD cur = r.dwButtonState & 0x1F; // lower 5 bits are the buttons
-    const DWORD changed = cur ^ (prev_buttons & 0x1F);
-    prev_buttons = r.dwButtonState;
-
     if (changed == 0) {
         // Windows sometimes fires a button event with no change (e.g. double-click
         // intermediate). Treat as a move to avoid phantom presses.
