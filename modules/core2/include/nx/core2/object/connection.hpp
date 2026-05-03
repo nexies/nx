@@ -50,14 +50,18 @@ namespace detail {
 using connection_handler_t = std::function<void(const void *)>;
 
 struct connection_entry {
-    connection_id_t     id             { 0 };
-    sender_key_t        sender_key     { 0 };
-    void *              receiver       { nullptr };  //< null for free-function / lambda slots
-    function_id_t       slot_id        { 0 };
-    connection_type     type           { connection_type::auto_t };
-    connection_flags    flags          {};
+    connection_id_t      id              { 0 };
+    sender_key_t         sender_key      { 0 };
+    void *               receiver        { nullptr }; //< null for free-function / lambda slots
+    function_id_t        slot_id         { 0 };
+    connection_type      type            { connection_type::auto_t };
+    connection_flags     flags           {};
     connection_handler_t handler;
-    thread *            receiver_thread { nullptr }; //< null means "no thread tracking"
+    thread *             receiver_thread { nullptr }; //< null means "no thread tracking"
+    // Weak reference to the receiver's liveness sentinel.
+    // Empty    → no receiver object (e.g. context-free lambda) — always call.
+    // Expired  → receiver has been destroyed — skip and remove.
+    std::weak_ptr<void>  receiver_alive;
 
     NX_NODISCARD bool
     is_unique()      const noexcept { return flags.has(connection_flag::unique); }

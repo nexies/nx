@@ -179,6 +179,16 @@ public:
     NX_NODISCARD const connection_info *
     _nx_connection_info() const noexcept;
 
+    // Returns a shared_ptr to the connection table. Used by emit() to keep
+    // the table alive even if this object is destroyed mid-emission.
+    NX_NODISCARD std::shared_ptr<connection_info>
+    _nx_connection_info_shared() noexcept;
+
+    // Returns a weak_ptr to the liveness sentinel. Stored in connection entries
+    // so emit() can check if the receiver is still alive before calling its slot.
+    NX_NODISCARD std::weak_ptr<void>
+    _nx_liveness_token() const noexcept;
+
 protected:
     // Allows subclasses to obtain the current signal sender.
     void

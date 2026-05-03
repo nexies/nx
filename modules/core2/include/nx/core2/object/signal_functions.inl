@@ -16,6 +16,7 @@
 #include <memory>
 #include <tuple>
 #include <type_traits>
+#include <vector>
 
 namespace nx::core {
 
@@ -90,15 +91,11 @@ connect(Sender *         sender,
     entry.handler         = std::move(handler);
     entry.receiver_thread = recv_thread;
 
-    auto * sender_info = static_cast<object *>(sender)->_nx_connection_info();
-    if (!sender_info->add_connection(std::move(entry)))
-        return false;
-
     if constexpr (std::is_base_of_v<object, Receiver>)
-        static_cast<object *>(receiver)->_nx_connection_info()
-            ->add_sender(static_cast<object *>(sender));
+        entry.receiver_alive = static_cast<object *>(receiver)->_nx_liveness_token();
 
-    return true;
+    auto * sender_info = static_cast<object *>(sender)->_nx_connection_info();
+    return sender_info->add_connection(std::move(entry));
 }
 
 // ── connect (lambda / callable overload) ─────────────────────────────────────
@@ -155,14 +152,11 @@ connect(Sender *         sender,
     entry.handler         = std::move(handler);
     entry.receiver_thread = ctx_thread;
 
-    auto * sender_info = static_cast<object *>(sender)->_nx_connection_info();
-    if (!sender_info->add_connection(std::move(entry)))
-        return false;
-
     if (context)
-        context->_nx_connection_info()->add_sender(static_cast<object *>(sender));
+        entry.receiver_alive = context->_nx_liveness_token();
 
-    return true;
+    auto * sender_info = static_cast<object *>(sender)->_nx_connection_info();
+    return sender_info->add_connection(std::move(entry));
 }
 
 // Convenience overloads
@@ -199,17 +193,9 @@ disconnect(Sender * sender, SigFn signal, Receiver * receiver, SlotFn slot)
     const auto slot_id = detail::get_function_id(slot);
     const auto sk      = detail::make_sender_key(sender, sig_id);
 
-    // Connection IDs are now unique counters — find first match by (receiver, slot_id).
     auto * sender_info = static_cast<object *>(sender)->_nx_connection_info();
-    if (!sender_info->remove_connection_by_key(
-            sk, static_cast<void *>(receiver), slot_id))
-        return false;
-
-    if constexpr (std::is_base_of_v<object, Receiver>)
-        static_cast<object *>(receiver)->_nx_connection_info()
-            ->remove_sender(static_cast<object *>(sender));
-
-    return true;
+    return sender_info->remove_connection_by_key(
+        sk, static_cast<void *>(receiver), slot_id);
 }
 
 // ── disconnect (remove all callable connections for a context) ────────────────
@@ -228,10 +214,6 @@ disconnect(Sender * sender, SigFn signal, object * context, std::nullptr_t)
     const int count = sender_info->remove_connections_by_key_and_receiver(
         sk, static_cast<void *>(context));
 
-    if (context) {
-        for (int i = 0; i < count; ++i)
-            context->_nx_connection_info()->remove_sender(static_cast<object *>(sender));
-    }
     return count > 0;
 }
 
@@ -251,7 +233,9 @@ emit(Sender * sender, SigFn signal, Args &&... args)
     const auto sig_id = detail::get_function_id(signal);
     const auto sk     = detail::make_sender_key(sender, sig_id);
 
-    auto * conn_info = static_cast<object *>(sender)->_nx_connection_info();
+    // Hold a shared_ptr so the connection table stays alive even if sender is
+    // destroyed by a handler during this emission.
+    auto conn_info = static_cast<object *>(sender)->_nx_connection_info_shared();
     if (!conn_info)
         return;
 
@@ -261,7 +245,16 @@ emit(Sender * sender, SigFn signal, Args &&... args)
 
     args_tuple_t args_tuple(std::forward<Args>(args)...);
 
+    std::vector<detail::connection_id_t> to_remove;
+
     for (const auto & entry : connections) {
+        // Skip (and schedule removal of) connections whose receiver has died.
+        // receiver == nullptr means a context-free lambda — always call those.
+        if (entry.receiver != nullptr && entry.receiver_alive.expired()) {
+            to_remove.push_back(entry.id);
+            continue;
+        }
+
         const bool call_direct =
             (entry.type == connection_type::direct) ||
             (entry.type == connection_type::auto_t &&
@@ -280,9 +273,13 @@ emit(Sender * sender, SigFn signal, Args &&... args)
             auto boxed = std::make_shared<args_tuple_t>(args_tuple);
             auto sndr  = static_cast<object *>(sender);
             auto recv  = static_cast<object *>(entry.receiver);
+            // Capture the liveness token so the task can verify the receiver
+            // is still alive when it eventually runs on the receiver's thread.
+            auto alive = entry.receiver_alive;
             auto task  = [h = entry.handler, b = std::move(boxed),
-                          sndr, recv]() mutable
+                          sndr, recv, alive]() mutable
             {
+                if (recv && alive.expired()) return;
                 if (recv) recv->_set_sender(sndr);
                 h(static_cast<const void *>(b.get()));
                 if (recv) recv->_set_sender(nullptr);
@@ -291,8 +288,11 @@ emit(Sender * sender, SigFn signal, Args &&... args)
         }
 
         if (entry.is_single_shot())
-            conn_info->remove_connection(entry.id);
+            to_remove.push_back(entry.id);
     }
+
+    for (const auto id : to_remove)
+        conn_info->remove_connection(id);
 }
 
 } // namespace nx::core

@@ -51,6 +51,10 @@ public:
             bar_->set_value(bar_val_);
             return true;
         }
+        if (e.character == U'q' || e.character == U'Q') {
+            nx_tui_app->quit();
+            return true;
+        }
         if (e.code == key::escape) {
             nx_tui_app->quit();
             return true;

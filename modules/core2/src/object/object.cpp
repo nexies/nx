@@ -19,8 +19,9 @@ namespace nx::core {
 class object::impl {
 public:
     explicit impl(object * owner)
-        : owner_   (owner)
-        , conn_info_(owner)
+        : owner_     (owner)
+        , conn_info_ (std::make_shared<connection_info>())
+        , liveness_  (std::make_shared<bool>(true))
     {}
 
     ~impl()
@@ -33,12 +34,8 @@ public:
             parent_->impl_->remove_child(owner_);
         }
 
-        // Receiver side: tell senders to drop connections pointing at us.
-        conn_info_.notify_senders_of_destruction();
-
-        // Sender side: remove ourselves from each receiver's senders_ set so
-        // receivers won't attempt to access us after our memory is freed.
-        conn_info_.notify_receivers_of_destruction();
+        // conn_info_ shared_ptr is released here. Any emit() that grabbed its
+        // own shared_ptr copy will keep the table alive until it finishes.
 
         // Destroy owned (heap) children in reverse construction order.
         // Null out child's parent_ pointer before deleting so the child's own
@@ -71,7 +68,14 @@ public:
     std::vector<object *> children_;
     thread *              thread_  { nullptr };
     object *              sender_  { nullptr };
-    connection_info       conn_info_;
+
+    // Connection table, shared so emit() can keep it alive across destruction.
+    std::shared_ptr<connection_info> conn_info_;
+
+    // Liveness sentinel: reset at the very start of ~object() so all
+    // weak_ptr<void> stored in connection entries expire immediately. Any
+    // in-flight emit() on any sender will then skip calls to this receiver.
+    std::shared_ptr<void> liveness_;
 };
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -90,8 +94,13 @@ object::object(object * parent)
 
 object::~object()
 {
+    // Expire all receiver_alive weak_ptrs BEFORE emitting destroyed.
+    // This ensures that no slot on this object can be invoked by any
+    // in-flight or future emit() call after this point.
+    impl_->liveness_.reset();
+
     NX_EMIT(destroyed);
-    // impl_ destructor handles children and connection cleanup
+    // impl_ destructor handles children and releases conn_info_ shared_ptr.
 }
 
 // ── Thread affinity ───────────────────────────────────────────────────────────
@@ -180,13 +189,25 @@ object::sender() const noexcept
 connection_info *
 object::_nx_connection_info() noexcept
 {
-    return &impl_->conn_info_;
+    return impl_->conn_info_.get();
 }
 
 const connection_info *
 object::_nx_connection_info() const noexcept
 {
-    return &impl_->conn_info_;
+    return impl_->conn_info_.get();
+}
+
+std::shared_ptr<connection_info>
+object::_nx_connection_info_shared() noexcept
+{
+    return impl_->conn_info_;
+}
+
+std::weak_ptr<void>
+object::_nx_liveness_token() const noexcept
+{
+    return impl_->liveness_;
 }
 
 // ── Protected helpers ─────────────────────────────────────────────────────────
