@@ -83,6 +83,7 @@ add_library(nx_tui
     include/nx/tui/terminal/guards.hpp
     include/nx/tui/terminal.hpp
     include/nx/tui/layout.hpp
+        include/nx/tui/widgets/menu.hpp
 )
 
 target_link_libraries(nx_tui PUBLIC

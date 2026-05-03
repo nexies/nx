@@ -53,23 +53,23 @@ namespace nx::tui {
         color(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
 
         // ── Accessors ─────────────────────────────────────────────────────────
-        [[nodiscard]] constexpr color_type type() const noexcept { return type_; }
-        [[nodiscard]] uint8_t r() const noexcept;
-        [[nodiscard]] uint8_t g() const noexcept;
-        [[nodiscard]] uint8_t b() const noexcept;
-        [[nodiscard]] uint8_t a() const noexcept;
+        NX_NODISCARD constexpr color_type type() const noexcept { return type_; }
+        NX_NODISCARD uint8_t r() const noexcept;
+        NX_NODISCARD uint8_t g() const noexcept;
+        NX_NODISCARD uint8_t b() const noexcept;
+        NX_NODISCARD uint8_t a() const noexcept;
 
-        [[nodiscard]] std::string name()     const;
+        NX_NODISCARD std::string name()     const;
         // Returns the ANSI escape sequence to set this color.
         // Pass background=true for background color sequence.
-        [[nodiscard]] std::string to_ansi(bool background = false) const;
+        NX_NODISCARD std::string to_ansi(bool background = false) const;
 
         // ── Comparison ────────────────────────────────────────────────────────
-        [[nodiscard]] bool
+        NX_NODISCARD bool
         operator==(const color & o) const noexcept
         { return r() == o.r() && g() == o.g() && b() == o.b(); }
 
-        [[nodiscard]] bool
+        NX_NODISCARD bool
         operator!=(const color & o) const noexcept
         { return !(*this == o); }
 
