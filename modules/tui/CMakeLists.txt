@@ -32,6 +32,10 @@ add_library(nx_tui
     src/widgets/spinner.cpp
     src/widgets/menu_item.cpp
     src/widgets/menu.cpp
+    src/widgets/slider.cpp
+    src/widgets/spin_box.cpp
+    src/widgets/combo_box.cpp
+    src/widgets/text_edit.cpp
 
     include/nx/tui/application.hpp
     include/nx/tui/terminal/terminal.hpp
@@ -82,6 +86,10 @@ add_library(nx_tui
     include/nx/tui/widgets/spinner.hpp
     include/nx/tui/widgets/menu_item.hpp
     include/nx/tui/widgets/menu.hpp
+    include/nx/tui/widgets/slider.hpp
+    include/nx/tui/widgets/spin_box.hpp
+    include/nx/tui/widgets/combo_box.hpp
+    include/nx/tui/widgets/text_edit.hpp
     include/nx/tui/types/border_style.hpp
     include/nx/tui/types/margin.hpp
     include/nx/tui/terminal/guards.hpp

@@ -63,3 +63,8 @@ nx_configure_demo(menu
         COMPONENT tui
         SOURCE menu_demo.cpp
 )
+
+nx_configure_demo(controls
+        COMPONENT tui
+        SOURCE controls_demo.cpp
+)
