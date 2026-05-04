@@ -46,7 +46,7 @@ void check_box::set_checked(bool c)
     _init_colors();
     const auto * app = tui_application::instance();
     const color target = checked_
-        ? app->get_theme().get_color(theme_role::highlight)
+        ? app->get_theme().get_color(theme_role::accent)
         : app->get_theme().get_bg(theme_role::background);
     check_color_.animate_to(target, 150, easing::ease_out);
 

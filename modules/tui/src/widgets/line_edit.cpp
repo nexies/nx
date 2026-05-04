@@ -93,52 +93,36 @@ void line_edit::set_text(std::string t)
 
 void line_edit::on_paint(painter & p)
 {
-    // Apply theme defaults for fg/bg unless the widget has an explicit style.
-    p.apply_theme_as_base(theme_role::foreground, theme_role::background);
-
-    p.fill(" ");
+    // Resolve once: control bg distinguishes input field from window surface.
+    const color fg_c = p.theme_color(theme_role::foreground);
+    const color bg_c = p.theme_bg(theme_role::control);
+    p.apply_style(fg(fg_c) | bg(bg_c));
+    p.fill();
 
     const int w = size().width;
     if (w <= 0) return;
 
-    // scroll_off_ and cursor_ are byte offsets; view width is in columns.
-    const std::size_t view_cols = static_cast<std::size_t>(w);
-    const std::size_t start     = scroll_off_;
-    const std::size_t end       = utf8_advance(text_, start, view_cols);
+    const std::size_t start = scroll_off_;
+    const std::size_t end   = utf8_advance(text_, start, static_cast<std::size_t>(w));
 
     if (start < text_.size())
         p.draw_text({ 0, 0 }, text_.substr(start, end - start));
 
-    // Draw cursor when focused: smooth fade between normal and inverted using
-    // cursor_alpha_ (0 = invisible, 1 = fully inverted).
-    if (has_focus()) {
-        const int cur_col = static_cast<int>(utf8_col_count(text_, scroll_off_, cursor_));
-        if (cur_col >= 0 && cur_col < w) {
-            const float alpha = cursor_alpha_.value();
-            if (alpha > 0.01f) {
-                std::string cur_ch = " ";
-                if (cursor_ < text_.size()) {
-                    const std::size_t clen = utf8_cluster_len(text_, cursor_);
-                    cur_ch = std::string(text_.data() + cursor_, clen);
-                }
+    if (!has_focus()) return;
 
-                // fg/bg from painter (already resolved to theme defaults).
-                color fg_c = p.current_color();
-                color bg_c = p.current_background_color();
-                // Last-resort fallbacks when no app/theme available.
-                if (fg_c == color::default_color)
-                    fg_c = p.theme_color(theme_role::foreground);
-                if (bg_c == color::default_color)
-                    bg_c = p.theme_bg(theme_role::background);
+    const int   cur_col = static_cast<int>(utf8_col_count(text_, scroll_off_, cursor_));
+    const float alpha   = cursor_alpha_.value();
 
-                const color c_fg = color::interpolate(alpha, fg_c, bg_c);
-                const color c_bg = color::interpolate(alpha, bg_c, fg_c);
-
-                painter cur_p = p;
-                cur_p.apply_style(fg(c_fg) | bg(c_bg));
-                cur_p.draw_char({ cur_col, 0 }, cur_ch);
-            }
+    if (cur_col >= 0 && cur_col < w && alpha > 0.01f) {
+        std::string cur_ch = " ";
+        if (cursor_ < text_.size()) {
+            const std::size_t clen = utf8_cluster_len(text_, cursor_);
+            cur_ch = std::string(text_.data() + cursor_, clen);
         }
+
+        p.with(fg(color::interpolate(alpha, fg_c, bg_c)) |
+               bg(color::interpolate(alpha, bg_c, fg_c)))
+         .draw_char({ cur_col, 0 }, cur_ch);
     }
 }
 

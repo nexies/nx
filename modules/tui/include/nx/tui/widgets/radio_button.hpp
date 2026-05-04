@@ -94,9 +94,12 @@ protected:
     void on_focus_out()                  override;
 
 private:
-    void _init_colors() noexcept;
+    // void _init_colors() noexcept;
     // Called by radio_group to forcibly deselect without re-notifying the group.
     void _deselect();
+
+    color _active_dot_color() noexcept;
+    color _inactive_dot_color() noexcept;
 
     friend class radio_group;
 };

@@ -116,7 +116,7 @@
 #       define NX_TRACE_SIGNALS_LOGGER_NAME "signals"
 #   endif
 #   define __NX_EMIT_TRACE(name, ...)                                            \
-        NX_LOG_LOGGER_TRACE(::nx::logging::get(NX_TRACE_SIGNALS_LOGGER_NAME),   \
+        NX_LOG_LOGGER_TRACE(::nx::logging::get_logger(NX_TRACE_SIGNALS_LOGGER_NAME),   \
                             "emit " #name "(" #__VA_ARGS__ ")")
 #else
 #   define __NX_EMIT_TRACE(name, ...) (void)0

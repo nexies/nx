@@ -4,6 +4,8 @@
 #include <nx/tui/types/style_option.hpp>
 #include <nx/tui/types/style_modifier.hpp>
 #include <nx/tui/types/theme_role.hpp>
+#include <nx/tui/types/border_style.hpp>
+#include <nx/tui/types/text_align.hpp>
 
 #include <string>
 
@@ -41,7 +43,7 @@ public:
     // clip_rect:   restricts actual writes to a sub-region of render_rect.
     painter(buffer_type & buffer, rect_type render_rect, rect_type clip_rect);
 
-    // ── Static style ──────────────────────────────────────────────────────────
+    // ── Style ─────────────────────────────────────────────────────────────────
 
     void enable_style (pixel_style s) noexcept;
     void disable_style(pixel_style s) noexcept;
@@ -59,6 +61,14 @@ public:
 
     // Apply a style_option: only present fields override the current style.
     void apply_style(const style_option & s) noexcept;
+
+    // Returns a copy of this painter with `s` merged on top of the current style.
+    // The original painter is unchanged — use the returned copy for a scoped style.
+    //
+    // Example:
+    //   p.with(fg(c) | bg(d)).draw_border(border_style::rounded);
+    //   auto styled = p.with(bold()); styled.draw_text({0,0}, "hello");
+    [[nodiscard]] painter with(const style_option & s) const;
 
     // ── Theme access ──────────────────────────────────────────────────────────
     //
@@ -79,7 +89,7 @@ public:
     // on_paint() to let the theme provide fallback fg/bg/decorations.
     void apply_theme_as_base(theme_role fg_role, theme_role bg_role) noexcept;
 
-    // ── Draw operations ───────────────────────────────────────────────────────
+    // ── Primitive draw ────────────────────────────────────────────────────────
 
     void draw_text(const point_type & pos, const std::string & text) const;
     void draw_char(const point_type & pos, const std::string & ch)   const;
@@ -95,6 +105,28 @@ public:
     //     to clear stale characters without discarding the background painted
     //     by a lower layer.
     void clear(bool keep_background = false) const;
+
+    // ── Geometry primitives ───────────────────────────────────────────────────
+
+    // Draw text aligned within the full width of the painter's rect at `row`.
+    // Truncates to fit; row defaults to 0.
+    void draw_text_aligned(const std::string & text, text_align align, int row = 0) const;
+
+    // Fill a horizontal line at `row` with `ch` across the full clip width.
+    void draw_hline(int row, const std::string & ch = "─") const;
+
+    // Fill a vertical line at `col` with `ch` across the full clip height.
+    void draw_vline(int col, const std::string & ch = "│") const;
+
+    // Draw a box border along the painter's full rect using border_style `bs`.
+    // border_style::none is a no-op.
+    void draw_border(border_style bs) const;
+
+    // Same, but render `title` on the top edge:  ┌─ Title ──┐
+    // `title_style` is merged on top of the current painter style for the title text.
+    void draw_border(border_style bs,
+                     const std::string & title,
+                     const style_option & title_style = {}) const;
 };
 
 } // namespace nx::tui

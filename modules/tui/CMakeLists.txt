@@ -30,6 +30,8 @@ add_library(nx_tui
     src/widgets/radio_button.cpp
     src/widgets/progress_bar.cpp
     src/widgets/spinner.cpp
+    src/widgets/menu_item.cpp
+    src/widgets/menu.cpp
 
     include/nx/tui/application.hpp
     include/nx/tui/terminal/terminal.hpp
@@ -78,12 +80,15 @@ add_library(nx_tui
     include/nx/tui/widgets/radio_button.hpp
     include/nx/tui/widgets/progress_bar.hpp
     include/nx/tui/widgets/spinner.hpp
+    include/nx/tui/widgets/menu_item.hpp
+    include/nx/tui/widgets/menu.hpp
     include/nx/tui/types/border_style.hpp
     include/nx/tui/types/margin.hpp
     include/nx/tui/terminal/guards.hpp
     include/nx/tui/terminal.hpp
     include/nx/tui/layout.hpp
-        include/nx/tui/widgets/menu.hpp
+        demo/line_edit_demo.cpp
+        include/nx/tui/types/orientation.hpp
 )
 
 target_link_libraries(nx_tui PUBLIC

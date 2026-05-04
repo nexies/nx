@@ -1,45 +1,9 @@
 #include <nx/tui/widgets/frame.hpp>
 #include <nx/tui/graphics/painter.hpp>
-#include <nx/tui/application.hpp>
-
-#include <algorithm>
-#include <string>
+#include <nx/tui/types/style_option.hpp>
+#include <nx/tui/types/theme_role.hpp>
 
 namespace nx::tui {
-
-// ── border character sets ─────────────────────────────────────────────────────
-
-namespace {
-
-struct border_chars {
-    // horiz, vert, top_left, top_right, bot_left, bot_right
-    const char * h;
-    const char * v;
-    const char * tl;
-    const char * tr;
-    const char * bl;
-    const char * br;
-};
-
-border_chars chars_for(border_style s) noexcept
-{
-    switch (s) {
-    case border_style::single:
-        return { "─", "│", "┌", "┐", "└", "┘" };
-    case border_style::double_:
-        return { "═", "║", "╔", "╗", "╚", "╝" };
-    case border_style::rounded:
-        return { "─", "│", "╭", "╮", "╰", "╯" };
-    case border_style::thick:
-        return { "━", "┃", "┏", "┓", "┗", "┛" };
-    case border_style::dashed:
-        return { "╌", "╎", "┌", "┐", "└", "┘" };
-    default:
-        return { " ", " ", " ", " ", " ", " " };
-    }
-}
-
-} // namespace
 
 // ── frame ─────────────────────────────────────────────────────────────────────
 
@@ -70,80 +34,31 @@ widget::size_type frame::size_hint() const
 
 void frame::on_paint(painter & p)
 {
-    // Apply theme background/foreground as defaults (explicit style_ wins).
     p.apply_theme_as_base(theme_role::foreground, theme_role::background);
 
-    if (!is_transparent()) {
+    if (!is_transparent())
         p.clear(false);
-    }
 
     if (border_style_ == border_style::none) {
-        p.fill(" ");
+        p.fill();
         return;
     }
 
-    const auto bc = chars_for(border_style_);
-    const int  w  = size().width;
-    const int  h  = size().height;
-
-    if (w < 2 || h < 2) return;
-
-    // Resolve the border color:
-    //   1. Explicit override set by set_border_color().
-    //   2. border_focus when a child has focus (theme accent).
-    //   3. border from theme.
     color border_c = border_color_;
     if (border_c == color::default_color) {
-        if (has_focused_descendant())
-            border_c = p.theme_color(theme_role::border_focus);
-        else
-            border_c = p.theme_color(theme_role::border);
+        border_c = has_focused_descendant()
+            ? p.theme_color(theme_role::border_focus)
+            : p.theme_color(theme_role::border);
     }
 
-    const color text_c = p.current_color();
+    auto border_p = p.with(fg(border_c));
 
-    // Fill inner area (transparent frames skip this so lower layers show through).
-    if (!is_transparent()) {
-        for (int row = 1; row < h - 1; ++row)
-            for (int col = 1; col < w - 1; ++col)
-                p.draw_char({ col, row }, " ");
-    }
-
-    // Draw border in resolved border color.
-    p.set_color(border_c);
-
-    p.draw_char({ 0,     0     }, bc.tl);
-    p.draw_char({ w - 1, 0     }, bc.tr);
-    p.draw_char({ 0,     h - 1 }, bc.bl);
-    p.draw_char({ w - 1, h - 1 }, bc.br);
-
-    for (int col = 1; col < w - 1; ++col) {
-        p.draw_char({ col, 0     }, bc.h);
-        p.draw_char({ col, h - 1 }, bc.h);
-    }
-    for (int row = 1; row < h - 1; ++row) {
-        p.draw_char({ 0,     row }, bc.v);
-        p.draw_char({ w - 1, row }, bc.v);
-    }
-
-    // Title (optional): ┌─ Title ─┐
-    if (!title_.empty() && w >= 6) {
-        const std::string display = " " + title_ + " ";
-        const int max_title_cols  = w - 4;
-        std::string rendered = display;
-        if (static_cast<int>(display.size()) > max_title_cols)
-            rendered = display.substr(0, static_cast<std::size_t>(max_title_cols));
-
-        p.set_color(text_c);
-        if (has_focused_descendant()) p.enable_style(pixel_style_flag::bold);
-        p.draw_text({ 2, 0 }, rendered);
-        if (has_focused_descendant()) p.disable_style(pixel_style_flag::bold);
-
-        p.set_color(border_c);
-        p.draw_char({ 1, 0 }, bc.h);
-        const int end_col = 2 + static_cast<int>(rendered.size());
-        if (end_col < w - 1)
-            p.draw_char({ end_col, 0 }, bc.h);
+    if (title_.empty()) {
+        border_p.draw_border(border_style_);
+    } else {
+        style_option title_s = fg(p.current_color());
+        if (has_focused_descendant()) title_s |= bold();
+        border_p.draw_border(border_style_, title_, title_s);
     }
 }
 

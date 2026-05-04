@@ -37,14 +37,14 @@ namespace nx
         value() const {
             if (!is_error_)
                 return std::get<value_type>(data_);
-            throw nx::err::invalid_argument("nx::basic_result is not a value");
+            throw nx::err::invalid_state("nx::basic_result is not a value");
         }
 
         NX_NODISCARD constexpr reference
         value() {
             if (!is_error_)
                 return std::get<value_type>(data_);
-            throw nx::err::invalid_argument("nx::basic_result is not a value");
+            throw nx::err::invalid_state("nx::basic_result is not a value");
         }
 
         NX_NODISCARD constexpr const_reference
@@ -72,7 +72,7 @@ namespace nx
         error() const {
             if (is_error_)
                 return std::get<error_type>(data_);
-            throw nx::err::invalid_argument("nx::basic_result is not an error");
+            throw nx::err::invalid_state("nx::basic_result is not an error");
         }
 
         // ── State ─────────────────────────────────────────────────────────────
@@ -163,14 +163,14 @@ namespace nx
         constexpr void
         value() const {
             if (is_error())
-                throw nx::err::invalid_argument("nx::basic_result<void> is not a value");
+                throw nx::err::invalid_state("nx::basic_result<void> is not a value");
         }
 
         NX_NODISCARD constexpr const error_type &
         error() const {
             if (is_error())
                 return *error_;
-            throw nx::err::invalid_argument("nx::basic_result<void> is not an error");
+            throw nx::err::invalid_state("nx::basic_result<void> is not an error");
         }
 
         // ── Monadic helpers ───────────────────────────────────────────────────

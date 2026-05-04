@@ -59,6 +59,8 @@ radio_button::radio_button(nx::core::object * parent)
 {
     set_focus_policy(focus_policy::tab_focus);
     set_fixed_height(1);
+
+    dot_color_.set(_inactive_dot_color());
 }
 
 void radio_button::set_text(std::string t)
@@ -74,25 +76,16 @@ widget::size_type radio_button::size_hint() const
     return { 1, 3 + static_cast<int>(text_.size()) };
 }
 
-void radio_button::_init_colors() noexcept
-{
-    if (initialized_) return;
-    initialized_ = true;
-    const color bg = tui_application::instance()
-                         ->get_theme().get_bg(theme_role::background);
-    dot_color_.set(bg);
-}
-
 void radio_button::set_checked(bool c)
 {
     if (checked_ == c) return;
     checked_ = c;
 
-    _init_colors();
     const auto * app = tui_application::instance();
     const color target = checked_
-        ? app->get_theme().get_color(theme_role::highlight)
-        : app->get_theme().get_bg(theme_role::background);
+        ? _active_dot_color()
+        : _inactive_dot_color();
+
     dot_color_.animate_to(target, 150, easing::ease_out);
 
     NX_EMIT(toggled, checked_)
@@ -107,33 +100,55 @@ void radio_button::_deselect()
 {
     if (!checked_) return;
     checked_ = false;
-    _init_colors();
-    const color bg = tui_application::instance()
-                         ->get_theme().get_bg(theme_role::background);
+    // _init_colors();
+
+    const color bg = _inactive_dot_color();
+
     dot_color_.animate_to(bg, 150, easing::ease_out);
     NX_EMIT(toggled, false)
     update();
 }
 
+color radio_button::_active_dot_color() noexcept
+{
+    if (nx_tui_app)
+        return nx_tui_app->get_theme().get_color(theme_role::control_active);
+
+    return color::white;
+}
+
+color radio_button::_inactive_dot_color() noexcept
+{
+    if (nx_tui_app)
+        return nx_tui_app->get_theme().get_bg(theme_role::control_active);
+    return color::gray_light;
+}
+
 void radio_button::on_paint(painter & p)
 {
-    _init_colors();
-    p.apply_theme_as_base(theme_role::foreground, theme_role::background);
-    p.fill(" ");
+    // _init_colors();
 
-    const color border_c = has_focus()
-        ? p.theme_color(theme_role::border_focus)
-        : p.theme_color(theme_role::border);
+    // p.apply_theme_as_base(theme_role::foreground, theme_role::background);
+    // p.fill(" ");
+
+    // const color border_c = has_focus()
+        // ? p.theme_color(theme_role::border_focus)
+        // : p.theme_color(theme_role::border);
     const color fg_c = p.theme_color(theme_role::foreground);
 
     // Outer ring
-    p.set_color(border_c);
-    p.draw_char({ 0, 0 }, checked_ ? "◉" : "◯");
+    // p.set_color(border_c);
+    // p.draw_char({ 0, 0 }, checked_ ? "◉" : "◯");
 
     // Label
+    // if (!text_.empty()) {
+        // p.set_color(fg_c);
+        // p.draw_text({ 2, 0 }, text_);
+    // }
+
+    p.with(fg(dot_color_.value())).draw_char({0, 0}, checked_ ? "◉" : "◯");
     if (!text_.empty()) {
-        p.set_color(fg_c);
-        p.draw_text({ 2, 0 }, text_);
+        p.with(fg(fg_c)).draw_text({ 2, 0 }, text_);
     }
 }
 

@@ -53,3 +53,13 @@ nx_configure_demo(tier1
         COMPONENT tui
         SOURCE tier1_demo.cpp
 )
+
+nx_configure_demo(line_edit
+        COMPONENT tui
+        SOURCE line_edit_demo.cpp
+)
+
+nx_configure_demo(menu
+        COMPONENT tui
+        SOURCE menu_demo.cpp
+)

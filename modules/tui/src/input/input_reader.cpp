@@ -101,10 +101,10 @@ std::optional<key_event> translate_key(const KEY_EVENT_RECORD & r) noexcept
 
 // ── mouse translation ─────────────────────────────────────────────────────────
 
-std::optional<mouse_event> translate_mouse(const MOUSE_EVENT_RECORD & r,
+std::optional<::nx::tui::mouse_event> translate_mouse(const MOUSE_EVENT_RECORD & r,
                                            DWORD & prev_buttons) noexcept
 {
-    mouse_event me;
+    ::nx::tui::mouse_event me;
 
     // Coordinates: dwMousePosition is character-cell, 0-based.
     // mouse_event.position is col,row 1-based — add 1.

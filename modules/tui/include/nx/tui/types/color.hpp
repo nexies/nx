@@ -4,6 +4,8 @@
 #include <string>
 #include <ostream>
 
+#include <nx/common/helpers.hpp>
+
 namespace nx::tui {
 
     enum class color_type : uint8_t {
@@ -41,6 +43,8 @@ namespace nx::tui {
         static color rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
         static color from_palette16(uint32_t index);
         static color from_palette256(uint32_t index);
+        // Convert OKLCH (L in [0,1], C chroma, H in degrees) to sRGB.
+        static color from_oklch(float L, float C, float H_deg);
 
         static color interpolate(float t, const color & a, const color & b);
         static color scale    (const color & c, float factor);

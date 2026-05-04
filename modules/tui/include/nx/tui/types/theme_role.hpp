@@ -20,36 +20,55 @@ namespace nx::tui {
 
     enum class theme_role : uint32_t {
         // ── Surfaces ──────────────────────────────────────────────────────────────
-        background, // main window / widget background
-        background_alt, // alternate surface (panels, table rows, sidebars)
-        foreground, // primary text / foreground
-        foreground_dim, // secondary / muted text
-        foreground_disabled, // text on disabled elements  (carries dim decoration)
+        background,           // main window / page surface
+        background_alt,       // alternate surface (panels, sidebars, table rows)
+        foreground,           // primary text on background
+        foreground_dim,       // secondary / muted text
+        foreground_disabled,  // text on disabled elements (carries dim decoration)
+
+        // ── Primary brand / action ────────────────────────────────────────────────
+        primary,              // primary action color (bg: buttons, links, highlights)
+        primary_content,      // text drawn on top of primary background
+
+        // ── Secondary action ──────────────────────────────────────────────────────
+        secondary,            // secondary action color (bg)
+        secondary_content,    // text drawn on top of secondary background
+
+        // ── Accent ────────────────────────────────────────────────────────────────
+        accent,               // accent color (focus ring, border flash, cursor blink)
+        accent_content,       // text drawn on top of accent background
+
+        // ── Neutral surface ───────────────────────────────────────────────────────
+        neutral,              // neutral surface color (panels, cards)
+        neutral_content,      // text on neutral surface
 
         // ── Interactive controls ──────────────────────────────────────────────────
-        control, // control at rest  (bg + fg)
-        control_hover, // control hovered
-        control_active, // control active / pressed / focused  (carries bold)
-        control_disabled, // control when the widget is disabled
+        control,              // control at rest (bg + fg)
+        control_hover,        // control hovered
+        control_active,       // control active / pressed / focused (carries bold)
+        control_disabled,     // control when the widget is disabled
 
-        // ── Selection & accent ────────────────────────────────────────────────────
-        selection, // selected item / text background
-        selection_text, // text drawn on top of selection
-        highlight, // strong accent (focus ring, border flash, cursor)
+        // ── Selection ────────────────────────────────────────────────────────────
+        selection,            // selected item background
+        selection_text,       // text drawn on top of selection
 
         // ── Borders ───────────────────────────────────────────────────────────────
-        border, // default border / separator
-        border_focus, // border of the focused widget
+        border,               // default border / separator
+        border_focus,         // border of the focused widget
 
         // ── Scrollbar ─────────────────────────────────────────────────────────────
-        scrollbar, // scrollbar track
-        scrollbar_thumb, // scrollbar thumb / grip
+        scrollbar,            // scrollbar track
+        scrollbar_thumb,      // scrollbar thumb / grip
 
         // ── Status ────────────────────────────────────────────────────────────────
-        success,
-        warning,
-        error,
         info,
+        info_content,         // text on info background
+        success,
+        success_content,      // text on success background
+        warning,
+        warning_content,      // text on warning background
+        error,
+        error_content,        // text on error background
 
         // ── Sentinel / extension point ────────────────────────────────────────────
         _count,

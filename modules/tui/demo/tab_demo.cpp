@@ -44,7 +44,7 @@ int main()
     // Page 1 — a few buttons
     auto * page1 = new v_box(tabs);
     page1->set_spacing(1);
-    page1->set_margin(1);
+    page1->set_margin({1, 3, 1, 3});
     auto * lbl1 = new label(page1);
     lbl1->set_text("This is the first tab.");
     auto * btn1 = new button(page1);

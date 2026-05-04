@@ -60,7 +60,7 @@ register_logger(std::shared_ptr<logger> lg)
 }
 
 std::shared_ptr<logger>
-get(std::string const& name)
+get_logger(std::string const& name)
 {
     std::lock_guard<std::mutex> lock { g_mutex };
     auto it = g_named.find(name);

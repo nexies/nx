@@ -121,7 +121,7 @@ main()
 
     // --- Registry: register + get ---
     register_logger(main_lg);
-    if (get("manual") != main_lg)
+    if (get_logger("manual") != main_lg)
         return fail("registry get(\"manual\")");
     set_default_logger(main_lg);
     if (get_default_logger() != main_lg)

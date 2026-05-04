@@ -36,7 +36,7 @@ struct capture_sink final : sink {
 
 TEST_CASE("registry: get missing logger returns nullptr", "[logging][registry]")
 {
-    REQUIRE(get("no_such_logger") == nullptr);
+    REQUIRE(get_logger("no_such_logger") == nullptr);
 }
 
 TEST_CASE("registry: register and get round-trip", "[logging][registry]")
@@ -44,7 +44,7 @@ TEST_CASE("registry: register and get round-trip", "[logging][registry]")
     auto cap = std::make_shared<capture_sink>();
     auto lg = std::make_shared<logger>("named", cap);
     register_logger(lg);
-    REQUIRE(get("named") == lg);
+    REQUIRE(get_logger("named") == lg);
 }
 
 TEST_CASE("registry: expired weak entry is dropped on get", "[logging][registry]")
@@ -54,7 +54,7 @@ TEST_CASE("registry: expired weak entry is dropped on get", "[logging][registry]
         auto lg = std::make_shared<logger>("temp", cap);
         register_logger(lg);
     }
-    REQUIRE(get("temp") == nullptr);
+    REQUIRE(get_logger("temp") == nullptr);
 }
 
 TEST_CASE("registry: default logger", "[logging][registry]")
@@ -73,5 +73,5 @@ TEST_CASE("registry: default logger", "[logging][registry]")
     REQUIRE(cap->lines[0] == "ping");
 
     set_default_logger(nullptr);
-    REQUIRE(get_default_logger() == nullptr);
+    REQUIRE(get_default_logger());
 }

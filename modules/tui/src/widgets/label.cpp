@@ -36,42 +36,9 @@ void label::set_alignment(text_align a)
 void label::on_paint(painter & p)
 {
     p.apply_theme_as_base(theme_role::foreground, theme_role::background);
-    p.fill(" ");
-
-    const int w = size().width;
-    if (w <= 0 || text_.empty()) return;
-
-    // Truncate to `w` grapheme clusters, tracking the byte boundary as we go.
-    nx::utf8::view view(text_);
-    int grapheme_count = 0;
-    const char * end_byte = text_.data();
-
-    for (auto it = view.begin(); it != view.end(); ++it) {
-        if (grapheme_count >= w) break;
-        auto g = *it;
-        if (!g) break; // invalid UTF-8 — stop here
-        end_byte = g->bytes().data() + g->bytes().size();
-        ++grapheme_count;
-    }
-
-    std::string visible(text_.data(),
-                        static_cast<std::size_t>(end_byte - text_.data()));
-
-    int x = 0;
-    switch (align_) {
-    case text_align::left:
-        x = 0;
-        break;
-    case text_align::center:
-        x = (w - grapheme_count) / 2;
-        break;
-    case text_align::right:
-        x = w - grapheme_count;
-        break;
-    }
-    if (x < 0) x = 0;
-
-    p.draw_text({ x, 0 }, visible);
+    p.fill();
+    if (!text_.empty())
+        p.draw_text_aligned(text_, align_);
 }
 
 } // namespace nx::tui

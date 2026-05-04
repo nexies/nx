@@ -73,14 +73,14 @@ TEST_CASE("basic_result: value throws when result contains error", "[basic_resul
 {
     test_result result(std::string("boom"));
 
-    REQUIRE_THROWS_AS(result.value(), nx::err::invalid_argument);
+    REQUIRE_THROWS_AS(result.value(), nx::err::invalid_state);
 }
 
 TEST_CASE("basic_result: error throws when result contains value", "[basic_result]")
 {
     test_result result(10);
 
-    REQUIRE_THROWS_AS(result.error(), nx::err::invalid_argument);
+    REQUIRE_THROWS_AS(result.error(), nx::err::invalid_state);
 }
 
 TEST_CASE("basic_result: expect returns contained value when no error", "[basic_result]")
@@ -234,13 +234,13 @@ TEST_CASE("basic_result<void>: value() does not throw on success", "[basic_resul
 TEST_CASE("basic_result<void>: value() throws on error", "[basic_result_void]")
 {
     void_result r(std::string("fail"));
-    REQUIRE_THROWS_AS(r.value(), nx::err::invalid_argument);
+    REQUIRE_THROWS_AS(r.value(), nx::err::invalid_state);
 }
 
 TEST_CASE("basic_result<void>: error() throws on success", "[basic_result_void]")
 {
     void_result r;
-    REQUIRE_THROWS_AS(r.error(), nx::err::invalid_argument);
+    REQUIRE_THROWS_AS(r.error(), nx::err::invalid_state);
 }
 
 TEST_CASE("basic_result<void>: expect calls handler only on error", "[basic_result_void]")
@@ -266,4 +266,35 @@ TEST_CASE("basic_result<void>: nx::result<void> alias works", "[basic_result_voi
 
     nx::result<void> fail(nx::error { std::errc::invalid_argument });
     REQUIRE(fail.is_error());
+}
+
+TEST_CASE("basic_result<struct>: nx::result<struct> operator-> accesses data members", "[basic_result_struct]")
+{
+    struct data_t { int a; int b; int c; } ;
+    nx::result<data_t> res = data_t{1, 2, 3};
+
+    REQUIRE(res->a == 1);
+    REQUIRE(res->b == 2);
+    REQUIRE(res->c == 3);
+}
+
+
+TEST_CASE("basic_result<int>: nx::result<int> operator* works", "[basic_result_int]")
+{
+    nx::result<int> res = 15;
+    REQUIRE(*res == 15);
+}
+
+TEST_CASE("basic_result<struct>: nx::result<struct> operator-> throws on error", "[basic_result_struct]")
+{
+    struct data_t { int a; int b; int c; } ;
+    nx::result<data_t> res = nx::err::runtime_error("error");
+
+    REQUIRE_THROWS_AS((res->a), nx::err::invalid_state);
+}
+
+TEST_CASE("basic_result<int>: nx::result<int> operator* throws on error", "[basic_result_int]")
+{
+    nx::result<int> res = nx::err::runtime_error("error");
+    REQUIRE_THROWS_AS((*res), nx::err::invalid_state);
 }

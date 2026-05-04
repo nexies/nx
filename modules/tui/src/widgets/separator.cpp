@@ -1,6 +1,7 @@
 #include <nx/tui/widgets/separator.hpp>
 #include <nx/tui/graphics/painter.hpp>
 #include <nx/tui/types/theme_role.hpp>
+#include <nx/tui/types/style_option.hpp>
 
 namespace nx::tui {
 
@@ -33,16 +34,11 @@ widget::size_type separator::size_hint() const
 
 void separator::on_paint(painter & p)
 {
-    p.set_color(p.theme_color(theme_role::border));
-    const int w = size().width;
-    const int h = size().height;
-    if (orient_ == orientation::horizontal) {
-        for (int x = 0; x < w; ++x)
-            p.draw_char({ x, 0 }, "─");
-    } else {
-        for (int y = 0; y < h; ++y)
-            p.draw_char({ 0, y }, "│");
-    }
+    auto styled = p.with(fg(p.theme_color(theme_role::border)));
+    if (orient_ == orientation::horizontal)
+        styled.draw_hline(0);
+    else
+        styled.draw_vline(0);
 }
 
 } // namespace nx::tui

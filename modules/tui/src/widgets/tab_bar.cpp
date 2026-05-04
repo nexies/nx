@@ -141,7 +141,7 @@ void tab_bar::on_paint(painter & p)
 
     const bool focused  = has_focus();
     const color ul_color  = focused ? p.theme_color(theme_role::border_focus)
-                                    : p.theme_color(theme_role::highlight);
+                                    : p.theme_color(theme_role::accent);
     const color dim_color = p.theme_color(theme_role::foreground_dim);
     const color fg_color  = p.theme_color(theme_role::foreground);
 

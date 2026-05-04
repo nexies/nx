@@ -6,6 +6,28 @@
 
 namespace nx::tui {
 
+// ── border helpers ────────────────────────────────────────────────────────────
+
+namespace {
+
+struct border_chars {
+    const char * h, * v, * tl, * tr, * bl, * br;
+};
+
+border_chars chars_for(border_style s) noexcept
+{
+    switch (s) {
+    case border_style::single:  return { "─","│","┌","┐","└","┘" };
+    case border_style::double_: return { "═","║","╔","╗","╚","╝" };
+    case border_style::rounded: return { "─","│","╭","╮","╰","╯" };
+    case border_style::thick:   return { "━","┃","┏","┓","┗","┛" };
+    case border_style::dashed:  return { "╌","╎","┌","┐","└","┘" };
+    default:                    return { " "," "," "," "," "," " };
+    }
+}
+
+} // namespace
+
 // ── construction ──────────────────────────────────────────────────────────────
 
 painter::painter(buffer_type & buffer)
@@ -56,6 +78,13 @@ void painter::set_background_color(const color & c) noexcept
 void painter::apply_style(const style_option & s) noexcept
 {
     style_ |= s;
+}
+
+painter painter::with(const style_option & s) const
+{
+    painter copy = *this;
+    copy.style_ |= s;
+    return copy;
 }
 
 // ── per-cell helpers ──────────────────────────────────────────────────────────
@@ -116,12 +145,11 @@ void painter::draw_text(const point_type & pos, const std::string & text) const
     const int local_row = pos.y;
     int       col       = 0;
 
-    for (auto it = nx::utf8::view(text).begin(),
-              end = nx::utf8::view(text).end(); it != end; ++it) {
+    for (auto && it : nx::utf8::view(text)) {
         const int bx = base_x + col;
         if (bx >= rect_.x() + rect_.width()) break;
 
-        auto g = *it;
+        auto g = it;
         if (!g) break; // invalid UTF-8 — stop
 
         if (bx >= rect_.x())
@@ -219,6 +247,114 @@ void painter::apply_theme_as_base(theme_role fg_role, theme_role bg_role) noexce
         const color c = theme_bg(bg_role);
         if (c != color::default_color) style_.background = c;
     }
+}
+
+// ── geometry primitives ───────────────────────────────────────────────────────
+
+void painter::draw_text_aligned(const std::string & text, text_align align, int row) const
+{
+    const int w = rect_.width();
+    if (w <= 0) return;
+
+    // Count grapheme clusters and find the byte boundary at `w`.
+    int   cols     = 0;
+    const char * end_byte = text.data();
+    for (auto it = nx::utf8::view(text).begin(), e = nx::utf8::view(text).end();
+         it != e; ++it) {
+        if (cols >= w) break;
+        auto g = *it;
+        if (!g) break;
+        end_byte = g->bytes().data() + g->bytes().size();
+        ++cols;
+    }
+
+    const std::string visible(text.data(), static_cast<std::size_t>(end_byte - text.data()));
+
+    int x = 0;
+    switch (align) {
+    case text_align::left:   x = 0;                    break;
+    case text_align::center: x = (w - cols) / 2;       break;
+    case text_align::right:  x = w - cols;              break;
+    }
+    if (x < 0) x = 0;
+
+    draw_text({ x, row }, visible);
+}
+
+void painter::draw_hline(int row, const std::string & ch) const
+{
+    const int w = rect_.width();
+    for (int x = 0; x < w; ++x)
+        draw_char({ x, row }, ch);
+}
+
+void painter::draw_vline(int col, const std::string & ch) const
+{
+    const int h = rect_.height();
+    for (int y = 0; y < h; ++y)
+        draw_char({ col, y }, ch);
+}
+
+void painter::draw_border(border_style bs) const
+{
+    if (bs == border_style::none) return;
+    const int w = rect_.width();
+    const int h = rect_.height();
+    if (w < 2 || h < 2) return;
+
+    const auto bc = chars_for(bs);
+
+    draw_char({ 0,     0     }, bc.tl);
+    draw_char({ w - 1, 0     }, bc.tr);
+    draw_char({ 0,     h - 1 }, bc.bl);
+    draw_char({ w - 1, h - 1 }, bc.br);
+
+    for (int col = 1; col < w - 1; ++col) {
+        draw_char({ col, 0     }, bc.h);
+        draw_char({ col, h - 1 }, bc.h);
+    }
+    for (int row = 1; row < h - 1; ++row) {
+        draw_char({ 0,     row }, bc.v);
+        draw_char({ w - 1, row }, bc.v);
+    }
+}
+
+void painter::draw_border(border_style bs,
+                          const std::string & title,
+                          const style_option & title_style) const
+{
+    draw_border(bs);
+
+    if (title.empty() || bs == border_style::none) return;
+
+    const int w = rect_.width();
+    if (w < 6) return;
+
+    const auto bc = chars_for(bs);
+    const std::string padded = " " + title + " ";
+    const int max_cols = w - 4;
+
+    // Truncate title to fit.
+    int   cols     = 0;
+    const char * end_byte = padded.data();
+    for (auto it = nx::utf8::view(padded).begin(), e = nx::utf8::view(padded).end();
+         it != e; ++it) {
+        if (cols >= max_cols) break;
+        auto g = *it;
+        if (!g) break;
+        end_byte = g->bytes().data() + g->bytes().size();
+        ++cols;
+    }
+    const std::string rendered(padded.data(), static_cast<std::size_t>(end_byte - padded.data()));
+
+    // Overwrite the top-edge h-chars at col 1 and col 2+(title_len) with border chars
+    // to close the gap cleanly, then draw the title text.
+    draw_char({ 1, 0 }, bc.h);
+    const int end_col = 2 + cols;
+    if (end_col < w - 1)
+        draw_char({ end_col, 0 }, bc.h);
+
+    with(title_style).draw_text({ 2, 0 }, rendered);
 }
 
 } // namespace nx::tui

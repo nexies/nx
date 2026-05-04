@@ -122,6 +122,13 @@ public:
             nx_tui_app->main_screen()->update();
             return true;
         }
+        if (e.character == U'h' || e.character == U'H')
+        {
+            nx_tui_app->set_theme(theme::halloween());
+            status_btn_->set_text("Status: halloween");
+            nx_tui_app->main_screen()->update();
+            return true;
+        }
         return false;
     }
 };
@@ -143,7 +150,7 @@ int main()
     hdr->set_border_style(border_style::single);
     hdr->set_title("nx::tui theme demo");
     hdr->set_fixed_height(3);
-    make_label("Press D = dark theme   L = light theme   Tab = cycle focus   Esc = quit",
+    make_label("Press D = dark theme   L = light theme  H = halloween  Tab = cycle focus   Esc = quit",
                hdr, fg(color::default_color));
 
     // ── Main row ──────────────────────────────────────────────────────────────
@@ -198,7 +205,7 @@ int main()
     auto * roles_frame = new frame(right);
     roles_frame->set_title("Color roles");
     roles_frame->set_border_style(border_style::rounded);
-    roles_frame->set_fixed_height(24);
+    roles_frame->set_fixed_height(35);
 
     auto * roles_box = new v_box(roles_frame);
     roles_box->set_spacing(0);
@@ -209,20 +216,32 @@ int main()
         { theme_role::foreground,          "foreground"          },
         { theme_role::foreground_dim,      "foreground_dim"      },
         { theme_role::foreground_disabled, "foreground_disabled" },
+        { theme_role::primary,             "primary"             },
+        { theme_role::primary_content,     "primary_content"     },
+        { theme_role::secondary,           "secondary"           },
+        { theme_role::secondary_content,   "secondary_content"   },
+        { theme_role::accent,              "accent"              },
+        { theme_role::accent_content,      "accent_content"      },
+        { theme_role::neutral,             "neutral"             },
+        { theme_role::neutral_content,     "neutral_content"     },
         { theme_role::control,             "control"             },
         { theme_role::control_hover,       "control_hover"       },
         { theme_role::control_active,      "control_active"      },
         { theme_role::control_disabled,    "control_disabled"    },
         { theme_role::selection,           "selection"           },
-        { theme_role::highlight,           "highlight"           },
+        { theme_role::selection_text,      "selection_text"      },
         { theme_role::border,              "border"              },
         { theme_role::border_focus,        "border_focus"        },
         { theme_role::scrollbar,           "scrollbar"           },
         { theme_role::scrollbar_thumb,     "scrollbar_thumb"     },
-        { theme_role::success,             "success"             },
-        { theme_role::warning,             "warning"             },
-        { theme_role::error,               "error"               },
         { theme_role::info,                "info"                },
+        { theme_role::info_content,        "info_content"        },
+        { theme_role::success,             "success"             },
+        { theme_role::success_content,     "success_content"     },
+        { theme_role::warning,             "warning"             },
+        { theme_role::warning_content,     "warning_content"     },
+        { theme_role::error,               "error"               },
+        { theme_role::error_content,       "error_content"       },
     };
 
     for (const auto & [r, name] : roles)

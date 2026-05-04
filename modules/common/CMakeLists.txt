@@ -77,5 +77,9 @@ if(MSVC)
             FMT_USE_CONSTEXPR=0
             FMT_USE_NONTYPE_TEMPLATE_ARGS=0
     )
+
+    target_compile_options(nx_common PUBLIC
+            /utf-8
+    )
 endif()
 

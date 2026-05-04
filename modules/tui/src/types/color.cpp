@@ -1,5 +1,6 @@
 #include <vector>
 #include <cmath>
+#include <algorithm>
 #include <fmt/format.h>
 
 #include <nx/common/platform.hpp>
@@ -235,6 +236,41 @@ color color::rgb(uint8_t r, uint8_t g, uint8_t b)
 color color::rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
 {
     return color(r, g, b, a);
+}
+
+color color::from_oklch(float L, float C, float H_deg)
+{
+    constexpr float pi = 3.14159265358979323846f;
+    const float H_rad = H_deg * (pi / 180.0f);
+
+    // OKLCH → OKLab
+    const float a_ok = C * std::cos(H_rad);
+    const float b_ok = C * std::sin(H_rad);
+
+    // OKLab → linear sRGB (Björn Ottosson's matrix)
+    const float l_ = L + 0.3963377774f * a_ok + 0.2158037573f * b_ok;
+    const float m_ = L - 0.1055613458f * a_ok - 0.0638541728f * b_ok;
+    const float s_ = L - 0.0894841775f * a_ok - 1.2914855480f * b_ok;
+
+    const float l = l_ * l_ * l_;
+    const float m = m_ * m_ * m_;
+    const float s = s_ * s_ * s_;
+
+    const float R_lin =  4.0767416621f * l - 3.3077115913f * m + 0.2309699292f * s;
+    const float G_lin = -1.2684380046f * l + 2.6097574011f * m - 0.3413193965f * s;
+    const float B_lin = -0.0041960863f * l - 0.7034186147f * m + 1.7076147010f * s;
+
+    // Linear sRGB → sRGB (IEC 61966-2-1 gamma)
+    auto to_srgb = [](float x) -> float {
+        x = std::clamp(x, 0.0f, 1.0f);
+        return x <= 0.0031308f ? 12.92f * x
+                               : 1.055f * pow_f(x, 1.0f / 2.4f) - 0.055f;
+    };
+
+    return rgb(
+        static_cast<uint8_t>(std::round(to_srgb(R_lin) * 255.0f)),
+        static_cast<uint8_t>(std::round(to_srgb(G_lin) * 255.0f)),
+        static_cast<uint8_t>(std::round(to_srgb(B_lin) * 255.0f)));
 }
 
 color color::from_palette16(uint32_t index)

@@ -7,31 +7,7 @@
 #include <nx/tui/application.hpp>
 #include <nx/tui/animation/easing.hpp>
 
-#include <algorithm>
-
 namespace nx::tui {
-
-// ── border character sets (same as frame.cpp) ─────────────────────────────────
-
-namespace {
-
-struct border_chars {
-    const char * h, * v, * tl, * tr, * bl, * br;
-};
-
-border_chars chars_for(border_style s) noexcept
-{
-    switch (s) {
-    case border_style::single:  return { "─","│","┌","┐","└","┘" };
-    case border_style::double_: return { "═","║","╔","╗","╚","╝" };
-    case border_style::rounded: return { "─","│","╭","╮","╰","╯" };
-    case border_style::thick:   return { "━","┃","┏","┓","┗","┛" };
-    case border_style::dashed:  return { "╌","╎","┌","┐","└","┘" };
-    default:                    return { " "," "," "," "," "," " };
-    }
-}
-
-} // namespace
 
 // ── button ────────────────────────────────────────────────────────────────────
 
@@ -42,59 +18,46 @@ button::button(nx::core::object * parent)
     set_fixed_height(3);
 }
 
-// ── Color resolution ──────────────────────────────────────────────────────────
+// ── Color helpers ─────────────────────────────────────────────────────────────
 
-color button::_resolve_idle_bg() const noexcept
+color button::_idle_bg() const noexcept
 {
-    if (base_bg_override_ && *base_bg_override_ != color::default_color)
-        return *base_bg_override_;
     if (auto * a = tui_application::instance())
         return a->get_theme().get_bg(theme_role::control);
-    return color::rgb(49, 50, 68);  // hardcoded fallback (no app)
+    return color::rgb(49, 50, 68);
 }
 
-color button::_resolve_hover_bg() const noexcept
+color button::_hover_bg() const noexcept
 {
-    if (hover_bg_override_ && *hover_bg_override_ != color::default_color)
-        return *hover_bg_override_;
     if (auto * a = tui_application::instance())
         return a->get_theme().get_bg(theme_role::control_hover);
     return color::rgb(69, 71, 90);
 }
 
-color button::_resolve_press_bg() const noexcept
+color button::_press_bg() const noexcept
 {
-    if (press_bg_override_ && *press_bg_override_ != color::default_color)
-        return *press_bg_override_;
     if (auto * a = tui_application::instance())
         return a->get_theme().get_bg(theme_role::control_active);
     return color::rgb(88, 91, 112);
 }
 
-color button::_resolve_idle_fg() const noexcept
+color button::_idle_fg() const noexcept
 {
-    if (base_fg_override_ && *base_fg_override_ != color::default_color)
-        return *base_fg_override_;
     if (auto * a = tui_application::instance())
         return a->get_theme().get_color(theme_role::control);
     return color::rgb(205, 214, 244);
 }
 
-color button::_resolve_accent() const noexcept
+color button::_accent() const noexcept
 {
-    if (accent_override_ && *accent_override_ != color::default_color)
-        return *accent_override_;
     if (auto * a = tui_application::instance())
-        return a->get_theme().get_color(theme_role::highlight);
+        return a->get_theme().get_color(theme_role::accent);
     return color::rgb(203, 166, 247);
 }
 
-void button::_init_colors() noexcept
+color button::_target_bg() const noexcept
 {
-    if (colors_initialized_) return;
-    bg_.set(_resolve_idle_bg());
-    border_.set(_resolve_idle_fg());
-    colors_initialized_ = true;
+    return is_hovered() ? _hover_bg() : _idle_bg();
 }
 
 // ── Public API ────────────────────────────────────────────────────────────────
@@ -105,28 +68,6 @@ void button::set_text(std::string t)
 {
     if (text_ == t) return;
     text_ = std::move(t);
-    update();
-}
-
-void button::set_base_color(color base_bg, color base_fg)
-{
-    base_bg_override_ = base_bg;
-    base_fg_override_ = base_fg != color::default_color
-        ? base_fg : color::rgb(205, 214, 244);
-
-    const color white = color::rgb(255, 255, 255);
-    if (base_bg != color::default_color) {
-        hover_bg_override_ = color::interpolate(0.15f, base_bg, white);
-        press_bg_override_ = color::interpolate(0.30f, base_bg, white);
-    } else {
-        hover_bg_override_.reset();
-        press_bg_override_.reset();
-    }
-
-    colors_initialized_ = false; // force re-init on next paint
-    bg_.set(_resolve_idle_bg());
-    border_.set(_resolve_idle_fg());
-    colors_initialized_ = true;
     update();
 }
 
@@ -144,40 +85,21 @@ widget::size_type button::size_hint() const
 
 void button::on_paint(painter & p)
 {
-    _init_colors();
-
     const int w = size().width;
     const int h = size().height;
 
-    // Fill background.
-    p.apply_style(bg(bg_.value()));
-    p.fill(" ");
+    const color bg_c     = bg_.value();
+    const color border_c = border_.value();
+    const color fg_c     = _idle_fg();
+
+    p.with(bg(bg_c)).fill();
 
     if (w < 2 || h < 2) return;
 
-    const auto bc = chars_for(border_style_);
+    p.with(fg(border_c) | bg(bg_c)).draw_border(border_style_);
 
-    // Border in animated border color.
-    p.apply_style(fg(border_.value()) | bg(bg_.value()));
-
-    p.draw_char({0,     0    }, bc.tl);
-    p.draw_char({w - 1, 0    }, bc.tr);
-    p.draw_char({0,     h - 1}, bc.bl);
-    p.draw_char({w - 1, h - 1}, bc.br);
-
-    for (int col = 1; col < w - 1; ++col) {
-        p.draw_char({col, 0    }, bc.h);
-        p.draw_char({col, h - 1}, bc.h);
-    }
-    for (int row = 1; row < h - 1; ++row) {
-        p.draw_char({0,     row}, bc.v);
-        p.draw_char({w - 1, row}, bc.v);
-    }
-
-    // Label centered in the inner area.
     if (text_.empty() || h < 3) return;
 
-    const int row   = h / 2;
     const int avail = w - 2;
     if (avail <= 0) return;
 
@@ -186,10 +108,9 @@ void button::on_paint(painter & p)
         : text_;
     const int x = 1 + (avail - static_cast<int>(vis.size())) / 2;
 
-    p.apply_style(fg(_resolve_idle_fg()) | bg(bg_.value()));
-    if (has_focus()) p.enable_style(pixel_style_flag::bold);
-    p.draw_text({x, row}, vis);
-    if (has_focus()) p.disable_style(pixel_style_flag::bold);
+    style_option label_s = fg(fg_c) | bg(bg_c);
+    if (has_focus()) label_s |= bold() | underline();
+    p.with(label_s).draw_text({ x, h / 2 }, vis);
 }
 
 // ── Focus ─────────────────────────────────────────────────────────────────────
@@ -197,13 +118,13 @@ void button::on_paint(painter & p)
 void button::on_focus_in()
 {
     widget::on_focus_in();
-    update(); // repaint so text becomes bold
+    update();
 }
 
 void button::on_focus_out()
 {
     widget::on_focus_out();
-    update(); // repaint so text loses bold
+    update();
 }
 
 // ── Mouse ─────────────────────────────────────────────────────────────────────
@@ -211,20 +132,20 @@ void button::on_focus_out()
 void button::on_mouse_enter(mouse_event & e)
 {
     widget::on_mouse_enter(e);
-    bg_.animate_to(_resolve_hover_bg(), 150, easing::ease_out);
+    bg_.animate_to(_hover_bg(), 150, easing::ease_out);
 }
 
 void button::on_mouse_leave(mouse_event & e)
 {
     widget::on_mouse_leave(e);
-    bg_.animate_to(_resolve_idle_bg(), 200, easing::ease_in);
+    bg_.animate_to(_idle_bg(), 200, easing::ease_in);
 }
 
 void button::on_mouse_press(mouse_event & e)
 {
     if (e.button != mouse_button::left) return;
-    bg_.animate_to(_resolve_press_bg(), 60, easing::ease_out);
-    border_.animate_to(_resolve_accent(), 60, easing::ease_out);
+    bg_.animate_to(_press_bg(), 60, easing::ease_out);
+    border_.animate_to(_accent(), 60, easing::ease_out);
     NX_EMIT(clicked)
     e.accept();
 }
@@ -233,7 +154,7 @@ void button::on_mouse_release(mouse_event & e)
 {
     if (e.button == mouse_button::left) {
         bg_.animate_to(_target_bg(), 200, easing::ease_in);
-        border_.animate_to(_resolve_idle_fg(), 300, easing::ease_in);
+        border_.animate_to(_idle_fg(), 300, easing::ease_in);
         e.accept();
     }
     widget::on_mouse_release(e);
@@ -253,16 +174,10 @@ void button::on_key_press(key_event & e)
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-color button::_target_bg() const noexcept
-{
-    return is_hovered() ? _resolve_hover_bg() : _resolve_idle_bg();
-}
-
 void button::_do_click()
 {
-    // Flash to press state, then animate back once the flash finishes.
-    bg_.animate_to(_resolve_press_bg(), 60, easing::ease_out);
-    border_.animate_to(_resolve_accent(), 60, easing::ease_out);
+    bg_.animate_to(_press_bg(), 60, easing::ease_out);
+    border_.animate_to(_accent(), 60, easing::ease_out);
 
     nx::core::connect(&bg_.raw(), &animator::finished, this,
         [this]() { bg_.animate_to(_target_bg(), 200, easing::ease_out); },
@@ -270,7 +185,7 @@ void button::_do_click()
         nx::core::connection_flag::single_shot);
 
     nx::core::connect(&border_.raw(), &animator::finished, this,
-        [this]() { border_.animate_to(_resolve_idle_fg(), 300, easing::ease_in); },
+        [this]() { border_.animate_to(_idle_fg(), 300, easing::ease_in); },
         nx::core::connection_type::auto_t,
         nx::core::connection_flag::single_shot);
 

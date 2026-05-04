@@ -1,6 +1,7 @@
 #pragma once
 
 #include <nx/tui/widgets/widget.hpp>
+#include <nx/tui/types/orientation.hpp>
 
 namespace nx::tui {
 
@@ -12,8 +13,6 @@ namespace nx::tui {
 
 class separator : public widget {
 public:
-    enum class orientation { horizontal, vertical };
-
     NX_OBJECT(separator)
 
     explicit separator(nx::core::object * parent = nullptr,

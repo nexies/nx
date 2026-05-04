@@ -22,7 +22,7 @@ void
 register_logger(std::shared_ptr<logger> lg);
 
 [[nodiscard]] std::shared_ptr<logger>
-get(std::string const& name);
+get_logger(std::string const& name);
 
 } // namespace nx::logging
 

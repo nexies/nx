@@ -17,7 +17,7 @@ namespace nx::tui {
     //
     // Usage — built-in roles:
     //   theme t = theme::dark();
-    //   t.set(theme_role::highlight, fg(color::rgb(255, 120, 0)));
+    //   t.set(theme_role::accent, fg(color::rgb(255, 120, 0)));
     //
     // Usage — custom roles:
     //   namespace my_app {
@@ -106,6 +106,9 @@ namespace nx::tui {
 
         NX_NODISCARD static
         theme light();
+
+        NX_NODISCARD static
+        theme halloween();
 
     private:
         static constexpr std::size_t k_builtin_count =

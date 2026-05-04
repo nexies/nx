@@ -64,7 +64,7 @@ void spinner::on_paint(painter & p)
 
     if (!spinning_) return;
 
-    const color fg = p.theme_color(theme_role::highlight);
+    const color fg = p.theme_color(theme_role::accent);
     p.set_color(fg);
     p.draw_char({ 0, 0 }, k_frames[_current_frame()]);
 
