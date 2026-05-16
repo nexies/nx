@@ -30,21 +30,28 @@ public:
 
     explicit scroll_area(nx::core::object * parent = nullptr);
 
-    [[nodiscard]] bool _intercepts_wheel() const noexcept override { return true; }
+    NX_NODISCARD bool
+    _intercepts_wheel() const noexcept override { return true; }
 
     // ── Explicit content size ─────────────────────────────────────────────────
     // Set to override the automatic size derived from the child's size_hint().
 
-    void set_content_width (int w) noexcept { content_w_ = w; update(); }
-    void set_content_height(int h) noexcept { content_h_ = h; update(); }
+    void
+    set_content_width (int w) noexcept { content_w_ = w; update(); }
+    void
+    set_content_height(int h) noexcept { content_h_ = h; update(); }
 
-    [[nodiscard]] int content_width()  const noexcept { return content_w_; }
-    [[nodiscard]] int content_height() const noexcept { return content_h_; }
+    NX_NODISCARD int
+    content_width()  const noexcept { return content_w_; }
+    NX_NODISCARD int
+    content_height() const noexcept { return content_h_; }
 
     // ── Scroll position ───────────────────────────────────────────────────────
 
-    [[nodiscard]] int scroll_x() const noexcept { return scroll_x_; }
-    [[nodiscard]] int scroll_y() const noexcept { return scroll_y_; }
+    NX_NODISCARD int
+    scroll_x() const noexcept { return scroll_x_; }
+    NX_NODISCARD int
+    scroll_y() const noexcept { return scroll_y_; }
 
     void scroll_to(int x, int y);
     void scroll_by(int dx, int dy);
@@ -53,10 +60,11 @@ public:
 
     // ── Size hint ─────────────────────────────────────────────────────────────
 
-    [[nodiscard]] size_type size_hint() const override;
+    NX_NODISCARD size_type
+    size_hint() const override;
 
 protected:
-    [[nodiscard]] std::optional<rect<int>>
+    NX_NODISCARD std::optional<rect<int>>
     children_clip() const noexcept override;
 
     void _apply_layout() override;
@@ -65,14 +73,14 @@ protected:
     void on_wheel(mouse_event & e) override;
 
 private:
-    [[nodiscard]] int  _effective_content_w() const noexcept;
-    [[nodiscard]] int  _effective_content_h() const noexcept;
-    [[nodiscard]] bool _needs_v_scrollbar()   const noexcept;
-    [[nodiscard]] bool _needs_h_scrollbar()   const noexcept;
-    [[nodiscard]] int  _v_scroll_w()          const noexcept;
-    [[nodiscard]] int  _h_scroll_h()          const noexcept;
-    [[nodiscard]] int  _viewport_w()          const noexcept;
-    [[nodiscard]] int  _viewport_h()          const noexcept;
+    NX_NODISCARD int  _effective_content_w() const noexcept;
+    NX_NODISCARD int  _effective_content_h() const noexcept;
+    NX_NODISCARD bool _needs_v_scrollbar()   const noexcept;
+    NX_NODISCARD bool _needs_h_scrollbar()   const noexcept;
+    NX_NODISCARD int  _v_scroll_w()          const noexcept;
+    NX_NODISCARD int  _h_scroll_h()          const noexcept;
+    NX_NODISCARD int  _viewport_w()          const noexcept;
+    NX_NODISCARD int  _viewport_h()          const noexcept;
 
     void _draw_vscrollbar(painter & p) const;
     void _draw_hscrollbar(painter & p) const;

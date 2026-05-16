@@ -71,20 +71,25 @@ public:
 
     // ── Content ───────────────────────────────────────────────────────────────
 
-    void set_text(std::string t);
-    [[nodiscard]] const std::string & text() const noexcept { return text_; }
+    void
+    set_text(std::string t);
+    NX_NODISCARD const std::string &
+    text() const noexcept { return text_; }
 
     NX_PROPERTY(text, READ text, WRITE set_text)
 
     // ── State ─────────────────────────────────────────────────────────────────
 
-    void set_checked(bool c);
-    [[nodiscard]] bool is_checked() const noexcept { return checked_; }
+    void
+    set_checked(bool c);
+    NX_NODISCARD bool
+    is_checked() const noexcept { return checked_; }
 
     NX_SIGNAL(toggled, bool)
     NX_PROPERTY(checked, READ is_checked, WRITE set_checked)
 
-    [[nodiscard]] size_type size_hint() const override;
+    NX_NODISCARD size_type
+    size_hint() const override;
 
 protected:
     void on_paint(painter & p)           override;

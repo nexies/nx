@@ -64,6 +64,11 @@ public:
             nx_tui_app->quit();
             return true;
             }
+        if (e.modifiers.has(key_modifier::ctrl) &&
+            e.character == U'C') {
+            nx_tui_app->quit();
+            return true;
+    }
 
         return false;
     }
@@ -110,6 +115,8 @@ int main()
     auto * cb2 = new check_box(chk_box);  cb2->set_text("Dark mode");  cb2->set_checked(true);
     auto * cb3 = new check_box(chk_box);  cb3->set_text("Auto-save");
 
+    auto * sep = new separator(left);
+
     // radio_button section
     auto * rdo_frame = new frame(left);
     rdo_frame->set_title("radio_button");
@@ -151,10 +158,10 @@ int main()
     auto * spin_box = new v_box(spin_frame);
     spin_box->set_spacing(1);
 
-    auto * sep1 = new separator(spin_box);
-    (void)sep1;
     auto * spin1 = new spinner(spin_box);
     spin1->set_label("Processing…");
+    auto * sep1 = new separator(spin_box);
+    (void)sep1;
     auto * spin2 = new spinner(spin_box);
     spin2->set_label("Uploading…");
     auto * sep2 = new separator(spin_box);

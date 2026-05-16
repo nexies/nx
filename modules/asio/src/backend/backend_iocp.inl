@@ -109,9 +109,12 @@ public:
         const DWORD err = ::GetLastError();
 
         // ERROR_INVALID_PARAMETER: handle type does not support overlapped I/O.
+        // ERROR_INVALID_HANDLE:    sync objects (events, semaphores) — not I/O handles.
         // ERROR_ACCESS_DENIED:     handle is already associated with an IOCP
         //                          (e.g. the same socket registered twice).
-        if (err != ERROR_INVALID_PARAMETER && err != ERROR_ACCESS_DENIED)
+        if (err != ERROR_INVALID_PARAMETER &&
+            err != ERROR_INVALID_HANDLE    &&
+            err != ERROR_ACCESS_DENIED)
             throw std::runtime_error(
                 "iocp_backend::add: CreateIoCompletionPort failed (err="
                 + std::to_string(err) + ")");

@@ -105,7 +105,7 @@ target_link_libraries(nx_tui PUBLIC
 
 nx_configure_component(nx_tui
     NAME tui
-    VERSION 0.0.2
+    VERSION 0.3.0
 )
 
 if (NX_BUILD_EXAMPLES)

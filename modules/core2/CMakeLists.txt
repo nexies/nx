@@ -28,6 +28,7 @@ set(nx_core2_sources
     src/loop/loop.cpp
     src/timer/timer.cpp
     src/app/application.cpp
+        src/io_device/io_device.cpp
 )
 
 add_library(nx_core2
@@ -57,3 +58,4 @@ nx_configure_component(nx_core2
 )
 
 add_subdirectory(tests)
+add_subdirectory(demo)

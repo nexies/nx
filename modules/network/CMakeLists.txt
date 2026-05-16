@@ -1,23 +1,38 @@
-add_library(nx_network
-        src/network.cpp
-        include/nx/network/UdpSocket.hpp
-        src/UdpSocket.cpp
+set(NX_NETWORK_SOURCES
+    src/network.cpp
+    src/types.cpp
+    src/socket.cpp
+    src/udp/socket.cpp
+    src/tcp/socket.cpp
+    src/tcp/server.cpp
 )
 
-target_link_libraries(nx_network PRIVATE
-        nx::core2
+if(WIN32)
+    list(APPEND NX_NETWORK_SOURCES src/detail/socket_impl_win.cpp)
+else()
+    list(APPEND NX_NETWORK_SOURCES src/detail/socket_impl_posix.cpp)
+endif()
+
+add_library(nx_network ${NX_NETWORK_SOURCES})
+
+target_include_directories(nx_network PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
-#include(nxMakeModule)
+target_include_directories(nx_network PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
 
-#nx_make_module(
-#        TARGET nx_network
-#        NAME network
-#        HEADERS_BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include
-#        VERSION 0.0.1
-#)
+target_link_libraries(nx_network PUBLIC nx::core2)
+
+if(WIN32)
+    target_link_libraries(nx_network PRIVATE ws2_32)
+endif()
 
 nx_configure_component(nx_network
-        NAME network
-        VERSION 0.0.1
+    NAME network
+    VERSION 0.1.0
 )
+
+add_subdirectory(demo)

@@ -1,3 +1,4 @@
+#include <iostream>
 #include <nx/common/platform.hpp>
 
 #if defined(NX_POSIX)
@@ -258,7 +259,6 @@ void input_reader::_on_readable()
             NX_EMIT(window_resized, ws)
             break;
         }
-
         default:
             break;
         }
