@@ -19,6 +19,8 @@
 
 namespace nx::asio {
 
+    class reactor_handle;
+
 
     class io_context::impl {
     public:
@@ -128,6 +130,11 @@ namespace nx::asio {
 
         std::unordered_map<std::uint64_t, std::shared_ptr<TimerOp>> timer_storage_;
         timer_id next_timer_id_ { 0 };
+
+        // Stable ID → reactor_handle* mapping.
+        // IOCP keys are IDs, not raw pointers; stale completions are dropped.
+        std::unordered_map<std::uint64_t, reactor_handle*> handle_registry_;
+        std::uint64_t next_token_id_ { 0 };
 
     };
 }

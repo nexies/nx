@@ -105,9 +105,12 @@ void server::_on_io_event(io_event ev)
             break;
         }
 
-        // Create tcp::socket that adopts the accepted impl.
-        // Parent = this server so lifetime is managed; caller can re-parent.
-        auto conn = std::make_shared<tcp::socket>(this);
+        // Create tcp::socket with no parent — lifetime is entirely controlled by
+        // the shared_ptr emitted via new_connection.  The server inherits the thread
+        // so the socket gets the right io_context before _accept_from attaches.
+        auto conn = std::make_shared<tcp::socket>(nullptr);
+        if (auto * t = get_thread())
+            conn->move_to_thread(t);
         conn->_accept_from(std::move(accepted.value()));
         NX_EMIT(new_connection, conn);
     }

@@ -85,6 +85,7 @@ namespace nx::asio
         bool             installed_ { false };
         handler_t        read_handler_;
         handler_t        write_handler_;
+        std::uint64_t    token_id_  { 0 };
     };
 
 }

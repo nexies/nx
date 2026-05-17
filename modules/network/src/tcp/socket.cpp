@@ -110,7 +110,21 @@ void socket::_on_io_event(io_event ev)
     }
 
     if ((ev & io_event::read) != io_event::none) {
-        NX_EMIT(ready_read);
+        char buf[4096];
+        while (true) {
+            auto r = _impl().read(buf, sizeof(buf));
+            if (r.is_error()) {
+                if (!detail::socket_impl::is_would_block(r.error()))
+                    NX_EMIT(error_occurred, r.error());
+                break;
+            }
+            if (r.value() == 0) {
+                _set_state(state::closed);
+                NX_EMIT(disconnected);
+                return;
+            }
+            NX_EMIT(data_received, nx::span<const char>(buf, r.value()));
+        }
         _impl().arm_read();
     }
     if ((ev & io_event::write) != io_event::none) {

@@ -50,6 +50,7 @@ namespace nx::asio
     std::size_t io_context::impl::run(std::optional<duration> max_duration)
     {
         running_.store(true, std::memory_order_release);
+        stopped_.store(false, std::memory_order_release);
 
         {
             std::lock_guard lg{state_mutex_};
@@ -179,7 +180,11 @@ namespace nx::asio
 
     void io_context::impl::register_reactor_handle(native_handle_t handle, void* token, io_interest interest)
     {
-        backend_->add(handle, token, interest);
+        auto * rh = static_cast<reactor_handle*>(token);
+        const auto id = ++next_token_id_;
+        rh->token_id_ = id;
+        handle_registry_[id] = rh;
+        backend_->add(handle, reinterpret_cast<void*>(static_cast<uintptr_t>(id)), interest);
         backend_->wake();
     }
 
@@ -191,6 +196,9 @@ namespace nx::asio
 
     void io_context::impl::unregister_reactor_handle(native_handle_t handle, void * token, io_interest interest)
     {
+        auto * rh = static_cast<reactor_handle*>(token);
+        handle_registry_.erase(rh->token_id_);
+        rh->token_id_ = 0;
         backend_->remove(handle, token, interest);
         backend_->wake();
     }
@@ -289,11 +297,17 @@ namespace nx::asio
         {
             if ((events[i].events & io_event::wakeup) != io_event::none)
             {
-                auto n = _consume_wakeup_event(&(events[i]));
+                (void)_consume_wakeup_event(&(events[i]));
                 continue;
             }
 
-            static_cast<reactor_handle *>(events[i].token)->on_event(events[i]);
+            const auto id = static_cast<std::uint64_t>(
+                reinterpret_cast<uintptr_t>(events[i].token));
+            auto it = handle_registry_.find(id);
+            if (it == handle_registry_.end())
+                continue; // stale completion — handle already unregistered
+
+            it->second->on_event(events[i]);
         }
     }
 

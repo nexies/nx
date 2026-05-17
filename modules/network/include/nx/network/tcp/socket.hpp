@@ -1,6 +1,7 @@
 #pragma once
 
 #include <nx/network/socket.hpp>
+#include <nx/common/span.hpp>
 
 namespace nx::network::tcp {
 
@@ -42,6 +43,7 @@ public:
 
     NX_SIGNAL(connected)
     NX_SIGNAL(disconnected)
+    NX_SIGNAL(data_received, nx::span<const char>)
 
 protected:
     void _on_io_event(nx::asio::io_event ev) override;

@@ -3,7 +3,15 @@
 #include <nx/network/types.hpp>
 #include <nx/network/socket_options.hpp>
 #include <nx/network/socket.hpp>
+#include <nx/network/buffer.hpp>
+#include <nx/network/buffer/read_accumulator.hpp>
 #include <nx/network/resolver.hpp>
+#include <nx/network/framing/length_prefix_framer.hpp>
+#include <nx/network/framing/delimiter_framer.hpp>
 #include <nx/network/udp/socket.hpp>
 #include <nx/network/tcp/socket.hpp>
 #include <nx/network/tcp/server.hpp>
+#include <nx/network/tcp/reconnector.hpp>
+#include <nx/network/http/request.hpp>
+#include <nx/network/http/response.hpp>
+#include <nx/network/http/server.hpp>

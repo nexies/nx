@@ -2,10 +2,20 @@ set(NX_NETWORK_SOURCES
     src/network.cpp
     src/types.cpp
     src/socket.cpp
+    src/buffer/read_buffer.cpp
+    src/buffer/read_accumulator.cpp
+    src/framing/length_prefix_framer.cpp
+    src/framing/delimiter_framer.cpp
     src/resolver.cpp
     src/udp/socket.cpp
     src/tcp/socket.cpp
     src/tcp/server.cpp
+    src/tcp/reconnector.cpp
+    src/http/request.cpp
+    src/http/response.cpp
+    src/http/request_parser.cpp
+    src/http/connection.cpp
+    src/http/server.cpp
 )
 
 if(WIN32)
@@ -33,7 +43,8 @@ endif()
 
 nx_configure_component(nx_network
     NAME network
-    VERSION 0.2.0
+    VERSION 0.6.0
 )
 
 add_subdirectory(demo)
+add_subdirectory(tests)
