@@ -36,7 +36,10 @@ nx::result<void> server::listen(const endpoint & local_ep,
     if (!r) { impl_.reset(); return r; }
 
     // Allow quick restart after close.
-    impl_->set_reuse_address(true);
+    {
+        int v = 1;
+        impl_->set_option_raw(opt_level::socket, opt_name::reuse_address, &v, sizeof(v));
+    }
 
     r = impl_->bind(local_ep);
     if (!r) { impl_.reset(); return r; }

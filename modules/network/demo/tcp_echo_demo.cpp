@@ -4,92 +4,99 @@
 
 #include <nx/network/network.hpp>
 #include <nx/core2/core2.hpp>
+#include <nx/logging.hpp>
 
 #include <iostream>
 #include <string_view>
 
 int main()
 {
-    // Register the main OS thread with nx so objects created here get a thread context.
+    nx::logging::set_default_log_domain("demo_tcp");
     nx::core::local_thread main_thread("main");
     nx::core::loop         loop;
 
+    const char echo_msg[] = "Hello, nx::network! :D :D :D :D :D :D";
+
     using namespace nx::network;
+
+    char srv_buf[256];
+    char cli_buf[256];
 
     // ── Server ────────────────────────────────────────────────────────────────
 
     tcp::server server;
-
     std::shared_ptr<tcp::socket> accepted_conn;
 
     nx::core::connect(&server, &tcp::server::new_connection, &server,
         [&](std::shared_ptr<tcp::socket> conn) {
             accepted_conn = conn;
-            std::cout << "[server] accepted connection\n";
+            nx_info("server accepted connetion");
 
             nx::core::connect(conn.get(), &tcp::socket::ready_read, conn.get(),
-                [&accepted_conn]() {
-                    char buf[256];
-                    auto n = accepted_conn->read(buf, sizeof(buf));
-                    if (!n) {
-                        std::cerr << "[server] read error: " << n.error().what() << "\n";
-                        return;
-                    }
-                    std::cout << "[server] echoing " << *n << " bytes\n";
-                    accepted_conn->write(buf, *n);
+                [&accepted_conn, &srv_buf]() {
+                    // and_then: read succeeds  →  immediately write the same bytes back
+                    accepted_conn->read(srv_buf, sizeof(srv_buf))
+                        .and_then([&](std::size_t n) {
+                            nx_info("server echoing {} bytes", n);
+                            return accepted_conn->write(srv_buf, n);
+                        })
+                        .or_else([](nx::error e) {
+                            nx_critical("server error: {}", e.what());
+                            std::exit(1);
+                        });
                 });
         });
 
-    nx::core::connect(&server, &tcp::server::error_occurred, &server,
-        [](nx::error e) {
-            std::cerr << "[server] error: " << e.what() << "\n";
+
+    auto server_endpoint = endpoint {ip_address::loopback_v4(), 9876};
+    server.listen(server_endpoint)
+        .or_else([](nx::error e) {
+            nx_critical("server error: {}", e.what());
+            std::exit(1);
         });
 
-    auto r = server.listen(endpoint { ip_address::loopback_v4(), 9876 });
-    if (!r) {
-        std::cerr << "listen: " << r.error().what() << "\n";
-        return 1;
-    }
-    std::cout << "[server] listening on 127.0.0.1:9876\n";
+    nx_info("server listening on {}:{}", server_endpoint.address.to_string(), server_endpoint.port);
 
     // ── Client ────────────────────────────────────────────────────────────────
 
     tcp::socket client;
-
-    auto open_r = client.open();
-    if (!open_r) {
-        std::cerr << "open: " << open_r.error().what() << "\n";
-        return 1;
-    }
+    client.open()
+        .or_else([](nx::error e) {
+            nx_critical("client error: {}", e.what());
+            std::exit(1);
+        });
 
     nx::core::connect(&client, &tcp::socket::connected, &client,
-        [&client]() {
-            std::cout << "[client] connected\n";
-            const char msg[] = "Hello, nx::network!";
-            client.write(msg, sizeof(msg) - 1);
+        [&client, &echo_msg]() {
+            nx_info("client connected");
+            client.write(echo_msg, sizeof(echo_msg) - 1);
         });
 
     nx::core::connect(&client, &tcp::socket::ready_read, &client,
-        [&client, &loop]() {
-            char buf[256];
-            auto n = client.read(buf, sizeof(buf));
-            if (n)
-                std::cout << "[client] echo: " << std::string_view(buf, *n) << "\n";
-            loop.quit();
+        [&client, &cli_buf, &loop]() {
+            // map×2: size_t  →  string_view  →  print + quit
+            client.read(cli_buf, sizeof(cli_buf))
+                .map([&cli_buf](std::size_t n) {
+                    return std::string_view(cli_buf, n);
+                })
+                .map([&loop](std::string_view sv) {
+                    nx_info("client echo: \"{}\"", sv);
+                    loop.quit();
+                });
         });
 
     nx::core::connect(&client, &tcp::socket::error_occurred, &client,
         [&loop](nx::error e) {
-            std::cerr << "[client] error: " << e.what() << "\n";
+            nx_critical("client error: {}", e.what());
             loop.exit(1);
         });
 
-    auto conn_r = client.connect(endpoint { ip_address::loopback_v4(), 9876 });
-    if (!conn_r) {
-        std::cerr << "connect: " << conn_r.error().what() << "\n";
-        return 1;
-    }
+    client.connect(endpoint { ip_address::loopback_v4(), 9876 })
+        .or_else([](nx::error e) {
+            nx_critical("client error: {}", e.what());
+            std::exit(2);
+        });
 
-    std::cout << "[demo] running event loop\n";
+    nx_info("running event loop");
     return loop.exec();
 }

@@ -94,6 +94,24 @@ void socket::_adopt_impl(std::unique_ptr<detail::socket_impl> impl) noexcept
     impl_ = std::move(impl);
 }
 
+// ── Option bridge ────────────────────────────────────────────────────────────
+
+nx::result<void> socket::_set_option_raw(opt_level level, opt_name name,
+                                          const void * val, std::size_t len)
+{
+    if (!impl_ || !impl_->is_open())
+        return nx::err::invalid_state("socket not open");
+    return impl_->set_option_raw(level, name, val, len);
+}
+
+nx::result<void> socket::_get_option_raw(opt_level level, opt_name name,
+                                          void * val, std::size_t & len) const
+{
+    if (!impl_ || !impl_->is_open())
+        return nx::err::invalid_state("socket not open");
+    return impl_->get_option_raw(level, name, val, len);
+}
+
 // ── Thread change ─────────────────────────────────────────────────────────────
 
 void socket::_on_thread_changed(nx::core::thread * /*old_t*/,

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <nx/network/types.hpp>
+#include <nx/network/socket_options.hpp>
 #include <nx/asio/backend/backend_types.hpp>
 #include <nx/asio/context/io_context.hpp>
 #include <nx/common/types/errors/codes.hpp>
@@ -57,10 +58,12 @@ public:
     // Non-blocking connect — completion signalled via arm_write callback.
     virtual nx::result<void> connect(const endpoint & ep) = 0;
 
-    // ── Convenience options (impl-layer only) ─────────────────────────────────
+    // ── Socket options ────────────────────────────────────────────────────────
 
-    virtual nx::result<void> set_reuse_address(bool enable) = 0;
-    virtual nx::result<void> set_no_delay(bool enable) = 0;
+    virtual nx::result<void> set_option_raw(opt_level level, opt_name name,
+                                             const void * val, std::size_t len) = 0;
+    virtual nx::result<void> get_option_raw(opt_level level, opt_name name,
+                                             void * val, std::size_t & len) const = 0;
 
     // ── Non-blocking I/O ──────────────────────────────────────────────────────
 

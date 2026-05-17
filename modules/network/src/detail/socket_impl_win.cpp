@@ -16,20 +16,6 @@
 #include <cstring>
 #include <stdexcept>
 
-// ── WSA one-time initialisation ───────────────────────────────────────────────
-
-namespace {
-struct wsa_guard {
-    wsa_guard() {
-        WSADATA d {};
-        if (WSAStartup(MAKEWORD(2, 2), &d) != 0)
-            throw std::runtime_error("WSAStartup failed");
-    }
-    ~wsa_guard() { WSACleanup(); }
-};
-static wsa_guard g_wsa;
-} // namespace
-
 namespace nx::network::detail {
 
 using io_event    = nx::asio::io_event;
@@ -245,21 +231,26 @@ public:
 
     // ── Options ───────────────────────────────────────────────────────────────
 
-    nx::result<void> set_reuse_address(bool enable) override
+    nx::result<void> set_option_raw(opt_level level, opt_name name,
+                                     const void * val, std::size_t len) override
     {
-        const BOOL v = enable ? TRUE : FALSE;
-        if (::setsockopt(socket_, SOL_SOCKET, SO_REUSEADDR,
-                         reinterpret_cast<const char *>(&v), sizeof(v)) == SOCKET_ERROR)
-            return os_err("setsockopt(SO_REUSEADDR)");
+        auto [lv, nm] = _translate_opt(level, name);
+        if (::setsockopt(socket_, lv, nm,
+                         reinterpret_cast<const char *>(val),
+                         static_cast<int>(len)) == SOCKET_ERROR)
+            return os_err("setsockopt()");
         return {};
     }
 
-    nx::result<void> set_no_delay(bool enable) override
+    nx::result<void> get_option_raw(opt_level level, opt_name name,
+                                     void * val, std::size_t & len) const override
     {
-        const BOOL v = enable ? TRUE : FALSE;
-        if (::setsockopt(socket_, IPPROTO_TCP, TCP_NODELAY,
-                         reinterpret_cast<const char *>(&v), sizeof(v)) == SOCKET_ERROR)
-            return os_err("setsockopt(TCP_NODELAY)");
+        auto [lv, nm] = _translate_opt(level, name);
+        int optlen = static_cast<int>(len);
+        if (::getsockopt(socket_, lv, nm,
+                         reinterpret_cast<char *>(val), &optlen) == SOCKET_ERROR)
+            return os_err("getsockopt()");
+        len = static_cast<std::size_t>(optlen);
         return {};
     }
 
@@ -371,6 +362,28 @@ public:
     bool is_open() const noexcept override { return socket_ != INVALID_SOCKET; }
 
 private:
+    static std::pair<int, int> _translate_opt(opt_level level, opt_name name) noexcept
+    {
+        int lv = 0;
+        switch (level) {
+            case opt_level::socket: lv = SOL_SOCKET;   break;
+            case opt_level::tcp:    lv = IPPROTO_TCP;  break;
+            case opt_level::ip:     lv = IPPROTO_IP;   break;
+            case opt_level::ipv6:   lv = IPPROTO_IPV6; break;
+        }
+        int nm = 0;
+        switch (name) {
+            case opt_name::reuse_address: nm = SO_REUSEADDR;  break;
+            case opt_name::no_delay:      nm = TCP_NODELAY;   break;
+            case opt_name::recv_buf_size: nm = SO_RCVBUF;     break;
+            case opt_name::send_buf_size: nm = SO_SNDBUF;     break;
+            case opt_name::broadcast:     nm = SO_BROADCAST;  break;
+            case opt_name::ip_ttl:        nm = IP_TTL;        break;
+            case opt_name::ipv6_only:     nm = IPV6_V6ONLY;   break;
+        }
+        return { lv, nm };
+    }
+
     void _apply_wsa_event_select()
     {
         if (socket_ != INVALID_SOCKET && event_ != WSA_INVALID_EVENT)

@@ -183,19 +183,23 @@ public:
 
     // ── Options ───────────────────────────────────────────────────────────────
 
-    nx::result<void> set_reuse_address(bool enable) override
+    nx::result<void> set_option_raw(opt_level level, opt_name name,
+                                     const void * val, std::size_t len) override
     {
-        const int v = enable ? 1 : 0;
-        if (::setsockopt(fd_, SOL_SOCKET, SO_REUSEADDR, &v, sizeof(v)) != 0)
-            return os_err("setsockopt(SO_REUSEADDR)");
+        auto [lv, nm] = _translate_opt(level, name);
+        if (::setsockopt(fd_, lv, nm, val, static_cast<socklen_t>(len)) != 0)
+            return os_err("setsockopt()");
         return {};
     }
 
-    nx::result<void> set_no_delay(bool enable) override
+    nx::result<void> get_option_raw(opt_level level, opt_name name,
+                                     void * val, std::size_t & len) const override
     {
-        const int v = enable ? 1 : 0;
-        if (::setsockopt(fd_, IPPROTO_TCP, TCP_NODELAY, &v, sizeof(v)) != 0)
-            return os_err("setsockopt(TCP_NODELAY)");
+        auto [lv, nm] = _translate_opt(level, name);
+        socklen_t optlen = static_cast<socklen_t>(len);
+        if (::getsockopt(fd_, lv, nm, val, &optlen) != 0)
+            return os_err("getsockopt()");
+        len = static_cast<std::size_t>(optlen);
         return {};
     }
 
@@ -294,6 +298,28 @@ public:
     bool                      is_open()       const noexcept override { return fd_ >= 0; }
 
 private:
+    static std::pair<int, int> _translate_opt(opt_level level, opt_name name) noexcept
+    {
+        int lv = 0;
+        switch (level) {
+            case opt_level::socket: lv = SOL_SOCKET;   break;
+            case opt_level::tcp:    lv = IPPROTO_TCP;  break;
+            case opt_level::ip:     lv = IPPROTO_IP;   break;
+            case opt_level::ipv6:   lv = IPPROTO_IPV6; break;
+        }
+        int nm = 0;
+        switch (name) {
+            case opt_name::reuse_address: nm = SO_REUSEADDR;  break;
+            case opt_name::no_delay:      nm = TCP_NODELAY;   break;
+            case opt_name::recv_buf_size: nm = SO_RCVBUF;     break;
+            case opt_name::send_buf_size: nm = SO_SNDBUF;     break;
+            case opt_name::broadcast:     nm = SO_BROADCAST;  break;
+            case opt_name::ip_ttl:        nm = IP_TTL;        break;
+            case opt_name::ipv6_only:     nm = IPV6_V6ONLY;   break;
+        }
+        return { lv, nm };
+    }
+
     void _arm_read_handler()
     {
         if (!reactor_) return;

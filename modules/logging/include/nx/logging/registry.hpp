@@ -19,6 +19,9 @@ set_default_logger(std::shared_ptr<logger> lg);
 get_default_logger();
 
 void
+set_default_log_domain(std::string_view domain);
+
+void
 register_logger(std::shared_ptr<logger> lg);
 
 [[nodiscard]] std::shared_ptr<logger>

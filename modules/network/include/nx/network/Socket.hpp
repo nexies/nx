@@ -1,6 +1,7 @@
 #pragma once
 
 #include <nx/network/types.hpp>
+#include <nx/network/socket_options.hpp>
 
 #include <nx/common/helpers.hpp>
 #include <nx/common/types/result.hpp>
@@ -11,6 +12,7 @@
 
 #include <chrono>
 #include <memory>
+#include <type_traits>
 
 // Forward-declare the internal impl so public headers stay clean.
 namespace nx::network::detail { class socket_impl; }
@@ -55,6 +57,40 @@ public:
     nx::result<void> open(socket_family family = socket_family::ipv4);
     void             close();
 
+    // ── Socket options ────────────────────────────────────────────────────────
+
+    // socket.set_option(opt::no_delay { true });
+    template<opt_level L, opt_name N, typename T>
+    nx::result<void> set_option(basic_option<L, N, T> opt)
+    {
+        if constexpr (std::is_same_v<T, bool>) {
+            int v = opt.value ? 1 : 0;
+            return _set_option_raw(L, N, &v, sizeof(v));
+        } else {
+            return _set_option_raw(L, N, &opt.value, sizeof(opt.value));
+        }
+    }
+
+    // auto r = socket.get_option<opt::recv_buf_size>();  // result<int>
+    template<typename Opt>
+    nx::result<typename Opt::value_type> get_option() const
+    {
+        using T = typename Opt::value_type;
+        if constexpr (std::is_same_v<T, bool>) {
+            int v = 0;
+            std::size_t len = sizeof(v);
+            auto r = _get_option_raw(Opt::level, Opt::name, &v, len);
+            if (!r) return r.error();
+            return static_cast<bool>(v);
+        } else {
+            T v {};
+            std::size_t len = sizeof(v);
+            auto r = _get_option_raw(Opt::level, Opt::name, &v, len);
+            if (!r) return r.error();
+            return v;
+        }
+    }
+
     // ── Sync wait ─────────────────────────────────────────────────────────────
 
     // Block until data is available or timeout expires.  timeout < 0 → forever.
@@ -86,6 +122,12 @@ protected:
     // Take ownership of a pre-built impl (e.g. accepted connection).
     // Caller must call _impl().attach() + _impl().arm_read() afterwards.
     void _adopt_impl(std::unique_ptr<detail::socket_impl> impl) noexcept;
+
+    // Bridge: defined in socket.cpp where socket_impl is complete.
+    nx::result<void> _set_option_raw(opt_level level, opt_name name,
+                                      const void * val, std::size_t len);
+    nx::result<void> _get_option_raw(opt_level level, opt_name name,
+                                      void * val, std::size_t & len) const;
 
     // core2 hook: re-register native handle on the new thread's io_context.
     void _on_thread_changed(nx::core::thread * old_t,

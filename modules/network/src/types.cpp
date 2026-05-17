@@ -13,6 +13,19 @@
 #  include <arpa/inet.h>
 #endif
 
+// ── WSA one-time initialisation (Windows only) ───────────────────────────────
+// Placed here rather than in socket_impl_win.cpp so that WSAStartup is called
+// whenever nx_network is linked, even if no sockets are created (e.g. resolver-only).
+#if defined(NX_OS_WINDOWS)
+namespace {
+struct wsa_guard {
+    wsa_guard()  { WSADATA d {}; WSAStartup(MAKEWORD(2, 2), &d); }
+    ~wsa_guard() { WSACleanup(); }
+};
+static wsa_guard g_wsa;
+} // namespace
+#endif
+
 namespace nx::network {
 
 // ── ip_address — named constructors ──────────────────────────────────────────

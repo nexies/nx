@@ -2,6 +2,7 @@ set(NX_NETWORK_SOURCES
     src/network.cpp
     src/types.cpp
     src/socket.cpp
+    src/resolver.cpp
     src/udp/socket.cpp
     src/tcp/socket.cpp
     src/tcp/server.cpp
@@ -32,7 +33,7 @@ endif()
 
 nx_configure_component(nx_network
     NAME network
-    VERSION 0.1.0
+    VERSION 0.2.0
 )
 
 add_subdirectory(demo)

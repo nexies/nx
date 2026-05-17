@@ -10,6 +10,7 @@
 
 #include <functional>
 #include <optional>
+#include <type_traits>
 #include <variant>
 
 namespace nx
@@ -93,6 +94,51 @@ namespace nx
             if (is_error_)
                 return handler(error());
             return value();
+        }
+
+        // fn(const T&) -> result<U>  =>  result<U>
+        // Chains a fallible operation; propagates the error unchanged.
+        template<typename Fn>
+        auto and_then(Fn && fn) const
+            -> std::invoke_result_t<Fn, const_reference>
+        {
+            using R = std::invoke_result_t<Fn, const_reference>;
+            if (is_error_)
+                return R { error() };
+            return std::forward<Fn>(fn)(value());
+        }
+
+        // fn(const T&) -> U  =>  result<U>
+        // Transforms the value; fn must not fail (returns U directly, not result<U>).
+        template<typename Fn>
+        auto map(Fn && fn) const
+            -> basic_result<std::invoke_result_t<Fn, const_reference>, Error>
+        {
+            using U = std::invoke_result_t<Fn, const_reference>;
+            if (is_error_)
+                return basic_result<U, Error> { error() };
+            if constexpr (std::is_void_v<U>) {
+                std::forward<Fn>(fn)(value());
+                return basic_result<U, Error> {};
+            } else {
+                return basic_result<U, Error> { std::forward<Fn>(fn)(value()) };
+            }
+        }
+
+        // fn(const Error&) -> void        : side-effect, expression type is void
+        // fn(const Error&) -> result<T>   : recovery, replaces the error
+        template<typename Fn>
+        auto or_else(Fn && fn) const
+        {
+            using R = std::invoke_result_t<Fn, const error_type &>;
+            if constexpr (std::is_void_v<R>) {
+                if (is_error_)
+                    std::forward<Fn>(fn)(error());
+            } else {
+                if (!is_error_)
+                    return basic_result<Type, Error>(*this);
+                return basic_result<Type, Error>(std::forward<Fn>(fn)(error()));
+            }
         }
 
         // ── Constructors ──────────────────────────────────────────────────────
@@ -179,6 +225,49 @@ namespace nx
         void expect(Handler && handler) const {
             if (is_error())
                 std::forward<Handler>(handler)(error());
+        }
+
+        // fn() -> result<U>  =>  result<U>
+        template<typename Fn>
+        NX_NODISCARD auto and_then(Fn && fn) const
+            -> std::invoke_result_t<Fn>
+        {
+            using R = std::invoke_result_t<Fn>;
+            if (is_error())
+                return R { error() };
+            return std::forward<Fn>(fn)();
+        }
+
+        // fn() -> U  =>  result<U>
+        template<typename Fn>
+        NX_NODISCARD auto map(Fn && fn) const
+            -> basic_result<std::invoke_result_t<Fn>, Error>
+        {
+            using U = std::invoke_result_t<Fn>;
+            if (is_error())
+                return basic_result<U, Error> { error() };
+            if constexpr (std::is_void_v<U>) {
+                std::forward<Fn>(fn)();
+                return basic_result<U, Error> {};
+            } else {
+                return basic_result<U, Error> { std::forward<Fn>(fn)() };
+            }
+        }
+
+        // fn(const Error&) -> void        : side-effect, expression type is void
+        // fn(const Error&) -> result<void>: recovery, replaces the error
+        template<typename Fn>
+        auto or_else(Fn && fn) const
+        {
+            using R = std::invoke_result_t<Fn, const error_type &>;
+            if constexpr (std::is_void_v<R>) {
+                if (is_error())
+                    std::forward<Fn>(fn)(error());
+            } else {
+                if (!is_error())
+                    return basic_result<void, Error>{};
+                return basic_result<void, Error>(std::forward<Fn>(fn)(error()));
+            }
         }
 
         // ── Constructors ──────────────────────────────────────────────────────

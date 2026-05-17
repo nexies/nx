@@ -59,6 +59,11 @@ public:
     }
 
     void
+    set_name (std::string_view name) {
+        name_ = name;
+    }
+
+    void
     set_formatter(std::unique_ptr<pattern_formatter> fmt)
     {
         formatter_ = std::move(fmt);

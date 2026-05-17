@@ -50,6 +50,10 @@ get_default_logger()
     return g_default;
 }
 
+void set_default_log_domain(std::string_view domain) {
+    get_default_logger()->set_name(domain);
+}
+
 void
 register_logger(std::shared_ptr<logger> lg)
 {
