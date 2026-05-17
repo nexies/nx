@@ -16,6 +16,8 @@ set(NX_NETWORK_SOURCES
     src/http/request_parser.cpp
     src/http/connection.cpp
     src/http/server.cpp
+    src/http/router.cpp
+    src/http/static_handler.cpp
 )
 
 if(WIN32)

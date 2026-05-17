@@ -101,11 +101,15 @@ void socket::_on_io_event(io_event ev)
             return;
         }
         if ((ev & io_event::write) != io_event::none) {
+            // Clear write from ev so the connected-socket write handler below
+            // doesn't fire spuriously. Then fall through to handle any read/
+            // hangup bits that arrived simultaneously (common on loopback).
+            ev = ev ^ io_event::write;
             _impl().disarm_write();
             _set_state(state::connected);
             _impl().arm_read();
             NX_EMIT(connected);
-            return;
+            if (ev == io_event::none) return;
         }
     }
 
@@ -132,6 +136,14 @@ void socket::_on_io_event(io_event ev)
         NX_EMIT(bytes_written, std::uint64_t { 0 });
     }
     if ((ev & io_event::hangup) != io_event::none) {
+        // Drain any data the peer sent before closing (FD_READ may have been
+        // consumed by the same WSAEnumNetworkEvents call that returned FD_CLOSE).
+        char buf[4096];
+        while (true) {
+            auto r = _impl().read(buf, sizeof(buf));
+            if (r.is_error() || r.value() == 0) break;
+            NX_EMIT(data_received, nx::span<const char>(buf, r.value()));
+        }
         _set_state(state::closed);
         NX_EMIT(disconnected);
     }

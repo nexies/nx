@@ -14,4 +14,6 @@
 #include <nx/network/tcp/reconnector.hpp>
 #include <nx/network/http/request.hpp>
 #include <nx/network/http/response.hpp>
+#include <nx/network/http/router.hpp>
+#include <nx/network/http/static_handler.hpp>
 #include <nx/network/http/server.hpp>

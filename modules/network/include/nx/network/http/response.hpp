@@ -18,6 +18,7 @@ struct response {
     static response ok            (std::string body = {},
                                    std::string_view content_type = "text/plain");
     static response not_found     (std::string body = "Not Found");
+    static response forbidden     (std::string body = "Forbidden");
     static response bad_request   (std::string body = "Bad Request");
     static response internal_error(std::string body = "Internal Server Error");
 

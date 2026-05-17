@@ -28,6 +28,17 @@ response response::not_found(std::string body)
     return r;
 }
 
+response response::forbidden(std::string body)
+{
+    response r;
+    r.status_code = 403;
+    r.reason      = "Forbidden";
+    r.body        = std::move(body);
+    if (!r.body.empty())
+        r.headers["Content-Type"] = "text/plain";
+    return r;
+}
+
 response response::bad_request(std::string body)
 {
     response r;
