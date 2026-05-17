@@ -38,15 +38,14 @@ nx::result<void> socket::connect_sync(const endpoint & remote_ep,
 
     _set_state(state::connecting);
 
-    // Poll until the socket becomes writable (= connected or error).
-    r = _impl().wait_readable(timeout);
+    // Wait until connect completes (write-readiness signals completion on all platforms).
+    r = _impl().wait_writable(timeout);
     if (!r) return r;
 
-    // Check for connection error via a zero-byte read.
-    char dummy;
-    auto rr = _impl().read(&dummy, 0);
-    if (rr.is_error() && !detail::socket_impl::is_would_block(rr.error()))
-        return rr.error();
+    // Check whether connect actually succeeded.
+    const int so_err = _impl().get_so_error();
+    if (so_err != 0)
+        return nx::err::runtime_error(so_err, "connect failed");
 
     _set_state(state::connected);
     _impl().arm_read();

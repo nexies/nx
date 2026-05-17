@@ -84,6 +84,12 @@ public:
     // Block until socket is readable or timeout expires.
     virtual nx::result<void> wait_readable(std::chrono::milliseconds timeout) = 0;
 
+    // Block until socket is writable or timeout expires (use after non-blocking connect).
+    virtual nx::result<void> wait_writable(std::chrono::milliseconds timeout) = 0;
+
+    // Read and clear the pending socket error (getsockopt SO_ERROR). Returns 0 on success.
+    virtual int get_so_error() noexcept = 0;
+
     // ── State ─────────────────────────────────────────────────────────────────
 
     NX_NODISCARD virtual nx::asio::native_handle_t native_handle() const noexcept = 0;

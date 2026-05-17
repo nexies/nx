@@ -292,6 +292,24 @@ public:
         return {};
     }
 
+    nx::result<void> wait_writable(std::chrono::milliseconds timeout) override
+    {
+        pollfd pfd { fd_, POLLOUT, 0 };
+        const int ms = (timeout.count() < 0) ? -1 : static_cast<int>(timeout.count());
+        const int r  = ::poll(&pfd, 1, ms);
+        if (r < 0)  return os_err("poll()");
+        if (r == 0) return nx::err::runtime_error("wait_writable: timeout");
+        return {};
+    }
+
+    int get_so_error() noexcept override
+    {
+        int err = 0;
+        socklen_t len = sizeof(err);
+        ::getsockopt(fd_, SOL_SOCKET, SO_ERROR, &err, &len);
+        return err;
+    }
+
     // ── State ─────────────────────────────────────────────────────────────────
 
     nx::asio::native_handle_t native_handle() const noexcept override { return fd_; }

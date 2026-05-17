@@ -351,6 +351,34 @@ public:
         return {};
     }
 
+    nx::result<void> wait_writable(std::chrono::milliseconds timeout) override
+    {
+        const DWORD ms = (timeout.count() < 0)
+            ? WSA_INFINITE
+            : static_cast<DWORD>(timeout.count());
+
+        const DWORD r = WSAWaitForMultipleEvents(1, &event_, FALSE, ms, FALSE);
+        if (r == WSA_WAIT_TIMEOUT)
+            return nx::err::runtime_error("wait_writable: timeout");
+        if (r == WSA_WAIT_FAILED)
+            return os_err("WSAWaitForMultipleEvents()");
+
+        // Reset the WSA event so any queued reactor completion delivers io_event::none
+        // when the io_context drains — harmless but avoids a spurious write event.
+        WSANETWORKEVENTS ne {};
+        WSAEnumNetworkEvents(socket_, event_, &ne);
+        return {};
+    }
+
+    int get_so_error() noexcept override
+    {
+        int err = 0;
+        int len = sizeof(err);
+        ::getsockopt(socket_, SOL_SOCKET, SO_ERROR,
+                     reinterpret_cast<char *>(&err), &len);
+        return err;
+    }
+
     // ── State ─────────────────────────────────────────────────────────────────
 
     nx::asio::native_handle_t native_handle() const noexcept override
