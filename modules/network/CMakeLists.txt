@@ -1,3 +1,5 @@
+find_package(OpenSSL REQUIRED)
+
 set(NX_NETWORK_SOURCES
     src/network.cpp
     src/types.cpp
@@ -18,6 +20,9 @@ set(NX_NETWORK_SOURCES
     src/http/server.cpp
     src/http/router.cpp
     src/http/static_handler.cpp
+    src/http/url.cpp
+    src/http/response_parser.cpp
+    src/tls/context.cpp
 )
 
 if(WIN32)
@@ -37,10 +42,13 @@ target_include_directories(nx_network PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-target_link_libraries(nx_network PUBLIC nx::core2)
+target_link_libraries(nx_network PUBLIC
+        nx::core2
+        OpenSSL::SSL
+        OpenSSL::Crypto)
 
 if(WIN32)
-    target_link_libraries(nx_network PRIVATE ws2_32)
+    target_link_libraries(nx_network PRIVATE ws2_32 crypt32)
 endif()
 
 nx_configure_component(nx_network

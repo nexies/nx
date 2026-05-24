@@ -35,3 +35,9 @@ nx_configure_demo(http_server
     SOURCE http_server_demo.cpp
     LINK_PUBLIC nx_logging
 )
+
+nx_configure_demo(https_server
+    COMPONENT network
+    SOURCE https_server_demo.cpp
+    LINK_PUBLIC nx_logging
+)

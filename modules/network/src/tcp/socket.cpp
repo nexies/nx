@@ -128,13 +128,17 @@ void socket::_on_io_event(io_event ev)
                 return;
             }
             NX_EMIT(data_received, nx::span<const char>(buf, r.value()));
+            if (!is_open()) return; // signal handler closed the socket
         }
+        if (!is_open()) return; // error_occurred handler closed the socket
         _impl().arm_read();
     }
+    if (!is_open()) return;
     if ((ev & io_event::write) != io_event::none) {
         _impl().disarm_write();
         NX_EMIT(bytes_written, std::uint64_t { 0 });
     }
+    if (!is_open()) return;
     if ((ev & io_event::hangup) != io_event::none) {
         // Drain any data the peer sent before closing (FD_READ may have been
         // consumed by the same WSAEnumNetworkEvents call that returned FD_CLOSE).
@@ -143,10 +147,13 @@ void socket::_on_io_event(io_event ev)
             auto r = _impl().read(buf, sizeof(buf));
             if (r.is_error() || r.value() == 0) break;
             NX_EMIT(data_received, nx::span<const char>(buf, r.value()));
+            if (!is_open()) return; // signal handler closed the socket
         }
+        if (!is_open()) return;
         _set_state(state::closed);
         NX_EMIT(disconnected);
     }
+    if (!is_open()) return;
     if ((ev & io_event::error) != io_event::none) {
         NX_EMIT(error_occurred, nx::err::runtime_error("tcp socket error"));
     }

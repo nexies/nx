@@ -1,4 +1,5 @@
 cmake_minimum_required (VERSION 3.20)
+include (cmake/nxVcpkg.cmake)
 project (nx VERSION 0.3.1 LANGUAGES CXX)
 
 set (CMAKE_CXX_STANDARD 17)

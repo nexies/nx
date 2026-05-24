@@ -1,4 +1,5 @@
 #include <nx/network/http/response.hpp>
+#include <fmt/format.h>
 
 #include <algorithm>
 
@@ -22,7 +23,7 @@ response response::not_found(std::string body)
     response r;
     r.status_code = 404;
     r.reason      = "Not Found";
-    r.body        = std::move(body);
+    r.body        = fmt::format("Code 404: {}", body);
     if (!r.body.empty())
         r.headers["Content-Type"] = "text/plain";
     return r;
@@ -33,7 +34,7 @@ response response::forbidden(std::string body)
     response r;
     r.status_code = 403;
     r.reason      = "Forbidden";
-    r.body        = std::move(body);
+    r.body        = fmt::format("Code 403: {}", body);
     if (!r.body.empty())
         r.headers["Content-Type"] = "text/plain";
     return r;
@@ -44,7 +45,7 @@ response response::bad_request(std::string body)
     response r;
     r.status_code = 400;
     r.reason      = "Bad Request";
-    r.body        = std::move(body);
+    r.body        = fmt::format("Code 400: {}", body);
     if (!r.body.empty())
         r.headers["Content-Type"] = "text/plain";
     return r;
@@ -55,7 +56,7 @@ response response::internal_error(std::string body)
     response r;
     r.status_code = 500;
     r.reason      = "Internal Server Error";
-    r.body        = std::move(body);
+    r.body        = fmt::format("Code 500: {}", body);
     if (!r.body.empty())
         r.headers["Content-Type"] = "text/plain";
     return r;

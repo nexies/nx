@@ -17,3 +17,7 @@
 #include <nx/network/http/router.hpp>
 #include <nx/network/http/static_handler.hpp>
 #include <nx/network/http/server.hpp>
+#include <nx/network/http/url.hpp>
+#include <nx/network/http/response_parser.hpp>
+#include <nx/network/http/client.hpp>
+#include <nx/network/tls/tls.hpp>

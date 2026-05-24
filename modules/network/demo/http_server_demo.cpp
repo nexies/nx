@@ -216,15 +216,23 @@ int main()
         loop.exit(0);
     });
 
-    http::server srv;
+    router.get("/api/forbidden", [&loop](const http::request &, auto respond) {
+        respond(http::response::forbidden());
+    });
 
-    nx::core::connect(&srv, &http::server::request_received, &srv,
-        [&router](http::request req, http::server::responder_t respond) {
+    router.get("/api/bad_request", [&loop](const http::request &, auto respond) {
+        respond(http::response::bad_request());
+    });
+
+    http::server<> srv;
+
+    nx::core::connect(&srv, &http::server<>::request_received, &srv,
+        [&router](http::request req, http::server<>::responder_t respond) {
             nx_info("{} {}", req.method, req.target);
             router.handle(std::move(req), std::move(respond));
         });
 
-    nx::core::connect(&srv, &http::server::error_occurred, &srv,
+    nx::core::connect(&srv, &http::server<>::error_occurred, &srv,
         [](nx::error e) { nx_critical("server error: {}", e.what()); });
 
     srv.listen(endpoint { ip_address::loopback_v4(), 8080 })
