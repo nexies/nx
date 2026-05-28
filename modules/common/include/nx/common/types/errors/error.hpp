@@ -7,6 +7,7 @@
 
 #include <nx/common/types/errors/error_descriptor.hpp>
 #include <nx/common/types/errors/named_category.hpp>
+#include <nx/string_view.hpp>
 #include <system_error>
 
 namespace nx {
@@ -39,7 +40,7 @@ namespace nx {
 
     protected:
         // For subclasses: construct with a custom category, code, and message.
-        error(const std::error_category& cat, int code, std::string_view message,
+        error(const std::error_category& cat, int code, nx::string_view message,
               const nx::source_location& loc = nx::source_location::current()) noexcept;
 
     public:
@@ -47,18 +48,18 @@ namespace nx {
         error() noexcept;
 
         // Generic nx error from message only (code = 1)
-        explicit error(std::string_view message,
+        explicit error(nx::string_view message,
                       const nx::source_location& loc = nx::source_location::current()) noexcept;
 
         // Generic nx error with explicit code
-        error(int code, std::string_view message,
+        error(int code, nx::string_view message,
               const nx::source_location& loc = nx::source_location::current()) noexcept;
 
         // std::error_code compatibility — lightweight, no descriptor
         explicit error(const std::error_code& code) noexcept;
 
         // std::error_code compatibility — with context comment
-        error(const std::error_code& code, std::string_view comment,
+        error(const std::error_code& code, nx::string_view comment,
               const nx::source_location& loc = nx::source_location::current()) noexcept;
 
         explicit error(std::errc code) noexcept;
@@ -113,7 +114,7 @@ namespace nx {
 
         // Copy with same code/category but new comment and location
         NX_NODISCARD error
-        operator()(std::string_view comment,
+        operator()(nx::string_view comment,
                   const nx::source_location& loc = nx::source_location::current()) const noexcept;
 
         // Same code and category (ignores comment/location)

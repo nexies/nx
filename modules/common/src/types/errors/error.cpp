@@ -3,6 +3,7 @@
 //
 
 #include <nx/common/types/errors/error.hpp>
+#include <nx/string_view.hpp>
 #include <sstream>
 
 namespace {
@@ -61,7 +62,7 @@ namespace nx {
 
     // ── protected constructor for subclasses ─────────────────────────────────
 
-    error::error(const std::error_category& cat, int code, std::string_view message,
+    error::error(const std::error_category& cat, int code, nx::string_view message,
                  const nx::source_location& loc) noexcept
         : code_(code), flag_(by_cat), d_ {}
     {
@@ -83,11 +84,11 @@ namespace nx {
         d_.cat = const_cast<std::error_category*>(&error_category());
     }
 
-    error::error(std::string_view message, const nx::source_location& loc) noexcept
+    error::error(nx::string_view message, const nx::source_location& loc) noexcept
         : error(error_category(), 1, message, loc)
     {}
 
-    error::error(int code, std::string_view message, const nx::source_location& loc) noexcept
+    error::error(int code, nx::string_view message, const nx::source_location& loc) noexcept
         : error(error_category(), code, message, loc)
     {}
 
@@ -97,7 +98,7 @@ namespace nx {
         d_.cat = const_cast<std::error_category*>(&code.category());
     }
 
-    error::error(const std::error_code& code, std::string_view comment,
+    error::error(const std::error_code& code, nx::string_view comment,
                  const nx::source_location& loc) noexcept
         : error(code.category(), code.value(), comment, loc)
     {}
@@ -235,7 +236,7 @@ namespace nx {
 
     // ── mutations ────────────────────────────────────────────────────────────
 
-    error error::operator()(std::string_view cmt, const nx::source_location& loc) const noexcept
+    error error::operator()(nx::string_view cmt, const nx::source_location& loc) const noexcept
     {
         auto copy = get_copy();
         copy.promote_desc();

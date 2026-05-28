@@ -9,8 +9,7 @@
 
 #include "nx/common/helpers.hpp"
 
-namespace nx::asio
-{
+NX_ASIO_NAMESPACE_BEGIN
     class steady_timer
     {
     public:
@@ -47,6 +46,7 @@ namespace nx::asio
         running () const;
 
     };
-}
+
+NX_ASIO_NAMESPACE_END
 
 #endif //NX_CORE_ASIO_STEADY_TIMER_HPP

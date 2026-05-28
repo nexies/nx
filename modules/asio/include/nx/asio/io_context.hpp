@@ -8,7 +8,7 @@
 #include <nx/asio/context/io_context.hpp>
 #include <nx/asio/context/reactor_handle.hpp>
 
-namespace nx::asio {
+NX_ASIO_NAMESPACE_BEGIN
 
     inline void
     post (io_context & ctx, io_context::task_t && task) {
@@ -20,6 +20,6 @@ namespace nx::asio {
         ctx.dispatch(std::move(task));
     }
 
-}
+NX_ASIO_NAMESPACE_END
 
 #endif //NX_ASIO_IO_CONTEXT_HPP

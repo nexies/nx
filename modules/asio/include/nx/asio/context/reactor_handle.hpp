@@ -11,8 +11,7 @@
 #include <functional>
 #include "nx/common/helpers.hpp"
 
-namespace nx::asio
-{
+NX_ASIO_NAMESPACE_BEGIN
     // reactor_handle — строительный блок для любого I/O объекта.
     //
     // Два способа использования:
@@ -88,6 +87,6 @@ namespace nx::asio
         std::uint64_t    token_id_  { 0 };
     };
 
-}
+NX_ASIO_NAMESPACE_END
 
 #endif //NX_REACTOR_HANDLE_HPP

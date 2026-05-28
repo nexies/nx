@@ -16,15 +16,18 @@ TEST_CASE("source_location: explicit construction stores fields", "[nx::source_l
 
     REQUIRE(loc.line() == 10);
 
+#if NX_CPP_STANDARD >= 17
     if constexpr (nx::source_location::has_builtin_column)
         REQUIRE(loc.column() == 20);
     else
         REQUIRE(loc.column() == 0);
+#endif
 
     REQUIRE(loc.file() == "test.cpp");
     REQUIRE(loc.function() == "test_func");
 }
 
+#if NX_CPP_STANDARD >= 17
 TEST_CASE("source_location: filepath returns filesystem path", "[nx::source_location]")
 {
     nx::source_location loc(1, 2, "dir/subdir/file.cpp", "func");
@@ -32,6 +35,7 @@ TEST_CASE("source_location: filepath returns filesystem path", "[nx::source_loca
     REQUIRE(loc.filepath() == std::filesystem::path("dir/subdir/file.cpp"));
     REQUIRE(loc.filepath().filename() == std::filesystem::path("file.cpp"));
 }
+#endif
 
 TEST_CASE("source_location: current captures call site information", "[nx::source_location]")
 {
@@ -60,8 +64,10 @@ TEST_CASE("source_location: short_link contains filename and line", "[nx::source
 
     REQUIRE(short_link.find("test_file.cpp:42") != std::string::npos);
 
+#if NX_CPP_STANDARD >= 17
     if constexpr (nx::source_location::has_builtin_column)
         REQUIRE(short_link.find(":3") != std::string::npos);
+#endif
 }
 
 TEST_CASE("source_location: description contains main fields", "[nx::source_location]")
@@ -76,8 +82,10 @@ TEST_CASE("source_location: description contains main fields", "[nx::source_loca
     REQUIRE(desc.find("File: /home/user/source.cpp") != std::string::npos);
     REQUIRE(desc.find("Line: 55") != std::string::npos);
 
+#if NX_CPP_STANDARD >= 17
     if constexpr (nx::source_location::has_builtin_column)
         REQUIRE(desc.find("Column: 8") != std::string::npos);
+#endif
 }
 
 TEST_CASE("source_location: description omits function line when function is empty", "[nx::source_location]")

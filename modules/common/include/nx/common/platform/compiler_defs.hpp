@@ -64,18 +64,29 @@
 
 //@}
 
-// Compatibility for non-Clang compilers.
-#ifndef __has_feature
-#  define __has_feature(x) 0
+#if defined(__has_feature)
+#define NX_HAS_FEATURE(feature__) __has_feature(feature__)
+#else
+#define NX_HAS_FEATURE(feature__) 0
 #endif
 
-#define NX_HAS_FEATURE(__feature__) __has_feature(__feature__)
-
-#ifndef __has_builtin
-#  define __has_builtin(x) 0
+#if defined(__has_builtin)
+#define NX_HAS_BUILTIN(builtin__) __has_builtin(builtin__)
+#else
+#define NX_HAS_BUILTIN(builtin__) 0
 #endif
 
-#define NX_HAS_BUILTIN(__builtin__) __has_builtin(__builtin__)
+#if defined(__has_attribute)
+#define NX_HAS_ATTRIBUTE(attribute__) __has_attribute(attribute__)
+#else
+#define NX_HAS_ATTRIBUTE(attribute__) 0
+#endif
+
+#if defined(__has_include)
+#define NX_HAS_INCLUDE(include__) __has_include(include__)
+#else
+#define NX_HAS_INCLUDE(include__) 0
+#endif
 
 //--------------------------------------------------------------------------------------------------
 // Compiler control helpers

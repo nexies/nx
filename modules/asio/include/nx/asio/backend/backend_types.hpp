@@ -6,15 +6,15 @@
 #define NX_ASIO_BACKEND_TYPES_HPP
 
 #include <nx/common/platform.hpp>
-
+#include <nx/asio/namespace.hpp>
 #include <cstdint>
 #include <optional>
 #include <chrono>
 
-namespace nx::asio {
+NX_ASIO_NAMESPACE_BEGIN
 
 # ifdef NX_OS_WINDOWS
-    typedef void* native_handle_t;
+    typedef void *native_handle_t;
     constexpr static const native_handle_t g_null_handle = nullptr;
 # else
     using native_handle_t = int;
@@ -22,74 +22,75 @@ namespace nx::asio {
 # endif
 
     enum class io_interest : std::uint32_t {
-        none    = 0x00,
-        read    = 0x01,
-        write   = 0x02,
+        none = 0x00,
+        read = 0x01,
+        write = 0x02,
 #if defined(NX_OS_APPLE)
-        signal  = 0x04
+        signal=0x04
 #endif
     };
 
     inline io_interest
-    operator & (io_interest a, io_interest b) {
-        using U = std::underlying_type_t<io_interest>;
+    operator &(io_interest a, io_interest b) {
+        using U = std::underlying_type<io_interest>::type;
         return static_cast<io_interest>(static_cast<U>(a) & static_cast<U>(b));
     }
 
     inline io_interest
-    operator | (io_interest a, io_interest b) {
-        using U = std::underlying_type_t<io_interest>;
+    operator |(io_interest a, io_interest b) {
+        using U = std::underlying_type<io_interest>::type;
         return static_cast<io_interest>(static_cast<U>(a) | static_cast<U>(b));
     }
 
     inline io_interest
-    operator ^ (io_interest a, io_interest b) {
-        using U = std::underlying_type_t<io_interest>;
+    operator ^(io_interest a, io_interest b) {
+        using U = std::underlying_type<io_interest>::type;
         return static_cast<io_interest>(static_cast<U>(a) ^ static_cast<U>(b));
     }
 
     enum class io_event : std::uint32_t {
-        none    = 0x00,
-        read    = 0x01,
-        write   = 0x02,
-        error   = 0x04,
-        hangup  = 0x08,
-        wakeup  = 0x10,
+        none = 0x00,
+        read = 0x01,
+        write = 0x02,
+        error = 0x04,
+        hangup = 0x08,
+        wakeup = 0x10,
     };
 
     inline io_event
-    operator & (io_event a, io_event b) {
-        using U = std::underlying_type_t<io_event>;
+    operator &(io_event a, io_event b) {
+        using U = std::underlying_type<io_interest>::type;
         return static_cast<io_event>(static_cast<U>(a) & static_cast<U>(b));
     }
 
     inline io_event
-    operator | (io_event a, io_event b) {
-        using U = std::underlying_type_t<io_event>;
+    operator |(io_event a, io_event b) {
+        using U = std::underlying_type<io_interest>::type;
         return static_cast<io_event>(static_cast<U>(a) | static_cast<U>(b));
     }
 
     inline io_event
-    operator ^ (io_event a, io_event b) {
-        using U = std::underlying_type_t<io_event>;
+    operator ^(io_event a, io_event b) {
+        using U = std::underlying_type<io_interest>::type;
         return static_cast<io_event>(static_cast<U>(a) ^ static_cast<U>(b));
     }
 
 
     struct backend_event {
-        void * token = nullptr;
-        native_handle_t identity { 0 };
+        void *token = nullptr;
+        native_handle_t identity{0};
         io_event events = io_event::none;
-        uint64_t u64 { 0 };
-        uint32_t u32 { 0 };
+        uint64_t u64{0};
+        uint32_t u32{0};
 
         union {
             struct {
                 int signum;
                 int reps;
-            }signal;
+            } signal;
+
             uint32_t bytes;
-        } data {};
+        } data{};
     };
 
     using clock = std::chrono::system_clock;
@@ -102,55 +103,51 @@ namespace nx::asio {
     // static constexpr timer_id
     // nextTimerId(timer_id & tid) { while (tid++ == g_nullTimerId) {}; return tid; }
 
-    struct timer_id
-    {
+    struct timer_id {
     private:
         static constexpr size_t invalid_val = std::numeric_limits<size_t>::max();
-        size_t val { 0 };
-        constexpr void
-        inc () { do { ++val; } while (val == invalid_val); }
+        size_t val{0};
+
+        void
+        inc() { do { ++val; } while (val == invalid_val); }
+
     public:
-        static constexpr timer_id invalid() { return timer_id { std::numeric_limits<size_t>::max() }; }
+        static constexpr timer_id invalid() { return timer_id{std::numeric_limits<size_t>::max()}; }
 
         constexpr
-        timer_id (size_t val = std::numeric_limits<size_t>::max()) noexcept
-            : val (val)
-        {}
+        timer_id(size_t val = std::numeric_limits<size_t>::max()) noexcept
+            : val(val) {
+        }
 
-        constexpr timer_id
-        operator ++ ()
-        {
+        timer_id
+        operator ++() {
             inc();
             return *this;
         }
 
-        constexpr timer_id
-        operator ++ (int)
-        {
+        timer_id
+        operator ++(int) {
             const timer_id tmp = *this;
             inc();
             return tmp;
         }
 
         constexpr bool
-        operator == (const timer_id & other) const
-        {
+        operator ==(const timer_id &other) const {
             return val == other.val;
         }
 
         constexpr bool
-        operator != (const timer_id & other) const
-        {
+        operator !=(const timer_id &other) const {
             return val != other.val;
         }
 
         constexpr
-        operator uint64_t () const
-        {
+        operator uint64_t() const {
             return val;
         }
     };
 
-}
+NX_ASIO_NAMESPACE_END
 
 #endif //NX_ASIO_BACKEND_TYPES_HPP

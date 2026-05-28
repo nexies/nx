@@ -17,14 +17,19 @@
 
 #if NX_CPP_VERSION >= 202302L
     #define NX_CPP23 1
+    #define NX_CPP_STANDARD 23
 #elif NX_CPP_VERSION >= 202002L
     #define NX_CPP20 1
+    #define NX_CPP_STANDARD 20
 #elif NX_CPP_VERSION >= 201703L
     #define NX_CPP17 1
+    #define NX_CPP_STANDARD 17
 #elif NX_CPP_VERSION >= 201402L
     #define NX_CPP14 1
+    #define NX_CPP_STANDARD 14
 #elif NX_CPP_VERSION >= 201103L
     #define NX_CPP11 1
+    #define NX_CPP_STANDARD 11
 #else
     #error "C++11 or higher required"
 #endif

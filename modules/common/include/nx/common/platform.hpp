@@ -12,4 +12,4 @@
 #include <nx/common/platform/symbols_defs.hpp>
 
 
-#endif //NX_PLATFORM_HPP
+#endif //NX_COMMON_PLATFORM_HPP

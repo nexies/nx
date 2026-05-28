@@ -6,6 +6,7 @@
 #define NX_COMMON_SINGLETON_HPP
 
 #include <nx/common/types/errors.hpp>
+#include <nx/make_unique.hpp>
 
 #include "result.hpp"
 
@@ -42,8 +43,12 @@ namespace nx
             using value_type = Class;
             using reference = value_type&;
             using ptr_type  = std::unique_ptr<value_type>;
+
         private:
-            inline static ptr_type instance_ { nullptr };
+            // C++11: static member of class template is defined in the header
+            // below the class body (inline static is C++17).
+            static ptr_type instance_;
+
         public:
 
             template<typename ... Args>
@@ -53,7 +58,7 @@ namespace nx
                 if (instance_ != nullptr)
                     throw std::runtime_error ("singleton instance is already initialized");
 
-                instance_ = std::make_unique<Class>(std::forward<Args>(args)...);
+                instance_ = nx::make_unique<Class>(std::forward<Args>(args)...);
                 if (!instance_)
                 {
                     throw std::runtime_error ("error on initialization");
@@ -65,7 +70,7 @@ namespace nx
             reset (Args && ... args)
             {
                 instance_.reset(nullptr);
-                instance_ = std::make_unique<Class>(std::forward<Args>(args)...);
+                instance_ = nx::make_unique<Class>(std::forward<Args>(args)...);
                 if (!instance_)
                     throw std::runtime_error ("error on reset");
             }
@@ -85,6 +90,12 @@ namespace nx
             }
 
         };
+
+        // Out-of-line definition for the static member of the class template.
+        // Allowed in headers for templates; only one definition is generated per TU.
+        template<typename Class>
+        typename smart_singleton<Class>::ptr_type smart_singleton<Class>::instance_ { nullptr };
+
     }
 
     template<typename Class>

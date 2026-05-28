@@ -7,7 +7,8 @@
 
 #include <nx/common/types/errors/error.hpp>
 
-namespace nx::err {
+// C++11-compatible nested namespace (C++17 syntax: namespace nx::err)
+namespace nx { namespace err {
 
     // ── nx::runtime_error ────────────────────────────────────────────────────
     // Errors caused by unforeseen runtime conditions (I/O failure, OS errors, etc.)
@@ -18,15 +19,15 @@ namespace nx::err {
             return cat;
         }
     protected:
-        runtime_error(const std::error_category& cat, int code, std::string_view msg,
+        runtime_error(const std::error_category& cat, int code, nx::string_view msg,
                       const nx::source_location& loc) noexcept
             : error(cat, code, msg, loc) {}
     public:
-        explicit runtime_error(std::string_view msg,
+        explicit runtime_error(nx::string_view msg,
                                const nx::source_location& loc = nx::source_location::current()) noexcept
             : error(s_category(), 1, msg, loc) {}
 
-        runtime_error(int code, std::string_view msg,
+        runtime_error(int code, nx::string_view msg,
                       const nx::source_location& loc = nx::source_location::current()) noexcept
             : error(s_category(), code, msg, loc) {}
     };
@@ -40,15 +41,15 @@ namespace nx::err {
             return cat;
         }
     protected:
-        logic_error(const std::error_category& cat, int code, std::string_view msg,
+        logic_error(const std::error_category& cat, int code, nx::string_view msg,
                     const nx::source_location& loc) noexcept
             : error(cat, code, msg, loc) {}
     public:
-        explicit logic_error(std::string_view msg,
+        explicit logic_error(nx::string_view msg,
                              const nx::source_location& loc = nx::source_location::current()) noexcept
             : error(s_category(), 1, msg, loc) {}
 
-        logic_error(int code, std::string_view msg,
+        logic_error(int code, nx::string_view msg,
                     const nx::source_location& loc = nx::source_location::current()) noexcept
             : error(s_category(), code, msg, loc) {}
     };
@@ -62,15 +63,15 @@ namespace nx::err {
             return cat;
         }
     protected:
-        memory_error(const std::error_category& cat, int code, std::string_view msg,
+        memory_error(const std::error_category& cat, int code, nx::string_view msg,
                      const nx::source_location& loc) noexcept
             : error(cat, code, msg, loc) {}
     public:
-        explicit memory_error(std::string_view msg,
+        explicit memory_error(nx::string_view msg,
                               const nx::source_location& loc = nx::source_location::current()) noexcept
             : error(s_category(), 1, msg, loc) {}
 
-        memory_error(int code, std::string_view msg,
+        memory_error(int code, nx::string_view msg,
                      const nx::source_location& loc = nx::source_location::current()) noexcept
             : error(s_category(), code, msg, loc) {}
     };
@@ -84,11 +85,11 @@ namespace nx::err {
             return cat;
         }
     public:
-        explicit access_error(std::string_view msg,
+        explicit access_error(nx::string_view msg,
                               const nx::source_location& loc = nx::source_location::current()) noexcept
             : runtime_error(s_category(), 1, msg, loc) {}
 
-        access_error(int code, std::string_view msg,
+        access_error(int code, nx::string_view msg,
                      const nx::source_location& loc = nx::source_location::current()) noexcept
             : runtime_error(s_category(), code, msg, loc) {}
     };
@@ -102,11 +103,11 @@ namespace nx::err {
             return cat;
         }
     public:
-        explicit invalid_argument(std::string_view msg,
+        explicit invalid_argument(nx::string_view msg,
                                   const nx::source_location& loc = nx::source_location::current()) noexcept
             : logic_error(s_category(), 1, msg, loc) {}
 
-        invalid_argument(int code, std::string_view msg,
+        invalid_argument(int code, nx::string_view msg,
                          const nx::source_location& loc = nx::source_location::current()) noexcept
             : logic_error(s_category(), code, msg, loc) {}
     };
@@ -120,11 +121,11 @@ namespace nx::err {
             return cat;
         }
     public:
-        explicit not_supported(std::string_view msg,
+        explicit not_supported(nx::string_view msg,
                                const nx::source_location& loc = nx::source_location::current()) noexcept
             : logic_error(s_category(), 1, msg, loc) {}
 
-        not_supported(int code, std::string_view msg,
+        not_supported(int code, nx::string_view msg,
                       const nx::source_location& loc = nx::source_location::current()) noexcept
             : logic_error(s_category(), code, msg, loc) {}
     };
@@ -138,11 +139,11 @@ namespace nx::err {
             return cat;
         }
     public:
-        explicit invalid_state(std::string_view msg,
+        explicit invalid_state(nx::string_view msg,
                                const nx::source_location& loc = nx::source_location::current()) noexcept
             : logic_error(s_category(), 1, msg, loc) {}
 
-        invalid_state(int code, std::string_view msg,
+        invalid_state(int code, nx::string_view msg,
                       const nx::source_location& loc = nx::source_location::current()) noexcept
             : logic_error(s_category(), code, msg, loc) {}
     };
@@ -155,11 +156,11 @@ namespace nx::err {
             return cat;
         }
     public:
-        explicit bad_cast(std::string_view msg,
+        explicit bad_cast(nx::string_view msg,
                           const nx::source_location & loc = nx::source_location::current()) noexcept
             : runtime_error(s_category(), 2, msg, loc) {}
     };
 
-} // namespace nx
+} } // namespace nx::err
 
 #endif //NX_COMMON_ERROR_CODES_HPP

@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 3.20)
 include (cmake/nxVcpkg.cmake)
 project (nx VERSION 0.3.1 LANGUAGES CXX)
 
-set (CMAKE_CXX_STANDARD 17)
+set (CMAKE_CXX_STANDARD 11)
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
 set (CMAKE_POSITION_INDEPENDENT_CODE ON)
 
@@ -12,7 +12,7 @@ set (NX_NAMESPACE           nx)
 set (NX_PROJECT_VERSION     ${PROJECT_VERSION})
 set (NX_EXPORT_SET          NX_EXPORTED_TARGETS)
 set (NX_GENERATED_INCLUDEDIR ${CMAKE_BINARY_DIR}/generated/${NX_NAMESPACE})
-set (NX_CXX_STANDARD        17)
+set (NX_CXX_STANDARD        11)
 set (NX_PROJECT_SOURCE_DIR  ${CMAKE_CURRENT_SOURCE_DIR})
 
 option (NX_BUILD_DOCS           "Build docs"                                             OFF)

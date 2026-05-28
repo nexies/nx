@@ -7,11 +7,12 @@
 
 #include <nx/common/types/errors/codes.hpp>
 #include <nx/common/helpers.hpp>
+#include <nx/optional.hpp>
+#include <nx/variant.hpp>
+#include <nx/type_traits.hpp>
 
 #include <functional>
-#include <optional>
 #include <type_traits>
-#include <variant>
 
 namespace nx
 {
@@ -28,7 +29,7 @@ namespace nx
         using expect_handler = std::function<value_type(const error_type &)>;
 
     private:
-        std::variant<value_type, error_type> data_;
+        nx::variant<value_type, error_type> data_;
         bool is_error_;
 
     public:
@@ -37,54 +38,54 @@ namespace nx
         NX_NODISCARD constexpr const_reference
         value() const {
             if (!is_error_)
-                return std::get<value_type>(data_);
+                return nx::get<value_type>(data_);
             throw nx::err::invalid_state("nx::basic_result is not a value");
         }
 
-        NX_NODISCARD constexpr reference
+        NX_NODISCARD reference
         value() {
             if (!is_error_)
-                return std::get<value_type>(data_);
+                return nx::get<value_type>(data_);
             throw nx::err::invalid_state("nx::basic_result is not a value");
         }
 
-        NX_NODISCARD constexpr const_reference
+        NX_NODISCARD const_reference
         operator*() const { return value(); }
 
-        NX_NODISCARD constexpr reference
+        NX_NODISCARD reference
         operator*() { return value(); }
 
-        NX_NODISCARD constexpr const_pointer
+        NX_NODISCARD const_pointer
         operator->() const { return &value(); }
 
-        NX_NODISCARD constexpr pointer
+        NX_NODISCARD pointer
         operator->() { return &value(); }
 
-        NX_NODISCARD constexpr value_type
+        NX_NODISCARD value_type
         value_or(const value_type & or_value) const {
             if (!is_error_)
-                return std::get<value_type>(data_);
+                return nx::get<value_type>(data_);
             return or_value;
         }
 
         // ── Error access ──────────────────────────────────────────────────────
 
-        NX_NODISCARD constexpr const error_type &
+        NX_NODISCARD const error_type &
         error() const {
             if (is_error_)
-                return std::get<error_type>(data_);
+                return nx::get<error_type>(data_);
             throw nx::err::invalid_state("nx::basic_result is not an error");
         }
 
         // ── State ─────────────────────────────────────────────────────────────
 
-        NX_NODISCARD constexpr bool
+        NX_NODISCARD bool
         has_value() const noexcept { return !is_error_; }
 
-        NX_NODISCARD constexpr bool
+        NX_NODISCARD bool
         is_error() const noexcept { return is_error_; }
 
-        NX_NODISCARD constexpr explicit
+        NX_NODISCARD explicit
         operator bool() const noexcept { return has_value(); }
 
         // ── Monadic helpers ───────────────────────────────────────────────────
@@ -97,77 +98,77 @@ namespace nx
         }
 
         // fn(const T&) -> result<U>  =>  result<U>
-        // Chains a fallible operation; propagates the error unchanged.
         template<typename Fn>
         auto and_then(Fn && fn) const
-            -> std::invoke_result_t<Fn, const_reference>
+            -> nx::invoke_result_t<Fn, const_reference>
         {
-            using R = std::invoke_result_t<Fn, const_reference>;
+            using R = nx::invoke_result_t<Fn, const_reference>;
             if (is_error_)
                 return R { error() };
             return std::forward<Fn>(fn)(value());
         }
 
-        // fn(const T&) -> U  =>  result<U>
-        // Transforms the value; fn must not fail (returns U directly, not result<U>).
-        template<typename Fn>
-        auto map(Fn && fn) const
-            -> basic_result<std::invoke_result_t<Fn, const_reference>, Error>
-        {
-            using U = std::invoke_result_t<Fn, const_reference>;
-            if (is_error_)
-                return basic_result<U, Error> { error() };
-            if constexpr (std::is_void_v<U>) {
-                std::forward<Fn>(fn)(value());
-                return basic_result<U, Error> {};
-            } else {
-                return basic_result<U, Error> { std::forward<Fn>(fn)(value()) };
-            }
+        // fn(const T&) -> U  =>  result<U>   (non-void U)
+        template<typename Fn,
+                 typename U = nx::invoke_result_t<Fn, const_reference>,
+                 typename std::enable_if<!std::is_void<U>::value, int>::type = 0>
+        NX_NODISCARD basic_result<U, Error> map(Fn && fn) const {
+            if (is_error_) return basic_result<U, Error> { error() };
+            return basic_result<U, Error> { std::forward<Fn>(fn)(value()) };
         }
 
-        // fn(const Error&) -> void        : side-effect, expression type is void
-        // fn(const Error&) -> result<T>   : recovery, replaces the error
-        template<typename Fn>
-        auto or_else(Fn && fn) const
-        {
-            using R = std::invoke_result_t<Fn, const error_type &>;
-            if constexpr (std::is_void_v<R>) {
-                if (is_error_)
-                    std::forward<Fn>(fn)(error());
-            } else {
-                if (!is_error_)
-                    return basic_result<Type, Error>(*this);
-                return basic_result<Type, Error>(std::forward<Fn>(fn)(error()));
-            }
+        // fn(const T&) -> void  =>  result<void>
+        template<typename Fn,
+                 typename U = nx::invoke_result_t<Fn, const_reference>,
+                 typename std::enable_if<std::is_void<U>::value, int>::type = 0>
+        NX_NODISCARD basic_result<void, Error> map(Fn && fn) const {
+            if (is_error_) return basic_result<void, Error> { error() };
+            std::forward<Fn>(fn)(value());
+            return basic_result<void, Error> {};
+        }
+
+        // fn(const Error&) -> void  :  side-effect
+        template<typename Fn,
+                 typename R = nx::invoke_result_t<Fn, const error_type &>,
+                 typename std::enable_if<std::is_void<R>::value, int>::type = 0>
+        void or_else(Fn && fn) const {
+            if (is_error_)
+                std::forward<Fn>(fn)(error());
+        }
+
+        // fn(const Error&) -> result<T>  :  recovery
+        template<typename Fn,
+                 typename R = nx::invoke_result_t<Fn, const error_type &>,
+                 typename std::enable_if<!std::is_void<R>::value, int>::type = 0>
+        basic_result<Type, Error> or_else(Fn && fn) const {
+            if (!is_error_) return basic_result<Type, Error>(*this);
+            return basic_result<Type, Error>(std::forward<Fn>(fn)(error()));
         }
 
         // ── Constructors ──────────────────────────────────────────────────────
 
-        // Constructors use std::in_place_type to avoid requiring a default
-        // constructor on value_type.
-
         basic_result(value_type && v)
             : is_error_ { false }
-            , data_ { std::in_place_type<value_type>, std::forward<value_type>(v) } {}
+            , data_ { nx::in_place_type_t<value_type>{}, std::forward<value_type>(v) } {}
 
         basic_result(const value_type & v)
             : is_error_ { false }
-            , data_ { std::in_place_type<value_type>, v } {}
+            , data_ { nx::in_place_type_t<value_type>{}, v } {}
 
         basic_result(error_type && e)
             : is_error_ { true }
-            , data_ { std::in_place_type<error_type>, std::forward<error_type>(e) } {}
+            , data_ { nx::in_place_type_t<error_type>{}, std::forward<error_type>(e) } {}
 
         basic_result(const error_type & e)
             : is_error_ { true }
-            , data_ { std::in_place_type<error_type>, e } {}
+            , data_ { nx::in_place_type_t<error_type>{}, e } {}
 
         // Only available when value_type is default-constructible.
         template<typename U = value_type,
-                 std::enable_if_t<std::is_default_constructible_v<U>, int> = 0>
+                 typename std::enable_if<std::is_default_constructible<U>::value, int>::type = 0>
         basic_result()
             : is_error_ { false }
-            , data_ { std::in_place_type<value_type> } {}
+            , data_ { nx::in_place_type_t<value_type>{} } {}
 
         ~basic_result() = default;
 
@@ -189,7 +190,7 @@ namespace nx
         using value_type = void;
 
     private:
-        std::optional<Error> error_;
+        nx::optional<Error> error_;
 
     public:
         // ── State ─────────────────────────────────────────────────────────────
@@ -205,14 +206,13 @@ namespace nx
 
         // ── Value / error access ──────────────────────────────────────────────
 
-        // Throws if this is an error; useful in generic code.
-        constexpr void
+        void
         value() const {
             if (is_error())
                 throw nx::err::invalid_state("nx::basic_result<void> is not a value");
         }
 
-        NX_NODISCARD constexpr const error_type &
+        NX_NODISCARD const error_type &
         error() const {
             if (is_error())
                 return *error_;
@@ -230,52 +230,57 @@ namespace nx
         // fn() -> result<U>  =>  result<U>
         template<typename Fn>
         NX_NODISCARD auto and_then(Fn && fn) const
-            -> std::invoke_result_t<Fn>
+            -> nx::invoke_result_t<Fn>
         {
-            using R = std::invoke_result_t<Fn>;
+            using R = nx::invoke_result_t<Fn>;
             if (is_error())
                 return R { error() };
             return std::forward<Fn>(fn)();
         }
 
-        // fn() -> U  =>  result<U>
-        template<typename Fn>
-        NX_NODISCARD auto map(Fn && fn) const
-            -> basic_result<std::invoke_result_t<Fn>, Error>
-        {
-            using U = std::invoke_result_t<Fn>;
-            if (is_error())
-                return basic_result<U, Error> { error() };
-            if constexpr (std::is_void_v<U>) {
-                std::forward<Fn>(fn)();
-                return basic_result<U, Error> {};
-            } else {
-                return basic_result<U, Error> { std::forward<Fn>(fn)() };
-            }
+        // fn() -> U  =>  result<U>   (non-void U)
+        template<typename Fn,
+                 typename U = nx::invoke_result_t<Fn>,
+                 typename std::enable_if<!std::is_void<U>::value, int>::type = 0>
+        NX_NODISCARD basic_result<U, Error> map(Fn && fn) const {
+            if (is_error()) return basic_result<U, Error> { error() };
+            return basic_result<U, Error> { std::forward<Fn>(fn)() };
         }
 
-        // fn(const Error&) -> void        : side-effect, expression type is void
-        // fn(const Error&) -> result<void>: recovery, replaces the error
-        template<typename Fn>
-        auto or_else(Fn && fn) const
-        {
-            using R = std::invoke_result_t<Fn, const error_type &>;
-            if constexpr (std::is_void_v<R>) {
-                if (is_error())
-                    std::forward<Fn>(fn)(error());
-            } else {
-                if (!is_error())
-                    return basic_result<void, Error>{};
-                return basic_result<void, Error>(std::forward<Fn>(fn)(error()));
-            }
+        // fn() -> void  =>  result<void>
+        template<typename Fn,
+                 typename U = nx::invoke_result_t<Fn>,
+                 typename std::enable_if<std::is_void<U>::value, int>::type = 0>
+        NX_NODISCARD basic_result<void, Error> map(Fn && fn) const {
+            if (is_error()) return basic_result<void, Error> { error() };
+            std::forward<Fn>(fn)();
+            return basic_result<void, Error> {};
+        }
+
+        // fn(const Error&) -> void  :  side-effect
+        template<typename Fn,
+                 typename R = nx::invoke_result_t<Fn, const error_type &>,
+                 typename std::enable_if<std::is_void<R>::value, int>::type = 0>
+        void or_else(Fn && fn) const {
+            if (is_error())
+                std::forward<Fn>(fn)(error());
+        }
+
+        // fn(const Error&) -> result<void>  :  recovery
+        template<typename Fn,
+                 typename R = nx::invoke_result_t<Fn, const error_type &>,
+                 typename std::enable_if<!std::is_void<R>::value, int>::type = 0>
+        basic_result<void, Error> or_else(Fn && fn) const {
+            if (!is_error()) return basic_result<void, Error>{};
+            return basic_result<void, Error>(std::forward<Fn>(fn)(error()));
         }
 
         // ── Constructors ──────────────────────────────────────────────────────
 
-        basic_result() noexcept : error_(std::nullopt) {}
+        basic_result() noexcept : error_(nx::nullopt) {}
 
-        basic_result(Error && e)       : error_(std::move(e)) {}
-        basic_result(const Error & e)  : error_(e) {}
+        basic_result(Error && e)      : error_(std::move(e)) {}
+        basic_result(const Error & e) : error_(e) {}
 
         basic_result(const basic_result &)             = default;
         basic_result(basic_result &&)                  = default;

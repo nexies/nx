@@ -9,8 +9,8 @@
 #include <functional>
 #include <nx/asio/context/io_context.hpp>
 
-namespace nx::asio
-{
+NX_ASIO_NAMESPACE_BEGIN
+
     class handle_notifier
     {
     public:
@@ -52,6 +52,7 @@ namespace nx::asio
         class impl;
         std::shared_ptr<impl> impl_;
     };
-}
+
+NX_ASIO_NAMESPACE_END
 
 #endif //NX_HANDLE_NOTIFIER_HPP

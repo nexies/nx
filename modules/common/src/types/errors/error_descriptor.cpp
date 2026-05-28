@@ -19,9 +19,7 @@ namespace {
 
     void try_pool_init()
     {
-        if (g_is_pool_init)
-            return;
-        std::lock_guard lg(g_mutex);
+        std::lock_guard<std::mutex> lg(g_mutex);
         if (g_is_pool_init)
             return;
         for (size_t i = 0; i < g_pool_size; ++i)
@@ -33,7 +31,7 @@ namespace {
     ptr_t pool_allocate()
     {
         try_pool_init();
-        std::lock_guard lg(g_mutex);
+        std::lock_guard<std::mutex> lg(g_mutex);
         if (g_current_pos >= g_pool_size)
             return nullptr;
         return g_ptrs[g_current_pos++];
@@ -41,7 +39,7 @@ namespace {
 
     void pool_free(ptr_t p)
     {
-        std::lock_guard lg(g_mutex);
+        std::lock_guard<std::mutex> lg(g_mutex);
         if (g_current_pos == 0)
             return;
         g_ptrs[--g_current_pos] = p;

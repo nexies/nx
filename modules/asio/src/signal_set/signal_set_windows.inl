@@ -210,7 +210,9 @@ public:
         if (!e.event_handle)
             throw std::runtime_error("signal_set: CreateEvent failed");
 
-        auto * cc = new callback_ctx{ weak_from_this(), signum };
+        auto * cc = new callback_ctx{/* weak_from_this(), signum*/ };
+        cc->owner = weak_from_this();
+        cc->signum = signum;
 
         if (!RegisterWaitForSingleObject(&e.wait_handle, e.event_handle,
                 &signal_set_windows::wait_callback, cc,

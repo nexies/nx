@@ -6,13 +6,14 @@
 #define NX_CORE_ASIO_SIGNAL_SET_HPP
 
 #include <nx/common/types.hpp>
+#include <nx/asio/namespace.hpp>
 
 #include <functional>
 #include <memory>
 #include <csignal>
 
-namespace nx::asio
-{
+NX_ASIO_NAMESPACE_BEGIN
+
     class io_context;
 
     class signal_set
@@ -49,6 +50,7 @@ namespace nx::asio
         class impl;
         std::shared_ptr<impl> impl_;
     };
-}
+
+NX_ASIO_NAMESPACE_END
 
 #endif //NX_CORE_ASIO_SIGNAL_SET_HPP

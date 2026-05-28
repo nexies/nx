@@ -6,6 +6,7 @@
 #include <nx/common/types/errors/codes.hpp>
 
 #include <utility>
+#include <nx/exchange.hpp>
 #include "context_impl.hpp"
 
 namespace nx::asio
@@ -68,17 +69,17 @@ namespace nx::asio
         // One-shot: exchange handler with nullptr before calling so that
         // re-arming inside the handler works and exceptions leave a clean state.
         if ((event.events & io_event::read) != io_event::none) {
-            if (auto h = std::exchange(read_handler_, nullptr))
+            if (auto h = nx::exchange(read_handler_, nullptr))
                 h(event);
         }
         if ((event.events & io_event::write) != io_event::none) {
-            if (auto h = std::exchange(write_handler_, nullptr))
+            if (auto h = nx::exchange(write_handler_, nullptr))
                 h(event);
         }
         // error/hangup: try both handlers so either side can react
         if ((event.events & (io_event::error | io_event::hangup)) != io_event::none) {
-            if (auto h = std::exchange(read_handler_,  nullptr)) h(event);
-            if (auto h = std::exchange(write_handler_, nullptr)) h(event);
+            if (auto h = nx::exchange(read_handler_,  nullptr)) h(event);
+            if (auto h = nx::exchange(write_handler_, nullptr)) h(event);
         }
     }
 

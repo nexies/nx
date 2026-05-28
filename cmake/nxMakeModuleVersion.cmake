@@ -9,7 +9,8 @@ function(nx_make_module_version)
 
     set(_name ${_NXV_NAME})
     string(TOUPPER ${_name} _name_up)
-    set(_MODULE_NAME ${_name})
+    set(_MODULE_NAME    ${_name})
+    set(_MODULE_NAME_UP ${_name_up})
 
     if(_NXV_VERSION)
         string(REPLACE "." ";" VERSION_LIST "${_NXV_VERSION}")
@@ -50,16 +51,33 @@ function(nx_make_module_version)
 
     string(TIMESTAMP _MODULE_BUILD_TIME_STR "%Y-%m-%d %H:%M:%S" UTC)
 
+    if(CMAKE_CXX_STANDARD GREATER_EQUAL 17)
+        set(_NS_BEGIN "namespace nx::${_name} {")
+        set(_NS_END   "}")
+    else()
+        set(_NS_BEGIN "namespace nx { namespace ${_name} {")
+        set(_NS_END   "} }")
+    endif()
+
+    configure_file(
+            "${NX_PROJECT_SOURCE_DIR}/include/nx/module_namespace.hpp.in"
+            "${CMAKE_BINARY_DIR}/generated/nx/${_name}/namespace.hpp"
+            @ONLY
+    )
+
     configure_file(
             "${NX_PROJECT_SOURCE_DIR}/include/nx/module_version.hpp.in"
             "${CMAKE_BINARY_DIR}/generated/nx/${_name}/version.hpp"
             @ONLY
     )
 
+    unset(_NS_BEGIN)
+    unset(_NS_END)
     unset(_MODULE_VERSION_PATCH)
     unset(_MODULE_VERSION_MINOR)
     unset(_MODULE_VERSION_MAJOR)
     unset(_MODULE_VERSION_STR)
+    unset(_MODULE_NAME_UP)
     unset(_MODULE_NAME)
     unset(_MODULE_BUILD_TIME_STR)
 endfunction()

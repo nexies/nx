@@ -9,7 +9,9 @@
 
 #include <memory>
 
-namespace nx::asio {
+#include "nx/optional.hpp"
+
+NX_ASIO_NAMESPACE_BEGIN
 
     class backend {
     public:
@@ -30,7 +32,7 @@ namespace nx::asio {
         wake () = 0;
 
         virtual std::size_t
-        wait (backend_event * out, std::size_t capacity, std::optional<duration_type> timeout) = 0;
+        wait (backend_event * out, std::size_t capacity, optional<duration_type> timeout) = 0;
 
         virtual std::size_t
         poll (backend_event * out, std::size_t capacity);
@@ -39,6 +41,6 @@ namespace nx::asio {
     std::unique_ptr<backend>
     create_backend();
 
-}
+NX_ASIO_NAMESPACE_END
 
 #endif //NX_ASIO_BACKEND_HPP

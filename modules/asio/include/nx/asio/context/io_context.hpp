@@ -9,7 +9,7 @@
 #include <memory>
 #include <nx/asio/backend/backend_types.hpp>
 
-namespace nx::asio {
+NX_ASIO_NAMESPACE_BEGIN
 
     class backend;
     class steady_timer;
@@ -66,6 +66,7 @@ namespace nx::asio {
         class impl;
         std::unique_ptr<impl> impl_;
     };
-}
+
+NX_ASIO_NAMESPACE_END
 
 #endif //NX_ASIO_CONTEXT_HPP

@@ -14,7 +14,9 @@
 #include <thread>
 #include <queue>
 #include <memory>
+#include <unordered_map>
 
+#include "nx/optional.hpp"
 #include "nx/common/helpers.hpp"
 
 namespace nx::asio {
@@ -33,7 +35,7 @@ namespace nx::asio {
         dispatch (task_t task);
 
         std::size_t
-        run (std::optional<duration> max_duration);
+        run (optional<duration> max_duration);
 
         std::size_t
         run_once ();
@@ -75,8 +77,8 @@ namespace nx::asio {
         void
         drainExpiredTimers ();
 
-        [[nodiscard]] std::optional<duration>
-        computeWaitTimeout (std::optional<duration> max_duration) const;
+        [[nodiscard]] optional<duration>
+        computeWaitTimeout (optional<duration> max_duration) const;
 
         std::size_t
         executeReady ();

@@ -5,10 +5,11 @@
 #include <nx/asio/context/io_context.hpp>
 #include "nx/asio/backend/backend.hpp"
 #include "context_impl.hpp"
+#include "nx/make_unique.hpp"
 
 namespace nx::asio {
     io_context::io_context()
-        : impl_ { std::make_unique<impl>(create_backend()) }
+        : impl_ { make_unique<impl>(create_backend()) }
     {
     }
 
@@ -24,7 +25,7 @@ namespace nx::asio {
     }
 
     std::size_t io_context::run() {
-        return impl_->run(std::nullopt);
+        return impl_->run(nx::nullopt);
     }
 
     std::size_t io_context::run_once() {

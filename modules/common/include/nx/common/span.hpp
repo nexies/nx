@@ -7,7 +7,7 @@
 // In C++20 and later: thin alias over std::span<T> (dynamic extent only).
 // In C++17: a minimal, header-only implementation with the same interface.
 
-#if defined(NX_CPP20)
+#if NX_CPP_STANDARD >= 20
 
 #  include <span>
 namespace nx {
@@ -16,7 +16,7 @@ namespace nx {
     inline constexpr std::size_t dynamic_extent = std::dynamic_extent;
 } // namespace nx
 
-#else // C++17
+#else // C++17 and earlier
 
 #  include <cstddef>
 #  include <type_traits>

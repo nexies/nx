@@ -29,7 +29,7 @@ namespace nx::asio
 
     void io_context::impl::post(task_t task)
     {
-        std::lock_guard lg(incoming_mutex_);
+        std::lock_guard<std::mutex> lg(incoming_mutex_);
         ready_.push_back(std::move(task));
         backend_->wake();
     }
@@ -47,20 +47,20 @@ namespace nx::asio
         return 0;
     }
 
-    std::size_t io_context::impl::run(std::optional<duration> max_duration)
+    std::size_t io_context::impl::run(nx::optional<duration> max_duration)
     {
         running_.store(true, std::memory_order_release);
         stopped_.store(false, std::memory_order_release);
 
         {
-            std::lock_guard lg{state_mutex_};
+            std::lock_guard<std::mutex> lg{state_mutex_};
             owner_thread_id = std::this_thread::get_id();
         }
 
         std::size_t tasks_processed { 0 };
         const auto deadline = max_duration.has_value()
-            ? std::optional<time_point>(clock::now() + *max_duration)
-            : std::nullopt;
+            ? nx::optional<time_point>(clock::now() + *max_duration)
+            : nx::nullopt;
 
         while (!stopped_.load(std::memory_order_acquire))
         {
@@ -69,7 +69,7 @@ namespace nx::asio
 
             // Recompute remaining time each iteration so backend_->wait never
             // sleeps longer than the time left in the run_for/run_until window.
-            std::optional<duration> remaining;
+            nx::optional<duration> remaining;
             if (deadline.has_value()) {
                 remaining = *deadline - clock::now();
                 if (*remaining <= duration::zero())
@@ -91,7 +91,7 @@ namespace nx::asio
         running_.store(true, std::memory_order_release);
 
         {
-            std::lock_guard lg{state_mutex_};
+            std::lock_guard<std::mutex> lg{state_mutex_};
             owner_thread_id = std::this_thread::get_id();
         }
 
@@ -111,7 +111,7 @@ namespace nx::asio
         running_.store(true, std::memory_order_release);
 
         {
-            std::lock_guard lg{state_mutex_};
+            std::lock_guard<std::mutex> lg{state_mutex_};
             owner_thread_id = std::this_thread::get_id();
         }
 
@@ -148,7 +148,7 @@ namespace nx::asio
         if (!running_.load(std::memory_order_acquire))
             return false;
         {
-            std::lock_guard lg{state_mutex_};
+            std::lock_guard<std::mutex> lg{state_mutex_};
             return (std::this_thread::get_id() == owner_thread_id);
         }
     }
@@ -230,11 +230,11 @@ namespace nx::asio
         }
     }
 
-    std::optional<duration> io_context::impl::computeWaitTimeout(std::optional<duration> max_duration) const
+    nx::optional<duration> io_context::impl::computeWaitTimeout(nx::optional<duration> max_duration) const
     {
         // Cancelled timers have been drained by drainExpiredTimers, so the top
         // of the heap is always the next active (non-cancelled) timer, or empty.
-        std::optional<duration> out;
+        nx::optional<duration> out;
 
         if (!timers_.empty()) {
             auto until_next = timers_.top()->expiry - clock::now();
@@ -254,7 +254,7 @@ namespace nx::asio
         std::size_t tasks_processed { 0 };
 
         {
-            std::lock_guard lg(incoming_mutex_);
+            std::lock_guard<std::mutex> lg(incoming_mutex_);
             std::swap(tasks_to_execute, ready_);
         }
 
@@ -273,7 +273,7 @@ namespace nx::asio
         task_t task_to_execute { nullptr };
         std::size_t tasks_processed { 0 };
         {
-            std::lock_guard lg(incoming_mutex_);
+            std::lock_guard<std::mutex> lg(incoming_mutex_);
             // std::swap(tasks_to_execute, ready_);
             if (!ready_.empty())
             {

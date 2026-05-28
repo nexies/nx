@@ -8,10 +8,11 @@
 #include <cstdint>
 #include <string>
 #include <sstream>
-#include <filesystem>
 #include <nx/common/platform/compiler_defs.hpp>
 #include <nx/common/helpers.hpp>
 #include <cstring>
+#include <nx/string_view.hpp>
+#include <nx/filesystem.hpp>
 
 #if defined(NX_CXX_MSVC) && NX_CXX_MSVC_VER >= 1926
 #   define NX_BUILTIN_FILE          __builtin_FILE()
@@ -19,7 +20,7 @@
 #   define NX_BUILTIN_LINE          __builtin_LINE()
 #   define NX_BUILTIN_COLUMN        __builtin_COLUMN()
 #   define NX_FUNCTION_SIGNATURE    __FUNCSIG__
-#
+
 #   define NX_HAS_BUILTIN_COLUMN    true
 #elif defined(NX_CXX_CLANG) || defined(NX_CXX_GCC)
 #   define NX_BUILTIN_FILE          __builtin_FILE()
@@ -52,6 +53,14 @@ namespace nx {
         const char * file_;
         const char * function_;
 
+        // Extract last path component without std::filesystem
+        static const char * basename_(const char * path) noexcept {
+            const char * last = path;
+            for (const char * p = path; *p; ++p)
+                if (*p == '/' || *p == '\\') last = p + 1;
+            return last;
+        }
+
     public:
         static constexpr bool has_builtin_column = NX_HAS_BUILTIN_COLUMN;
 
@@ -73,23 +82,17 @@ namespace nx {
         NX_NODISCARD constexpr uint_least16
         line () const { return line_; }
 
+        // C++11 compatible: ternary instead of if constexpr
         NX_NODISCARD constexpr uint_least16
-        column () const
-        {
-            if constexpr (has_builtin_column)
-            {
-                return column_;
-            }
-            return 0;
-        }
+        column () const { return has_builtin_column ? column_ : uint_least16(0); }
 
-        NX_NODISCARD constexpr std::string_view
+        NX_NODISCARD nx::string_view
         function () const { return function_; }
 
-        NX_NODISCARD constexpr std::string_view
+        NX_NODISCARD nx::string_view
         file () const { return file_; }
 
-        NX_NODISCARD std::filesystem::path
+        NX_NODISCARD nx::filesystem::path
         filepath () const { return { file_ }; }
 
         NX_NODISCARD static constexpr source_location
@@ -100,13 +103,9 @@ namespace nx {
         short_link () const
         {
             std::stringstream ss;
-            ss << filepath().filename().string() << ":" << line_;
-
-            if constexpr (has_builtin_column)
-            {
+            ss << basename_(file_) << ":" << line_;
+            if (has_builtin_column)
                 ss << ":" << column_;
-            }
-
             return ss.str();
         }
 
@@ -116,15 +115,11 @@ namespace nx {
             std::stringstream ss;
             ss << "Source Location: " << short_link() << std::endl;
             if (!function().empty())
-            {
                 ss << "\tFunction: " << function() << std::endl;
-            }
             ss << "\tFile: " << file() << std::endl;
             ss << "\tLine: " << line() << std::endl;
-
-            if constexpr (has_builtin_column)
+            if (has_builtin_column)
                 ss << "\tColumn: " << column() << std::endl;
-
             return ss.str();
         }
 
@@ -151,7 +146,7 @@ namespace nx {
         return os << src.description();
     }
 
-    static constexpr inline source_location
+    static constexpr source_location
     g_undefined_location { 0, 0, "undefined", "undefined"};
 }
 

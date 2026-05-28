@@ -1,7 +1,8 @@
 #pragma once
 
-namespace nx::@_MODULE_NAME@
-{
+#include <nx/@_MODULE_NAME@/namespace.hpp>
+
+NX_@_MODULE_NAME_UP@_NAMESPACE_BEGIN
     namespace version {
         static constexpr const char * str = "@_MODULE_VERSION_STR@";
         static constexpr int major = @_MODULE_VERSION_MAJOR@;
@@ -9,4 +10,4 @@ namespace nx::@_MODULE_NAME@
         static constexpr int patch = @_MODULE_VERSION_PATCH@;
         static constexpr const char * build_time_utc = "@_MODULE_BUILD_TIME_STR@";
     }
-}
+NX_@_MODULE_NAME_UP@_NAMESPACE_END

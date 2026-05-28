@@ -3,18 +3,18 @@
 //
 
 #include <nx/common/types/utf8.hpp>
+#include <nx/string_view.hpp>
 
-namespace nx::utf8
-{
+namespace nx { namespace utf8 {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // grapheme
 // ─────────────────────────────────────────────────────────────────────────────
 
-std::string_view
+nx::string_view
 grapheme::bytes() const noexcept
 {
-    return { begin_, static_cast<std::size_t>(end_ - begin_) };
+    return nx::string_view(begin_, static_cast<std::size_t>(end_ - begin_));
 }
 
 std::u32string
@@ -43,9 +43,8 @@ grapheme_iterator::grapheme_iterator(const char * current, const char * end) noe
     , end_(end)
 {
     if (current_ < end_) {
-        // Pre-compute where the first cluster ends so operator* is O(1).
         auto r = detail::cluster_end(current_, end_);
-        cluster_end_ = r ? *r : current_ + 1; // +1: skip one bad byte
+        cluster_end_ = r ? *r : current_ + 1;
     }
 }
 
@@ -55,7 +54,6 @@ grapheme_iterator::operator*() const
     if (current_ >= end_)
         return nx::err::invalid_argument("utf8: dereference of end iterator");
 
-    // Validate: try to decode the first codepoint of the cluster
     auto r = detail::decode(current_, cluster_end_);
     if (!r)
         return r.error();
@@ -103,7 +101,7 @@ grapheme_iterator::operator!=(const grapheme_iterator & other) const
 // view
 // ─────────────────────────────────────────────────────────────────────────────
 
-view::view(std::string_view text) noexcept
+view::view(nx::string_view text) noexcept
     : text_(text)
 {}
 
@@ -141,4 +139,4 @@ view::size() const noexcept
     return count;
 }
 
-} // namespace nx::utf8
+} } // namespace nx::utf8

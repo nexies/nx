@@ -51,12 +51,23 @@ add_library(nx_common
 target_include_directories(nx_common PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/nx/common/format>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/nx/common/format>
+        # C++11/14 compatibility shims (nx::string_view, nx::optional, nx::variant …)
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/std_compat>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
 nx_configure_component(nx_common
         NAME common
         VERSION 0.0.1
 )
+
+# Install std_compat headers alongside the main include tree
+if(NX_ENABLE_INSTALL)
+    install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/std_compat/nx"
+        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/nx"
+        FILES_MATCHING PATTERN "*.hpp"
+    )
+endif()
 
 add_subdirectory(tests)
 
