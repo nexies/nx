@@ -63,7 +63,7 @@ endif()
 
 nx_configure_component(nx_network
     NAME network
-    VERSION 0.6.5
+    VERSION 0.6.6
 )
 
 # ── nx_pcap (optional — requires libpcap) ─────────────────────────────────────

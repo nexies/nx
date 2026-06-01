@@ -54,7 +54,7 @@ endif()
 
 nx_configure_component(nx_core2
     NAME core2
-    VERSION 0.1.0
+    VERSION 0.1.1
 )
 
 add_subdirectory(tests)

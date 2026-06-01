@@ -37,7 +37,7 @@ target_link_libraries(nx_asio PUBLIC
 
 nx_configure_component(nx_asio
         NAME asio
-        VERSION 0.0.5
+        VERSION 0.0.6
 )
 
 add_subdirectory(tests)
