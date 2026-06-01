@@ -29,7 +29,7 @@ add_library(nx_logging
 
 nx_configure_component(nx_logging
         NAME logging
-        VERSION 0.1.0
+        VERSION 0.1.1
 )
 
 target_link_libraries(nx_logging PUBLIC
