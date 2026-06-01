@@ -29,7 +29,7 @@ nx::error socket_impl::would_block_error()
 
 bool socket_impl::is_would_block(const nx::error & e) noexcept
 {
-    return e.code().value() == EAGAIN || e.code().value() == EWOULDBLOCK;
+    return e.code() == EAGAIN || e.code() == EWOULDBLOCK;
 }
 
 static nx::error os_err(std::string_view ctx, int code = errno)

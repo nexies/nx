@@ -166,6 +166,11 @@ namespace nx {
         return code_;
     }
 
+    int error::code() const noexcept
+    {
+        return code_;
+    }
+
     std::error_category const& error::category() const noexcept
     {
         return flag_ == by_desc ? *d_.desc->category : *d_.cat;

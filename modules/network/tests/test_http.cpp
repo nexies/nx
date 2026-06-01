@@ -76,7 +76,7 @@ static bool has_header(const std::string & resp, std::string_view name, std::str
 struct ServerFixture {
     nx::core::local_thread thread;
     http::router           router;
-    http::server           srv;
+    http::server<>         srv;
     uint16_t               port;
 
     explicit ServerFixture(uint16_t p) : thread("srv"), port(p)
@@ -99,8 +99,8 @@ struct ServerFixture {
             respond(http::response::ok(it != qp.end() ? it->second : ""));
         });
 
-        nx::core::connect(&srv, &http::server::request_received, &srv,
-            [this](http::request req, http::server::responder_t respond) {
+        nx::core::connect(&srv, &http::server<>::request_received, &srv,
+            [this](http::request req, http::server<>::responder_t respond) {
                 router.handle(std::move(req), std::move(respond));
             });
 

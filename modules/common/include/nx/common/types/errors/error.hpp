@@ -76,6 +76,9 @@ namespace nx {
         NX_NODISCARD int
         value() const noexcept;
 
+        NX_NODISCARD int
+        code () const noexcept;
+
         // Error category (identity distinguishes error types)
         NX_NODISCARD std::error_category const&
         category() const noexcept;

@@ -5,7 +5,7 @@
 #ifndef NX_LOGGING_LEVELS_HPP
 #define NX_LOGGING_LEVELS_HPP
 
-#include <string_view>
+#include <nx/string_view.hpp>
 
 namespace nx::logging {
 

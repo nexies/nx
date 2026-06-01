@@ -13,7 +13,7 @@ find_package(Pcap QUIET)
 set(NX_NETWORK_SOURCES
     src/network.cpp
     src/types.cpp
-    src/socket.cpp
+        src/socket.cpp
     src/buffer/read_buffer.cpp
     src/buffer/read_accumulator.cpp
     src/framing/length_prefix_framer.cpp
