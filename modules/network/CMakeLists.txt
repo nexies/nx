@@ -90,9 +90,9 @@ if(PCAP_FOUND)
         VERSION 0.1.0
     )
 
-    message(STATUS "nx_pcap: libpcap found — pcap support enabled")
+#    nx_log("libpcap found — pcap support enabled")
 else()
-    message(STATUS "nx_pcap: libpcap not found — pcap support disabled")
+#    nx_log("libpcap not found — pcap support disabled")
 endif()
 
 add_subdirectory(demo)

@@ -3,7 +3,7 @@ if(NOT TARGET nx::network)
     return()
 endif()
 
-find_package(nlohmann_json CONFIG)
+find_package(nlohmann_json CONFIG QUIET)
 
 if(NOT TARGET nlohmann_json::nlohmann_json)
     nx_log("nx::tg module requires nlohmann_json, which is not configured - skipping...")
