@@ -3,6 +3,7 @@
 //
 
 #include <nx/asio/backend/backend.hpp>
+#include <nx/make_unique.hpp>
 #include "backend_epoll.inl"
 #include "backend_kevent.inl"
 #include "backend_iocp.inl"
