@@ -22,7 +22,7 @@ using io_interest = nx::asio::io_interest;
 
 // ── error helpers ─────────────────────────────────────────────────────────────
 
-nx::error socket_impl::would_block_error()
+nx::err::runtime_error socket_impl::would_block_error()
 {
     return nx::err::runtime_error(EAGAIN, "would block");
 }
