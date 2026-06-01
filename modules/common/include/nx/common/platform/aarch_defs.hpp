@@ -30,7 +30,7 @@
 #   define NX_ARCH_NAME "Unknown architecture"
 # endif
 
-#ifndef NX_ARCH_64
+#ifdef NX_ARCH_64
 #   define NX_ARCH_64 1
 #   define NX_ARCH_32 1
 #endif

@@ -64,8 +64,11 @@ protected:
     void on_paint(painter & p)             override;
     void on_key_press(key_event & e)       override;
     void on_mouse_press(mouse_event & e)   override;
+    void on_wheel(mouse_event & e)         override;
     void on_mouse_enter(mouse_event & e)   override;
     void on_mouse_leave(mouse_event & e)   override;
+
+    [[nodiscard]] bool _intercepts_wheel() const noexcept override { return true; }
     void on_focus_in()                     override;
     void on_focus_out()                    override;
 

@@ -11,30 +11,29 @@ namespace nx::tui {
 
 // ── combo_box ─────────────────────────────────────────────────────────────────
 //
-// A drop-down selection widget that expands inline (no overlay required).
+// A drop-down selection widget.  Always occupies exactly 1 row in the layout.
+// When expanded the dropdown is rendered as an overlay on top of other widgets
+// via a second render pass in screen — the layout is never disturbed.
 //
 // Collapsed (height = 1):
 //   ┌ Selected item text                          ▼ ┐
 //
-// Expanded (height = 1 + min(count, max_visible)):
-//   ┌ Selected item text                          ▼ ┐  ← header
-//   │ Item 0                                        │  ← dropdown
+// Expanded (overlay below, no layout change):
+//   ┌ Selected item text                          ▲ ┐  ← header (layout row)
+//   │ Item 0                                        │  ← overlay
 //   │ Item 1  ◀ selected                            │
 //   │ Item 2                                        │
-//   └───────────────────────────────────────────────┘
 //
-// When expanded the parent layout re-flows automatically (set_geometry replay).
-//
-// Keyboard (collapsed): Enter / Space → expand.
+// Keyboard (collapsed): Enter / ↓ → expand.
 // Keyboard (expanded):  ↑/↓ move highlight, Enter select, Escape cancel.
 
 class combo_box : public widget {
     std::vector<std::string> items_;
-    int current_     = -1;
-    int highlight_   = -1;  // index highlighted while dropdown is open
+    int current_       = -1;
+    int highlight_     = -1;
     int saved_current_ = -1;
-    bool expanded_   = false;
-    int  max_visible_ = 6;
+    bool expanded_     = false;
+    int  max_visible_  = 6;
 
     animated_value<color> bg_     { this, _idle_bg() };
     animated_value<color> border_ { this, _border_c() };
@@ -74,8 +73,14 @@ public:
 
     [[nodiscard]] size_type size_hint() const override;
 
+    // ── Overlay API ───────────────────────────────────────────────────────────
+
+    [[nodiscard]] bool      has_overlay()  const noexcept override;
+    [[nodiscard]] rect<int> overlay_rect() const noexcept override;
+
 protected:
     void on_paint(painter & p)             override;
+    void on_paint_overlay(painter & p)     override;
     void on_key_press(key_event & e)       override;
     void on_mouse_press(mouse_event & e)   override;
     void on_mouse_move(mouse_event & e)    override;
@@ -85,9 +90,7 @@ protected:
     void on_focus_out()                    override;
 
 private:
-    [[nodiscard]] int  _visible_count()    const noexcept;
-    void               _set_height(int h);
-    void               _request_parent_layout();
+    [[nodiscard]] int  _visible_count() const noexcept;
 
     [[nodiscard]] color _idle_bg()   const noexcept;
     [[nodiscard]] color _hover_bg()  const noexcept;

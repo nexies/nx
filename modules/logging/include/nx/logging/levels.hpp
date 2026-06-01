@@ -26,7 +26,7 @@ should_log_level(level message_level, level threshold) noexcept
         && message_level != level::off;
 }
 
-[[nodiscard]] inline std::string_view
+[[nodiscard]] inline nx::string_view
 to_string_view(level l) noexcept
 {
     switch (l) {

@@ -136,6 +136,14 @@ public:
     // descendant is the hit-test target.  scroll_area overrides this.
     [[nodiscard]] virtual bool _intercepts_wheel() const noexcept { return false; }
 
+    // ── Overlay painting ──────────────────────────────────────────────────────
+    // For widgets that need to draw outside their layout bounds (e.g. combo_box
+    // dropdown).  The overlay is rendered after the full normal widget pass.
+    // Returns true if this widget currently has an active overlay.
+    [[nodiscard]] virtual bool has_overlay() const noexcept { return false; }
+    // Returns the overlay area in LOCAL widget coords.  An empty rect = none.
+    [[nodiscard]] virtual rect<int> overlay_rect() const noexcept { return {}; }
+
     // ── Size hint ─────────────────────────────────────────────────────────────
     NX_PROPERTY(size_hint, READ size_hint)
 
@@ -203,6 +211,7 @@ protected:
     // ── Event handlers (override in subclasses) ───────────────────────────────
 
     virtual void on_paint(painter & p);
+    virtual void on_paint_overlay(painter & p);
 
     // Called by screen::_render_widget before painting, so child widgets are
     // repositioned before their own paint pass.  Override in container widgets

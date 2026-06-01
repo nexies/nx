@@ -235,13 +235,13 @@ int main()
     nx::core::connect(&srv, &http::server<>::error_occurred, &srv,
         [](nx::error e) { nx_critical("server error: {}", e.what()); });
 
-    srv.listen(endpoint { ip_address::loopback_v4(), 8080 })
+    srv.listen(endpoint { ip_address::loopback_v4(), 8796 })
         .or_else([](nx::error e) {
             nx_critical("listen failed: {}", e.what());
             std::exit(1);
         });
 
-    nx_info("HTTP server listening on http://127.0.0.1:8080");
+    nx_info("HTTP server listening on http://127.0.0.1:8796");
 
     return loop.exec();
 }

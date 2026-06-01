@@ -1,0 +1,65 @@
+name: Version Bump
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, '[ci skip]')"
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 1
+
+      - name: Parse modules from commit message
+        id: parse
+        run: |
+          MSG="${{ github.event.head_commit.message }}"
+          MODULES=$(echo "$MSG" | grep -oP '(?<=\[)[^\]]+' | head -1)
+          if [ -z "$MODULES" ]; then
+            echo "No module tag found in commit message, skipping."
+            echo "modules=" >> $GITHUB_OUTPUT
+          else
+            MODULES=$(echo "$MODULES" | tr -d ' ')
+            echo "modules=$MODULES" >> $GITHUB_OUTPUT
+            echo "Found modules: $MODULES"
+          fi
+
+      - name: Bump patch version for each module
+        if: steps.parse.outputs.modules != ''
+        run: |
+          IFS=',' read -ra MODS <<< "${{ steps.parse.outputs.modules }}"
+          CHANGED=0
+          for MOD in "${MODS[@]}"; do
+            CMAKE="modules/$MOD/CMakeLists.txt"
+            if [ ! -f "$CMAKE" ]; then
+              echo "Module '$MOD' not found, skipping."
+              continue
+            fi
+            CURRENT=$(grep -oP '(?<=VERSION )\d+\.\d+\.\d+' "$CMAKE" | head -1)
+            if [ -z "$CURRENT" ]; then
+              echo "No VERSION found in $CMAKE, skipping."
+              continue
+            fi
+            MAJOR=$(echo $CURRENT | cut -d. -f1)
+            MINOR=$(echo $CURRENT | cut -d. -f2)
+            PATCH=$(echo $CURRENT | cut -d. -f3)
+            NEW_VER="$MAJOR.$MINOR.$((PATCH + 1))"
+            sed -i "s/VERSION $CURRENT/VERSION $NEW_VER/" "$CMAKE"
+            echo "Bumped $MOD: $CURRENT -> $NEW_VER"
+            CHANGED=1
+          done
+          echo "changed=$CHANGED" >> $GITHUB_ENV
+
+      - name: Commit version bump
+        if: env.changed == '1'
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add modules/*/CMakeLists.txt
+          git commit -m "chore: bump module versions [ci skip]"
+          git push

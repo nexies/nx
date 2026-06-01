@@ -27,3 +27,20 @@ nx_configure_test(http
     SOURCE test_http.cpp
     LINK_PUBLIC nx_logging
 )
+
+if(TARGET nx_pcap)
+    nx_configure_test(pcap_reader
+        COMPONENT pcap
+        SOURCE test_pcap_reader.cpp
+    )
+
+    nx_configure_test(pcap_device
+        COMPONENT pcap
+        SOURCE test_pcap_device.cpp
+    )
+
+    nx_configure_test(pcap_replayer
+        COMPONENT pcap
+        SOURCE test_pcap_replayer.cpp
+    )
+endif()

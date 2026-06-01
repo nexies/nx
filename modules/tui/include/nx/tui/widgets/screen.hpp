@@ -24,10 +24,11 @@ class screen : public widget {
 
     display_buffer back_;
     display_buffer front_;
-    widget *       focus_        = nullptr;
-    widget *       hovered_      = nullptr;
-    bool           full_repaint_ = true; // set by resize(), cleared after first _flush_diff
-    int            render_calls_ = 0;    // _render_widget calls in the last render() pass
+    widget *       focus_         = nullptr;
+    widget *       hovered_       = nullptr;
+    bool           full_repaint_  = true;  // set by resize(), cleared after first _flush_diff
+    bool           overlay_active_ = false; // true if an overlay was rendered last frame
+    int            render_calls_  = 0;     // _render_widget calls in the last render() pass
     int            total_render_calls_ = 0;
 
 public:
@@ -99,6 +100,13 @@ private:
     widget *
     _widget_at(widget & w, int wx, int wy, int qx, int qy,
                int & out_gx, int & out_gy);
+
+    // Overlay pass: renders all widgets with has_overlay()==true on top of back_.
+    void _render_overlays();
+
+    // Returns the overlay-owning widget whose overlay_rect (in screen coords)
+    // contains (qx, qy), or nullptr.  out_gx/out_gy = widget global origin.
+    widget * _widget_at_overlay(int qx, int qy, int & out_gx, int & out_gy);
 };
 
 } // namespace nx::tui

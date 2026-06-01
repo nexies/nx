@@ -88,6 +88,9 @@ namespace nx {
         NX_NODISCARD std::string
         description() const noexcept;
 
+        NX_NODISCARD std::string
+        message() const noexcept;
+
         // User-defined context message
         NX_NODISCARD std::string
         comment() const noexcept;

@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 3.20)
 include (cmake/nxVcpkg.cmake)
 project (nx VERSION 0.3.1 LANGUAGES CXX)
 
-set (CMAKE_CXX_STANDARD 11)
+set (CMAKE_CXX_STANDARD 17)
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
 set (CMAKE_POSITION_INDEPENDENT_CODE ON)
 
@@ -12,17 +12,17 @@ set (NX_NAMESPACE           nx)
 set (NX_PROJECT_VERSION     ${PROJECT_VERSION})
 set (NX_EXPORT_SET          NX_EXPORTED_TARGETS)
 set (NX_GENERATED_INCLUDEDIR ${CMAKE_BINARY_DIR}/generated/${NX_NAMESPACE})
-set (NX_CXX_STANDARD        11)
+set (NX_CXX_STANDARD        17)
 set (NX_PROJECT_SOURCE_DIR  ${CMAKE_CURRENT_SOURCE_DIR})
 
-option (NX_BUILD_DOCS           "Build docs"                                             OFF)
-option (NX_BUILD_MODULES        "Build modules"                                          ON)
-option (NX_BUILD_EXAMPLES       "Build examples"                                         ON)
-option (NX_BUILD_TESTS          "Enable building tests for the modules"                  ON)
-option (NX_BUILD_DEVEL_TESTS    "Enable building development tests"                      OFF)
-option (NX_CLANG_TIDY           "Enable clang-tidy"                                      OFF)
-option (NX_DEVEL_WARNING        "Enable devel warnings"                                  OFF)
-option (NX_ENABLE_INSTALL       "Enable install targets"                                 ON)
+option (NX_BUILD_DOCS             "Build docs"                                           OFF)
+option (NX_BUILD_MODULES          "Build modules"                                        ON)
+option (NX_BUILD_EXAMPLES         "Build examples"                                       ON)
+option (NX_BUILD_TESTS            "Enable building tests for the modules"                ON)
+option (NX_BUILD_DEVEL_TESTS      "Enable building development tests"                    OFF)
+option (NX_CLANG_TIDY             "Enable clang-tidy"                                    OFF)
+option (NX_DEVEL_WARNING          "Enable devel warnings"                                OFF)
+option (NX_ENABLE_INSTALL         "Enable install targets"                               ON)
 option (NX_ENABLE_CXX_20_FEATURES "Enable std::c++20 features"                           OFF)
 
 # ── Output directories ─────────────────────────────────────────────────────────
@@ -42,7 +42,8 @@ foreach (_cfg Debug Release RelWithDebInfo MinSizeRel)
 endforeach ()
 
 # ── Modules ────────────────────────────────────────────────────────────────────
-add_library (nx INTERFACE)
+add_library (nx INTERFACE
+        include/nx/module_namespace.hpp.in)
 add_library (nx::nx ALIAS nx)
 
 list (APPEND CMAKE_MODULE_PATH "${NX_CMAKE_MODULE_PATH}")

@@ -214,6 +214,14 @@ void spin_box::on_mouse_press(mouse_event & e)
     e.accept();
 }
 
+void spin_box::on_wheel(mouse_event & e)
+{
+    const int delta = e.button == mouse_button::wheel_down ? -step_ : step_;
+    _cancel_edit();
+    _set_value_clamped(value_ + delta);
+    e.accept();
+}
+
 void spin_box::on_mouse_enter(mouse_event & e)
 {
     widget::on_mouse_enter(e);

@@ -1,3 +1,8 @@
+if(NOT TARGET nx::network)
+    nx_log("nx::tg module requires nx::network module, which is not configured - skipping...")
+    return()
+endif()
+
 find_package(nlohmann_json CONFIG REQUIRED)
 
 add_library(nx_tg

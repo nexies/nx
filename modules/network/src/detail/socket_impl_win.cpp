@@ -36,7 +36,8 @@ bool socket_impl::is_would_block(const nx::error & e) noexcept
 
 static nx::err::runtime_error os_err(std::string_view ctx, int code = WSAGetLastError())
 {
-    return nx::err::runtime_error(code, ctx);
+    std::error_code c(code, std::system_category());
+    return nx::err::runtime_error(code, c.message());
 }
 
 // ── sockaddr helpers ──────────────────────────────────────────────────────────

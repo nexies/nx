@@ -181,6 +181,11 @@ namespace nx {
         return category().message(code_);
     }
 
+    std::string error::message() const noexcept
+    {
+        return comment();
+    }
+
     std::string error::comment() const noexcept
     {
         return flag_ == by_desc ? d_.desc->comment : std::string{};

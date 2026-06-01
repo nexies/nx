@@ -68,6 +68,7 @@ void widget::update() noexcept
 
 void widget::_apply_layout()               {}
 void widget::on_paint(painter &)           {}
+void widget::on_paint_overlay(painter &)   {}
 void widget::on_key_press(key_event &)     {}
 void widget::on_key_release(key_event &)   {}
 void widget::on_mouse_press(mouse_event &)  {}

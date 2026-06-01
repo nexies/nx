@@ -1,4 +1,14 @@
-find_package(OpenSSL REQUIRED)
+find_package(OpenSSL QUIET)
+if(NOT OpenSSL_FOUND)
+    nx_log("OpenSSL is not found. nx::network module will not be built")
+    return()
+endif ()
+
+# ── libpcap detection ─────────────────────────────────────────────────────────
+
+find_package(Pcap QUIET)
+
+# ── nx_network sources ────────────────────────────────────────────────────────
 
 set(NX_NETWORK_SOURCES
     src/network.cpp
@@ -55,6 +65,35 @@ nx_configure_component(nx_network
     NAME network
     VERSION 0.6.0
 )
+
+# ── nx_pcap (optional — requires libpcap) ─────────────────────────────────────
+
+if(PCAP_FOUND)
+    add_library(nx_pcap
+        src/pcap/file_reader.cpp
+        src/pcap/device.cpp
+        src/pcap/replayer.cpp
+    )
+
+    target_include_directories(nx_pcap PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+    )
+
+    target_link_libraries(nx_pcap
+        PUBLIC  nx_network
+        PRIVATE PCAP::PCAP
+    )
+
+    nx_configure_component(nx_pcap
+        NAME    pcap
+        VERSION 0.1.0
+    )
+
+    message(STATUS "nx_pcap: libpcap found — pcap support enabled")
+else()
+    message(STATUS "nx_pcap: libpcap not found — pcap support disabled")
+endif()
 
 add_subdirectory(demo)
 add_subdirectory(tests)

@@ -6,9 +6,35 @@
 #include <nx/tui/types/theme_role.hpp>
 
 #include <cstdio>
+#include <tuple>
 #include <vector>
 
 namespace nx::tui {
+
+// ── Overlay helpers (file-local) ──────────────────────────────────────────────
+
+struct overlay_entry { widget * w; int gx; int gy; };
+
+static bool _any_overlay(widget & w)
+{
+    if (!w.is_visible()) return false;
+    if (w.has_overlay()) return true;
+    for (auto * child : w.child_widgets())
+        if (_any_overlay(*child)) return true;
+    return false;
+}
+
+static void _collect_overlays(widget & w, int gx, int gy,
+                               std::vector<overlay_entry> & out)
+{
+    if (!w.is_visible()) return;
+    if (w.has_overlay()) out.push_back({&w, gx, gy});
+    for (auto * child : w.child_widgets()) {
+        _collect_overlays(*child,
+                          gx + child->pos().x,
+                          gy + child->pos().y, out);
+    }
+}
 
 // ── construction ──────────────────────────────────────────────────────────────
 
@@ -52,11 +78,23 @@ void screen::on_paint(painter & p)
 void screen::render()
 {
     render_calls_ = 0;
-    // Seed back_ with the previous frame so that cells belonging to widgets
-    // we skip this pass already contain the correct content.
     back_ = front_;
-    const bool force = full_repaint_;
+
+    // When an overlay was shown last frame but isn't now, force a full repaint
+    // so that cells which were covered by the overlay get refreshed from the
+    // underlying widgets rather than keeping stale overlay content.
+    const bool has_overlays = _any_overlay(*this);
+    const bool force = full_repaint_ || (overlay_active_ && !has_overlays);
+
     _render_widget(*this, 0, 0, rect<int>(0, 0, back_.cols(), back_.rows()), force);
+
+    if (has_overlays) {
+        _render_overlays();
+        overlay_active_ = true;
+    } else {
+        overlay_active_ = false;
+    }
+
     _flush_diff();
     total_render_calls_ += render_calls_;
     NX_EMIT(rendered)
@@ -133,6 +171,50 @@ void screen::_render_widget(widget & w, int global_x, int global_y, rect<int> cl
     }
 
     w._clear_subtree_dirty();
+}
+
+void screen::_render_overlays()
+{
+    std::vector<overlay_entry> overlays;
+    _collect_overlays(*this, 0, 0, overlays);
+
+    const rect<int> full(0, 0, back_.cols(), back_.rows());
+
+    for (auto & entry : overlays) {
+        const auto ov = entry.w->overlay_rect();
+        if (ov.empty()) continue;
+        // Map overlay local rect to screen coords.
+        const rect<int> screen_ov(entry.gx + ov.x(), entry.gy + ov.y(),
+                                  ov.width(), ov.height());
+        if (screen_ov.intersect(full).empty()) continue;
+        // Painter: rect = overlay area in screen coords; clip = full screen so
+        // we can draw outside the widget's normal layout bounds.
+        painter p(back_, screen_ov, full);
+        entry.w->on_paint_overlay(p);
+    }
+}
+
+widget * screen::_widget_at_overlay(int qx, int qy, int & out_gx, int & out_gy)
+{
+    std::vector<overlay_entry> overlays;
+    _collect_overlays(*this, 0, 0, overlays);
+
+    // Check in reverse order so the last (topmost) overlay wins.
+    for (int i = static_cast<int>(overlays.size()) - 1; i >= 0; --i) {
+        const auto & entry = overlays[i];
+        const auto ov = entry.w->overlay_rect();
+        if (ov.empty()) continue;
+        const int x1 = entry.gx + ov.x();
+        const int y1 = entry.gy + ov.y();
+        const int x2 = x1 + ov.width()  - 1;
+        const int y2 = y1 + ov.height() - 1;
+        if (qx >= x1 && qx <= x2 && qy >= y1 && qy <= y2) {
+            out_gx = entry.gx;
+            out_gy = entry.gy;
+            return entry.w;
+        }
+    }
+    return nullptr;
 }
 
 void screen::_flush_diff()
@@ -281,8 +363,12 @@ bool screen::dispatch_mouse(mouse_event e)
     const int qx = e.position.x - 1;
     const int qy = e.position.y - 1;
 
+    // Overlay widgets (e.g. combo_box dropdown) must be tested before the
+    // normal hit-test so clicks on the dropdown area route to the right widget.
     int target_gx = 0, target_gy = 0;
-    auto * target = _widget_at(*this, 0, 0, qx, qy, target_gx, target_gy);
+    auto * target = _widget_at_overlay(qx, qy, target_gx, target_gy);
+    if (!target)
+        target = _widget_at(*this, 0, 0, qx, qy, target_gx, target_gy);
 
     // Fire enter/leave when the deepest widget under the cursor changes.
     if (target != hovered_) {
