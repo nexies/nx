@@ -12,6 +12,12 @@
 #include <string>
 #include <vector>
 
+#if defined(NX_OS_WINDOWS)
+#include <io.h>
+#elif defined(NX_OS_LINUX)
+#include <unistd.h>
+#endif
+
 using namespace nx::network::pcap;
 
 // ── pcap file writer (same helper as in test_pcap_reader.cpp) ─────────────────

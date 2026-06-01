@@ -14,8 +14,8 @@ NX_ASIO_NAMESPACE_BEGIN
     {
     public:
         using task_t = io_context::task_t;
-        using duration = duration;
-        using time_point = time_point;
+        using duration = nx::asio::duration;
+        using time_point = nx::asio::time_point;
         using clock_t = clock;
 
     private:

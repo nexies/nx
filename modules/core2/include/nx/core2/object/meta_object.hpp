@@ -16,8 +16,8 @@ namespace nx::core
         template <typename Object>
         class meta_object
         {
-            using meta_property_descriptor = meta_property_descriptor<Object>;
-            using meta_property_registry = meta_property_registry<Object>;
+            using meta_property_descriptor = nx::core::detail::meta_property_descriptor<Object>;
+            using meta_property_registry = nx::core::detail::meta_property_registry<Object>;
 
             std::string_view object_class_name_ = "undefined";
             meta_property_registry property_registry_;

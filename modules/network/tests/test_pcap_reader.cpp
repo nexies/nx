@@ -3,11 +3,16 @@
 #include <catch2/catch_test_macros.hpp>
 
 #include <cstdio>
-#include <cstring>
-#include <io.h>
 #include <memory>
+#include <cstring>
 #include <string>
 #include <vector>
+
+#if defined(NX_OS_WINDOWS)
+#include <io.h>
+#elif defined(NX_OS_LINUX)
+#include <unistd.h>
+#endif
 
 using namespace nx::network::pcap;
 
@@ -42,6 +47,8 @@ struct test_packet {
     uint32_t             ts_sec;
     uint32_t             ts_usec;
 };
+
+
 
 // Writes packets to a temp file and returns its path.
 // Caller must std::remove() the path when done.
