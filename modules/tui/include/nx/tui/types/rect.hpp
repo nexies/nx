@@ -10,8 +10,8 @@ namespace nx::tui {
     class rect {
     public:
         using value_type = typename size_traits<T>::value_type;
-        using point_type = point<T>;
-        using size_type = size<T>;
+        using point_type = nx::tui::point<T>;
+        using size_type =  nx::tui::size<T>;
 
     private:
         point_type pos_{};
