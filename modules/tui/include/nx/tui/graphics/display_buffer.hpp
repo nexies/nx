@@ -19,8 +19,8 @@ namespace nx::tui {
         using const_pixel_reference  = const pixel_type &;
         using units                  = int;
         using character_type         = pixel_type::character_type;
-        using rect_type              = rect<units>;
-        using size_type              = size<units>;
+        using rect_type              = nx::tui::rect<units>;
+        using size_type              = nx::tui::size<units>;
 
     private:
         rect_type              rect_;
