@@ -22,7 +22,7 @@ target_link_libraries(nx_tg PUBLIC
 
 nx_configure_component(nx_tg
     NAME tg
-    VERSION 0.1.1
+    VERSION 0.1.2
 )
 
 add_subdirectory(demo)
