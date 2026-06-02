@@ -106,7 +106,8 @@ private:
     {
         pending_req_ = std::move(req);
         pending_cb_  = std::move(cb);
-        resolver_.resolve(u.host, u.effective_port());
+        auto r = resolver_.resolve(u.host, u.effective_port());
+        if (!r) _fail(r.error());
     }
 
     void _on_resolved(std::string host, std::vector<endpoint> eps)
@@ -187,10 +188,26 @@ private:
     // Moves owned resources out of the client and schedules their teardown on
     // the next event-loop tick.  This prevents destroying objects (acc_, parser_,
     // stream_) while they are still on the call stack (signal dispatch).
+    //
+    // Signals are disconnected BEFORE releasing so that the deferred
+    // s->disconnect() on the next tick does not fire _on_disconnected() /
+    // _fail() against a pending_cb_ that belongs to the *next* request.
     void _cleanup()
     {
         pending_cb_  = nullptr;
         pending_req_ = {};
+
+        if (stream_) {
+            if (acc_)
+                nx::core::disconnect(stream_.get(), &Stream::data_received, acc_.get(), nullptr);
+            nx::core::disconnect(stream_.get(), &Stream::connected,      this, nullptr);
+            nx::core::disconnect(stream_.get(), &Stream::disconnected,   this, nullptr);
+            nx::core::disconnect(stream_.get(), &Stream::error_occurred, this, nullptr);
+        }
+        if (parser_) {
+            nx::core::disconnect(parser_.get(), &response_parser::response_ready, this, nullptr);
+            nx::core::disconnect(parser_.get(), &response_parser::parse_error,    this, nullptr);
+        }
 
         auto p = std::shared_ptr<response_parser>(parser_.release());
         auto a = std::shared_ptr<read_accumulator>(acc_.release());

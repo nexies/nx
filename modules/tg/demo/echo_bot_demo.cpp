@@ -35,10 +35,18 @@ int main(int argc, char * argv[])
     nx::tg::bot bot(token);
 
     nx::core::connect(&bot, &nx::tg::bot::message_received, &bot,
-        [&bot](const nx::tg::message & msg) {
+        [&bot, &loop](const nx::tg::message & msg) {
             if (msg.text.empty()) return;
-            nx_info("[{}] {}: {}", msg.chat.id, msg.from.first_name, msg.text);
-            bot.send_message(msg.chat.id, msg.text);
+            // if (msg.text == "/exit") {
+                // nx_info("[{}] {}: Received EXIT...", msg.chat.id, msg.from.first_name);
+                // bot.send_message(msg.chat.id, "exiting...");
+                // bot.stop();
+                // loop.exit(0);
+            // }
+            // else {
+                nx_info("[{}] {}: {}", msg.chat.id, msg.from.first_name, msg.text);
+                bot.send_message(msg.chat.id, fmt::format("echo: {}", msg.text));
+            // }
         });
 
     nx::core::connect(&bot, &nx::tg::bot::error_occurred, &bot,

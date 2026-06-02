@@ -75,21 +75,17 @@ void response_parser::on_data()
 
             if (sv.empty()) {
                 const auto cl = current_.headers.find("content-length");
-                const auto te = current_.headers.find("transfer-encoding");
 
                 if (cl != current_.headers.end()) {
                     try { body_remaining_ = std::stoull(cl->second); }
                     catch (...) { _error("invalid content-length"); return; }
-                    state_ = (body_remaining_ > 0) ? state::body : state::status_line;
-                    if (body_remaining_ == 0) _complete();
-                } else if (te != current_.headers.end()) {
-                    // chunked or other TE: accumulate until connection closes
-                    state_ = state::body_until_close;
+                    if (body_remaining_ == 0) { _complete(); return; }
+                    state_ = state::body;
                 } else {
-                    // No framing info: body ends when connection closes
+                    // No content-length (chunked or connection-close): accumulate until close
                     state_ = state::body_until_close;
                 }
-                return;
+                break; // continue the loop to process body immediately
             }
 
             const auto colon = sv.find(':');

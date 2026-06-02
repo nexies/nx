@@ -102,6 +102,8 @@ std::string bot::_api_url(std::string_view method) const
 
 void bot::_poll()
 {
+    nx_trace("bot::_poll()");
+
     const std::string url_str =
         _api_url("getUpdates?timeout=30&offset=" + std::to_string(offset_));
 
@@ -119,6 +121,7 @@ void bot::_poll()
 
 void bot::_on_poll_response(nx::network::http::response resp, nx::error err)
 {
+    nx_trace("bot::_on_poll_response()");
     if (err) {
         NX_EMIT(error_occurred, err)
         if (running_) _poll();
