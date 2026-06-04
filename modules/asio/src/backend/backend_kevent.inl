@@ -39,10 +39,25 @@ public:
     }
 
     void modify(native_handle_t handle, void* token, io_interest interests) override {
-        // kevent EV_ADD is idempotent — re-adding an existing filter updates it.
-        // We add all filters in the new set; removing dropped filters is left to
-        // remove() since we don't track the previous interests here.
+        // Add/enable all filters in the new set.
         kevent_update(handle, token, interests, EV_ADD | EV_ENABLE);
+
+        // Disable filters that are no longer wanted.
+        // kqueue requires explicit EV_DELETE — there is no "set exactly these filters" API.
+        const io_interest all_tracked = io_interest::read | io_interest::write;
+        const io_interest to_remove   = all_tracked & (all_tracked ^ interests);
+        if (to_remove != io_interest::none) {
+            // Ignore errors: filter may not have been added yet, which is fine.
+            struct kevent ev;
+            if ((to_remove & io_interest::read) != io_interest::none) {
+                EV_SET(&ev, handle, EVFILT_READ, EV_DELETE, 0, 0, token);
+                kevent(kqueue_fd_, &ev, 1, nullptr, 0, nullptr);
+            }
+            if ((to_remove & io_interest::write) != io_interest::none) {
+                EV_SET(&ev, handle, EVFILT_WRITE, EV_DELETE, 0, 0, token);
+                kevent(kqueue_fd_, &ev, 1, nullptr, 0, nullptr);
+            }
+        }
     }
 
     void remove(native_handle_t handle, void * token, io_interest interest) override {

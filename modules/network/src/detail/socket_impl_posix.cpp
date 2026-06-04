@@ -15,6 +15,20 @@
 #include <cerrno>
 #include <cstring>
 
+// ── Platform compat ───────────────────────────────────────────────────────────
+// SOCK_NONBLOCK / SOCK_CLOEXEC as socket() flags are Linux-only.
+// MSG_NOSIGNAL is also Linux-only; on macOS we set SO_NOSIGPIPE instead.
+
+#if defined(__linux__)
+#  define NX_SOCK_FLAGS   (SOCK_NONBLOCK | SOCK_CLOEXEC)
+#  define NX_SEND_FLAGS   MSG_NOSIGNAL
+#  define NX_HAS_ACCEPT4  1
+#else
+#  define NX_SOCK_FLAGS   0
+#  define NX_SEND_FLAGS   0
+#  define NX_HAS_ACCEPT4  0
+#endif
+
 namespace nx::network::detail {
 
 using io_event    = nx::asio::io_event;
@@ -75,6 +89,33 @@ static endpoint ep_from_sockaddr(const sockaddr_storage & ss)
     return ep;
 }
 
+// ── Non-Linux helpers ─────────────────────────────────────────────────────────
+
+#if !NX_HAS_ACCEPT4
+static nx::result<void> make_nonblocking_cloexec(int fd) noexcept
+{
+    int fl = ::fcntl(fd, F_GETFL, 0);
+    if (fl < 0 || ::fcntl(fd, F_SETFL, fl | O_NONBLOCK) < 0)
+        return nx::err::runtime_error(errno, "fcntl(O_NONBLOCK)");
+
+    int fd_flags = ::fcntl(fd, F_GETFD, 0);
+    if (fd_flags < 0 || ::fcntl(fd, F_SETFD, fd_flags | FD_CLOEXEC) < 0)
+        return nx::err::runtime_error(errno, "fcntl(FD_CLOEXEC)");
+
+    return {};
+}
+
+static void set_nosigpipe(int fd) noexcept
+{
+#if defined(SO_NOSIGPIPE)
+    const int one = 1;
+    ::setsockopt(fd, SOL_SOCKET, SO_NOSIGPIPE, &one, sizeof(one));
+#else
+    (void)fd;
+#endif
+}
+#endif // !NX_HAS_ACCEPT4
+
 // ── socket_impl_posix ─────────────────────────────────────────────────────────
 
 class socket_impl_posix final : public socket_impl {
@@ -95,9 +136,17 @@ public:
         const int st = (type == socket_type::tcp) ? SOCK_STREAM :
                        (type == socket_type::udp) ? SOCK_DGRAM  : SOCK_RAW;
 
-        fd_ = ::socket(af, st | SOCK_NONBLOCK | SOCK_CLOEXEC, 0);
+        fd_ = ::socket(af, st | NX_SOCK_FLAGS, 0);
         if (fd_ < 0)
             return os_err("socket()");
+
+#if !NX_HAS_ACCEPT4
+        if (auto r = make_nonblocking_cloexec(fd_); !r) {
+            ::close(fd_); fd_ = -1;
+            return r;
+        }
+        set_nosigpipe(fd_);
+#endif
         return {};
     }
 
@@ -218,7 +267,7 @@ public:
 
     nx::result<std::size_t> write(const char * buf, std::size_t len) override
     {
-        const auto n = ::send(fd_, buf, len, MSG_NOSIGNAL);
+        const auto n = ::send(fd_, buf, len, NX_SEND_FLAGS);
         if (n < 0) {
             if (errno == EAGAIN || errno == EWOULDBLOCK)
                 return would_block_error();
@@ -250,7 +299,7 @@ public:
         socklen_t sslen = 0;
         ep_to_sockaddr(to, ss, sslen);
 
-        const auto n = ::sendto(fd_, buf, len, MSG_NOSIGNAL,
+        const auto n = ::sendto(fd_, buf, len, NX_SEND_FLAGS,
                                  reinterpret_cast<sockaddr *>(&ss), sslen);
         if (n < 0) {
             if (errno == EAGAIN || errno == EWOULDBLOCK)
@@ -267,6 +316,7 @@ public:
         sockaddr_storage ss {};
         socklen_t sslen = sizeof(ss);
 
+#if NX_HAS_ACCEPT4
         const int client_fd = ::accept4(fd_,
                                          reinterpret_cast<sockaddr *>(&ss), &sslen,
                                          SOCK_NONBLOCK | SOCK_CLOEXEC);
@@ -275,6 +325,20 @@ public:
                 return would_block_error();
             return os_err("accept4()");
         }
+#else
+        const int client_fd = ::accept(fd_,
+                                        reinterpret_cast<sockaddr *>(&ss), &sslen);
+        if (client_fd < 0) {
+            if (errno == EAGAIN || errno == EWOULDBLOCK)
+                return would_block_error();
+            return os_err("accept()");
+        }
+        if (auto r = make_nonblocking_cloexec(client_fd); !r) {
+            ::close(client_fd);
+            return r.error();
+        }
+        set_nosigpipe(client_fd);
+#endif
 
         remote_ep = ep_from_sockaddr(ss);
         return std::unique_ptr<socket_impl>(new socket_impl_posix(client_fd));

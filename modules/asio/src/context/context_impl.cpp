@@ -190,7 +190,11 @@ namespace nx::asio
 
     void io_context::impl::modify_reactor_handle(native_handle_t handle, void* token, io_interest interest)
     {
-        backend_->modify(handle, token, interest);
+        auto * rh = static_cast<reactor_handle*>(token);
+        // Must pass the same numeric id that was used in register_reactor_handle,
+        // not the raw pointer — the backend stores it as kqueue udata and
+        // processBackendEvents looks it up by id.
+        backend_->modify(handle, reinterpret_cast<void*>(static_cast<uintptr_t>(rh->token_id_)), interest);
         backend_->wake();
     }
 
