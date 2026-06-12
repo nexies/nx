@@ -58,7 +58,7 @@ target_include_directories(nx_common PUBLIC
 
 nx_configure_component(nx_common
         NAME common
-        VERSION 0.0.3
+        VERSION 0.0.4
 )
 
 # Install std_compat headers alongside the main include tree
