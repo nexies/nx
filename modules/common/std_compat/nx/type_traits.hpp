@@ -20,6 +20,16 @@ using invoke_result_t = std::invoke_result_t<F, Args...>;
 template<typename F, typename... Args>
 using invoke_result_t = typename std::result_of<F(Args...)>::type;
 
+
 #endif
+
+template<typename T>
+using remove_cv_t = typename std::remove_cv<T>::type;
+
+template<bool C, typename T = void>
+using enable_if_t = typename std::enable_if<C, T>::type;
+
+template<typename T>
+using remove_reference_t = typename std::remove_reference<T>::type;
 
 } // namespace nx

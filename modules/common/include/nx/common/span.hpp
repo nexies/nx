@@ -1,6 +1,6 @@
 #pragma once
 
-#include <nx/common/platform/standard_defs.hpp>
+#include <nx/type_traits.hpp>
 
 // ── nx::span ──────────────────────────────────────────────────────────────────
 //
@@ -18,18 +18,18 @@ namespace nx {
 
 #else // C++17 and earlier
 
-#  include <cstddef>
-#  include <type_traits>
+// #  include <cstddef>
 
 namespace nx {
 
-inline constexpr std::size_t dynamic_extent = std::size_t(-1);
+constexpr std::size_t dynamic_extent = std::size_t(-1);
+
 
 template<typename T>
 class span {
 public:
     using element_type    = T;
-    using value_type      = std::remove_cv_t<T>;
+    using value_type      = nx::remove_cv_t<T>;
     using size_type       = std::size_t;
     using difference_type = std::ptrdiff_t;
     using pointer         = T *;
@@ -48,8 +48,8 @@ public:
 
     // Construct from any contiguous container exposing .data() / .size().
     template<typename C,
-             typename = std::enable_if_t<
-                 !std::is_same<std::remove_cv_t<C>, span>::value &&
+             typename = nx::enable_if_t<
+                 !std::is_same<nx::remove_cv_t<C>, span>::value &&
                  std::is_convertible<decltype(std::declval<C &>().data()), pointer>::value>>
     constexpr span(C & c) noexcept : data_(c.data()), size_(c.size()) {}
 
